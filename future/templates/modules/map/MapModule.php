@@ -1,9 +1,15 @@
 <?php
 
 require_once realpath(LIB_DIR.'/Module.php');
-require_once realpath(LIB_DIR.'/feeds/ArcGISServer.php');
-require_once realpath(LIB_DIR.'/feeds/MapSearch.php');
-require_once realpath(LIB_DIR.'/feeds/WMSServer.php');
+//require_once realpath(LIB_DIR.'/feeds/ArcGISServer.php');
+//require_once realpath(LIB_DIR.'/feeds/MapSearch.php');
+//require_once realpath(LIB_DIR.'/feeds/WMSServer.php');
+require_once realpath(LIB_DIR.'/MapLayerDataController.php');
+require_once realpath(LIB_DIR.'/StaticMapDataController.php');
+
+// detail-basic: $imageUrl $imageWidth $imageHeight $scrollNorth $scrollSouth $scrollEast $scrollWest $zoomInUrl $zoomOutUrl $photoUrl $photoWidth
+// detail: $hasMap $mapPane $photoPane $detailPane $imageWidth $imageHeight $imageUrl $name $details
+// search: $places
 
 define('ZOOM_FACTOR', 2);
 define('MOVE_FACTOR', 0.40);
@@ -11,6 +17,7 @@ define('MIN_MAP_CONTEXT', 250); // enforce a minimum range in feet (their units)
 
 class MapModule extends Module {
   protected $id = 'map';
+  protected $feeds;
 
   private function bboxArr2Str($bbox) {
     return implode(',', array_values($bbox));
@@ -26,6 +33,7 @@ class MapModule extends Module {
     );
   }
 
+  /*
   // all args can be -1, 0, or 1
   private function shiftBBox($bbox, $east, $south, $in) {
     $xrange = $bbox['xmax'] - $bbox['xmin'];
@@ -52,7 +60,9 @@ class MapModule extends Module {
   
     return $bbox;
   }
+  */
 
+    /*
   private function initializeMap($name, $details) {
     $wms = new WMSServer();
     $bbox = isset($this->args['bbox']) ? $this->bboxStr2Arr($this->args['bbox']) : NULL;
@@ -229,12 +239,14 @@ JS;
     $this->addInlineJavascriptFooter($footerScript);
 
     $this->addOnLoad("loadImage(getMapURL(mapBaseURL),'mapimage');");
-    
+
     return $hasMap;
   }
+    */
   
   private function initializeFullscreenMap() {
     $selectvalue = $this->args['selectvalues'];
+    /*
     $bbox = explode(',', $this->args['bbox']);
     $minx = $bbox[0];
     $miny = $bbox[1];
@@ -354,6 +366,7 @@ JS;
     
     $this->addOnLoad($resizeScript);
     $this->addOnOrientationChange($resizeScript);
+    */
   }
 
   private function drillURL($drilldown, $name=NULL, $addBreadcrumb=true) {
@@ -435,21 +448,37 @@ JS;
     return count($searchResults);
   }
 
+    private function getLayer($index) {
+        if (isset($this->feeds[$index])) {
+            $feedData = $this->feeds[$index];
+            $controller = MapLayerDataController::factory($feedData);
+            $controller->setDebugMode($GLOBALS['siteConfig']->getVar('DATA_DEBUG'));
+            return $controller;
+        } else {
+            throw new Exception("Error getting layer for index $index");
+        }
+    }
+
   protected function initializeForPage() {
     switch ($this->page) {
       case 'help':
         break;
         
       case 'index':
-        $layers = ArcGISServer::getLayers();
-        
+        //$layers = ArcGISServer::getLayers();
+
+        if (!$this->feeds)
+            $this->feeds = $this->loadFeedData();
+
         $categories = array();
-        foreach ($layers as $layer => $title) {
-          $categories[] = array(
-            'title' => $title,
-            'url'   => $this->categoryURL($layer),
-          );
+        foreach ($this->feeds as $id => $feed) {
+            $categories[] = array(
+                'title' => $feed['TITLE'],
+                'url' => $this->categoryURL($id),
+                );
         }
+
+        // TODO show category description in cell subtitles
         $this->assign('categories', $categories);
         break;
         
@@ -488,27 +517,32 @@ JS;
       case 'category':
         if (isset($this->args['category'])) {
           $category = $this->args['category'];
-          
-          $layers = ArcGISServer::getLayers();
+
+          if (!$this->feeds)
+              $this->feeds = $this->loadFeedData();
+
           $categories = array();
-          foreach ($layers as $layer => $title) {
-            $categories[] = array(
-              'id'    => $layer,
-              'title' => $title,
-            );
+          foreach ($this->feeds as $id => $feed) {
+              $categories[] = array(
+                  'id' => $id,
+                  'title' => $feed['TITLE'],
+                  );
           }
 
-          $layer = ArcGISServer::getLayer($category);
+          $layer = $this->getLayer($category);
+            
+          //$layer = ArcGISServer::getLayer($category);
           $features = $layer->getFeatureList();
           $places = array();
-          foreach ($features as $title => $info) {
+          foreach ($features as $feature) {
+            $title = $feature->getTitle();
             $places[] = array(
               'title' => $title,
               'url'   => $this->detailURL($title, $category, $info),
             );
           }
-            
-          $this->assign('title',      $layer->getName());          
+
+          $this->assign('title',      $layer->getTitle());
           $this->assign('places',     $places);          
           $this->assign('categories', $categories);
           
@@ -527,9 +561,63 @@ JS;
         
         // Map Tab
         $tabKeys[] = 'map';
-        $hasMap = $this->initializeMap($name, $details);
+        //$hasMap = $this->initializeMap($name, $details);
+        $hasMap = true;
         $this->assign('hasMap', $hasMap);
+
+        if (!$this->feeds)
+            $this->feeds = $this->loadFeedData();
+
+        $layer = $this->getLayer($this->args['category']);
+        $feature = $layer->getFeature($name);
+
+        $mapClass = $layer->getMapControllerClass();
+        $mapController = new $mapClass();
+
+        // TODO all this should be moved to initializeMap() once its working
+        $geometry = $feature->getGeometry();
+        $center = $geometry->getCenterCoordinate();
+        $mapController->setCenter($center['lat'], $center['lon']);
+        $style = $feature->getStyleAttribs();
+        switch ($geometry->getType()) {
+            case 'Point':
+                if ($mapController->canAddAnnotations()) {
+                    $mapController->addAnnotation($center['lat'], $center['lon'], $style);
+                }
+                break;
+            case 'Polyline':
+                if ($mapController->canAddPaths()) {
+                    $mapController->addPath($geometry->getPoints(), $style);
+                }
+                break;
+            default:
+                break;
+        }
+
+        $mapController->setZoomLevel(14);
+
+        switch ($this->pagetype) {
+            case 'compliant':
+                $imageWidth = 290; $imageHeight = 190;
+                break;
+       
+            case 'basic':
+                if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
+                    $imageWidth = 410; $imageHeight = 260;
+                } else {
+                    $imageWidth = 200; $imageHeight = 200;
+                }
+                break;
+        }
+        $mapController->setImageWidth($imageWidth);
+        $mapController->setImageHeight($imageHeight);
+
+        $this->assign('imageHeight', $imageHeight);
+        $this->assign('imageWidth',  $imageWidth);
+
+        $this->assign('imageUrl', $mapController->getImageURL());
         
+        /*
         // Photo Tab
         $photoFile = null;
         if (array_key_exists('PHOTO_FILE', $details)) {
@@ -547,11 +635,15 @@ JS;
           $this->assign('photoUrl', $photoUrl);
         }
         $this->addInlineJavascript("var photoURL = '{$photoUrl}';");
-        
+        */        
         
         // Details Tab
         $tabKeys[] = 'detail';
-        
+        $this->assign('details', $feature->getDescription());
+        // for ArcGIS data, which comes back in key/value pairs, 
+        // construct a list or table in the $details html
+
+        /*
         $displayDetails = array();
         foreach ($details as $field => $value) {
           $value = trim($value);
@@ -572,7 +664,7 @@ JS;
         $this->assign('name', $name);
         $this->assign('address', $details['Address']);
         $this->assign('details', $displayDetails);
-        
+        */
         $this->enableTabs($tabKeys, null, $tabJavascripts);
         break;
         

@@ -69,6 +69,7 @@ class RSSDataController extends DataController
     {
         if (!$this->items) {
             $data = $this->getData();
+            $this->parseData($data);
             $this->items = $this->parseData($data);
             
         }

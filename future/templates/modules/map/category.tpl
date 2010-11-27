@@ -1,7 +1,7 @@
 {include file="findInclude:common/header.tpl"}
 
 <div class="nonfocal">
-  <h2>Browse Buildings: {$title}</h2>
+  <h2>Browse {$title}:</h2>
 </div>
 
 {include file="findInclude:common/results.tpl" results=$places}
