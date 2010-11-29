@@ -52,7 +52,7 @@ class KMLDocument extends XMLElement
 
 class KMLStyle extends XMLElement
 {
-    protected $name = 'Style';
+    protected $isSimpleStyle = true;
 
     protected $iconStyle; // color, colorMode, scale, heading, hotSpot, icon>href
     protected $balloonStyle; // bgColor, textColor, text, displayMode
@@ -60,13 +60,37 @@ class KMLStyle extends XMLElement
     protected $labelStyle;
     protected $listStyle;
 
+    // pointers to simple style objects
+    protected $normalStyle;
+    protected $highlightStyle;
+    protected $styleContainer; // pointer to whoever owns the lookup table of simple styles
+
     public function getPointStyle() {
-        $style = array_merge($this->balloonStyle, $this->iconStyle);
+        if ($this->isSimpleStyle) {
+            $style = array_merge($this->balloonStyle, $this->iconStyle);
+        } else {
+            $styleRef = $this->styleContainer->getStyle($this->normalStyle);
+            $style = $styleRef->getPointStyle();
+        }
         return $style;
     }
 
     public function getLineStyle() {
-        return $this->lineStyle;
+        if ($this->isSimpleStyle) {
+            $style = $this->lineStyle;
+        } else {
+            $styleRef = $this->styleContainer->getStyle($this->normalStyle);
+            $style = $styleRef->getLineStyle();
+        }
+        return $style;
+    }
+
+    public function isSimpleStyle() {
+        return $this->isSimpleStyle;
+    }
+
+    public function setStyleContainer($container) {
+        $this->styleContainer = $container;
     }
 
     public function addElement(XMLElement $element)
@@ -97,6 +121,14 @@ class KMLStyle extends XMLElement
             case 'LISTSTYLE':
                 $this->listStyle = array();
                 break;
+            case 'PAIR':
+                $state = $element->getProperty('KEY');
+                if ($state == 'normal') {
+                    $this->normalStyle = substr($element->getProperty('STYLEURL'), 1);
+                } else if ($state == 'highlighted') {
+                    $this->highlightStyle = substr($element->getProperty('STYLEURL'), 1);
+                }
+                break;
             default:
                 parent::addElement($element);
                 break;
@@ -106,6 +138,7 @@ class KMLStyle extends XMLElement
     
     public function __construct($name, $attribs)
     {
+        $this->isSimpleStyle = ($name === 'STYLE');
         $this->setAttribs($attribs);
     }
 }
@@ -292,8 +325,8 @@ class KMLDataParser extends XMLDataParser
     protected $document;
 
     // whitelists
-    protected static $startElements=array('DOCUMENT','STYLE','PLACEMARK','POINT','LINESTRING');
-    protected static $endElements=array('DOCUMENT','STYLE','PLACEMARK','STYLEURL');
+    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING');
+    protected static $endElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','STYLEURL');
 
     /*    
     public function init($args)
@@ -330,6 +363,11 @@ class KMLDataParser extends XMLDataParser
             case 'STYLE':
                 $this->elementStack[] = new KMLStyle($name, $attribs);
                 break;
+            case 'STYLEMAP':
+                $style = new KMLStyle($name, $attribs);
+                $style->setStyleContainer($this);
+                $this->elementStack[] = $style;
+                break;
             case 'PLACEMARK':
                 $this->elementStack[] = new KMLPlacemark($name, $attribs);
                 break;
@@ -360,15 +398,19 @@ class KMLDataParser extends XMLDataParser
                 $this->document = $element;
                 break;
             case 'STYLE':
+            case 'STYLEMAP':
                 $this->styles[$element->getAttrib('ID')] = $element;
                 break;
             case 'PLACEMARK':
                 $this->items[] = $element;
                 break;
             case 'STYLEURL':
-                // parent must be a Placemark object
                 $value = $element->value();
-                $parent->setStyle($this->getStyle($value));
+                if ($parent->name() == 'Placemark') {
+                    $parent->setStyle($this->getStyle($value));
+                } else {
+                    $parent->addElement($element);
+                }
                 break;
         }
     }
