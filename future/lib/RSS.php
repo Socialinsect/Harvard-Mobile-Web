@@ -234,6 +234,7 @@ class RSSItem extends XMLElement
             'SUMMARY'=>'description',
             'CONTENT'=>'content',
             'CONTENT:ENCODED'=>'content',
+            'BODY'=>'content',
             'DC:DATE'=>'pubDate',
             'PUBLISHED'=>'pubDate'
             
