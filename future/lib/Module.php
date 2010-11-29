@@ -6,11 +6,15 @@ require_once realpath(LIB_DIR.'/User.php');
 
 abstract class Module {
   protected $id = 'none';
+  protected $moduleName = '';
   
   protected $session;
   
   protected $page = 'index';
   protected $args = array();
+
+  protected $templateModule = 'none'; 
+  protected $templatePage = 'index';
   
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
@@ -22,9 +26,8 @@ abstract class Module {
   private $breadcrumbTitle     = 'No Title';
   private $breadcrumbLongTitle = 'No Title';
   
-  private $moduleName = 'No Title';
-  
   private $inlineCSSBlocks = array();
+  private $externalCSSURLs = array();
   private $inlineJavascriptBlocks = array();
   private $inlineJavascriptFooterBlocks = array();
   private $onOrientationChangeBlocks = array();
@@ -163,7 +166,7 @@ abstract class Module {
   //
   private function getMinifyUrls() {
     $minKey = "{$this->id}-{$this->page}-{$this->pagetype}-{$this->platform}-".md5(ROOT_DIR);
-    $minDebug = $GLOBALS['siteConfig']->getVar('MINIFY_DEBUG') ? '&debug=1' : '';
+    $minDebug = $this->getSiteVar('MINIFY_DEBUG') ? '&debug=1' : '';
     
     return array(
       'css' => "/min/g=css-$minKey$minDebug",
@@ -257,6 +260,25 @@ abstract class Module {
     header("Location: $url");
     exit;
   }
+
+  //
+  // Configuration
+  //
+  protected function getSiteVar($var)
+  {
+      return $GLOBALS['siteConfig']->getVar($var);
+  }
+
+  protected function getSiteSection($var)
+  {
+      return $GLOBALS['siteConfig']->getSection($var);
+  }
+
+  protected function getModuleVar($var)
+  {
+     $config = $this->getModuleConfig();
+     return $config->getVar($var);
+  }
   
   protected function loadFeedData()
   {
@@ -270,86 +292,166 @@ abstract class Module {
   }
   
   //
+  // Admin Methods
+  //
+  //
+  
+  protected function prepareAdminForSection($section, $adminModule) {
+  }
+  
+  protected function saveConfig($moduleData, $section=null)
+  {
+        $type = $section == 'feeds' ? 'feeds' : 'module';
+        $moduleConfigFile = ConfigFile::factory($this->id, $section, true);
+        
+        if ($section=='feeds') {
+            $moduleData = $moduleData[$section];
+        }
+        
+        $moduleConfigFile->addSectionVars($moduleData, !$section);
+        $moduleConfigFile->saveFile();
+  }
+  
+  //
   // Factory function
   // instantiates objects for the different modules
   //
-  public static function factory($id, $page='index', $args=array()) {
+  public static function factory($id, $page='', $args=array()) {
     $className = ucfirst($id).'Module';
     
     $moduleFile = realpath_exists(MODULES_DIR."/$id/$className.php");
     if ($moduleFile && include_once($moduleFile)) {
-      return new $className($page, $args);
-      
+      $module = new $className();
+      if ($page) {
+          $module->factoryInit($page, $args);
+      }
+      return $module;
     } else {
       throw new PageNotFound("Module '$id' not found while handling '{$_SERVER['REQUEST_URI']}'");
     }
+   }
+   
+   public function factoryInit($page, $args)
+   {
+        $moduleData = $this->getModuleData();
+        $this->moduleName = $moduleData['title'];
+        
+        $disabled = self::argVal($moduleData, 'disabled', false);
+        if ($disabled) {
+            $this->redirectToModule('error', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
+        }
+        
+        $secure = self::argVal($moduleData, 'secure', false);
+        if ($secure && (!isset($_SERVER['HTTPS']) || ($_SERVER['HTTPS'] !='on'))) { 
+            // redirect to https (at this time, we are assuming it's on the same host)
+             $redirect= "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+             header("Location:$redirect");    
+             exit();
+        }
+        
+        if ($this->getSiteVar('AUTHENTICATION_ENABLED')) {
+            $this->initSession();
+            $user = $this->getUser();
+            $this->assign('session_userID', $user->getUserID());
+            $protected = self::argVal($moduleData, 'protected', false);
+            if ($protected) {
+                if (!$this->session->isLoggedIn()) {
+                    $this->redirectToModule('error', array('code'=>'protected', 'url'=>URL_BASE . 'login/?' .
+                        http_build_query(array('url'=>$_SERVER['REQUEST_URI']))));
+                }
+            }
+        }
+        
+        $this->page = $page;
+        $this->setTemplatePage($this->page, $this->id);
+        $this->args = $args;
+        
+        $this->pagetype      = $GLOBALS['deviceClassifier']->getPagetype();
+        $this->platform      = $GLOBALS['deviceClassifier']->getPlatform();
+        $this->supportsCerts = $GLOBALS['deviceClassifier']->getSupportsCerts();
+        
+        // Pull in fontsize
+        if (isset($args['font'])) {
+          $this->fontsize = $args['font'];
+          setcookie('fontsize', $this->fontsize, time() + $this->getSiteVar('LAYOUT_COOKIE_LIFESPAN'), COOKIE_PATH);      
+        
+        } else if (isset($_COOKIE['fontsize'])) { 
+          $this->fontsize = $_COOKIE['fontsize'];
+        }
+        
+        $this->initialize();
+  
   }
   
   protected function initSession()
   {
     if (!$this->session) {
-        $authorityClass = $GLOBALS['siteConfig']->getVar('AUTHENTICATION_AUTHORITY');
-        $authorityArgs = $GLOBALS['siteConfig']->getSection('authentication');
+        $authorityClass = $this->getSiteVar('AUTHENTICATION_AUTHORITY');
+        $authorityArgs = $this->getSiteSection('authentication');
         $AuthenticationAuthority = AuthenticationAuthority::factory($authorityClass, $authorityArgs);
         
         $this->session = new Session($AuthenticationAuthority);
     }
   }
   
-  function __construct($page='index', $args=array()) {
-    $GLOBALS['siteConfig']->loadWebAppFile('modules');
-    
-    $modules = $GLOBALS['siteConfig']->getWebAppVar('modules');
-    if (isset($modules[$this->id])) {
-      $this->moduleName = $modules[$this->id]['title'];
-      $moduleData = $modules[$this->id];
-    } else {
-        throw new Exception("Module data for $this->id not found");
+  public function getModuleName()
+  {
+    return $this->moduleName;
+  }
+  
+  protected function getModuleDefaultData()
+  {
+    return array(
+        'title'=>$this->moduleName,
+        'disabled'=>0,
+        'disableable'=>0,
+        'movable'=>0,
+        'protected'=>0,
+        'search'=>0,
+        'secure'=>0
+    );
+  }
+  
+  protected function getSectionTitleForKey($key)
+  {
+    return $key; //should be overridden by subclasses
+  }
+
+  protected function getModuleItemForKey($key, $value)
+  {
+    $item = array(
+        'label'=>ucfirst($key),
+        'name'=>"moduleData[$key]",
+        'value'=>$value,
+        'type'=>'text'
+    );
+
+    switch ($key)
+    {
+        case 'title':
+            $item['type'] = 'text';
+            break;
+        case 'disabled':
+        case 'disableable':
+        case 'movable':
+        case 'search':
+        case 'protected':
+        case 'secure':
+            $item['type'] = 'boolean';
+            break;
+        case 'id':
+            $item['type'] = 'label';
+            break;
+        default:
+            break;
     }
     
-    $disabled = self::argVal($moduleData, 'disabled', false);
-    if ($disabled) {
-        $this->redirectToModule('error', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
-    }
-    
-    $secure = self::argVal($moduleData, 'secure', false);
-    if ($secure && (!isset($_SERVER['HTTPS']) || ($_SERVER['HTTPS'] !='on'))) { 
-        // redirect to https (at this time, we are assuming it's on the same host)
-         $redirect= "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-         header("Location:$redirect");    
-         exit();
-    }
-    
-    if ($GLOBALS['siteConfig']->getVar('AUTHENTICATION_ENABLED')) {
-        $this->initSession();
-        $user = $this->getUser();
-        $this->assign('session_userID', $user->getUserID());
-        $protected = self::argVal($moduleData, 'protected', false);
-        if ($protected) {
-            if (!$this->session->isLoggedIn()) {
-                $this->redirectToModule('error', array('code'=>'protected', 'url'=>URL_BASE . 'login/?' .
-                    http_build_query(array('url'=>$_SERVER['REQUEST_URI']))));
-            }
-        }
-    }
-    
-    $this->page = $page;
-    $this->args = $args;
-    
-    $this->pagetype      = $GLOBALS['deviceClassifier']->getPagetype();
-    $this->platform      = $GLOBALS['deviceClassifier']->getPlatform();
-    $this->supportsCerts = $GLOBALS['deviceClassifier']->getSupportsCerts();
-    
-    // Pull in fontsize
-    if (isset($args['font'])) {
-      $this->fontsize = $args['font'];
-      setcookie('fontsize', $this->fontsize, time() + $GLOBALS['siteConfig']->getVar('LAYOUT_COOKIE_LIFESPAN'), COOKIE_PATH);      
-    
-    } else if (isset($_COOKIE['fontsize'])) { 
-      $this->fontsize = $_COOKIE['fontsize'];
-    }
-    
-    $this->initialize();
+    return $item;
+  }
+
+                    
+  function __construct() {
+     $this->moduleName = ucfirst($this->id);
   }
   
   //
@@ -365,62 +467,36 @@ abstract class Module {
   // Module control functions
   //
   protected function getAllModules() {
-    $modules = $GLOBALS['siteConfig']->getWebAppVar('modules');
-    return $modules;
-  }
-
-  protected function getHomeScreenModules() {
-    $modules = $this->getAllModules();
-    
-    foreach ($modules as $id => $info) {
-      if (!$info['homescreen'] || $info['disabled']) {
-        unset($modules[$id]);
-      }
-    }
-    
-    if (isset($_COOKIE["visiblemodules"])) {
-      if ($_COOKIE["visiblemodules"] == "NONE") {
-        $visibleModuleIDs = array();
-      } else {
-        $visibleModuleIDs = array_flip(explode(",", $_COOKIE["visiblemodules"]));
-      }
-      foreach ($modules as $moduleID => &$info) {
-         $info['disabled'] = !isset($visibleModuleIDs[$moduleID]) && $info['disableable'];
-      }
-    }
-
-    if (isset($_COOKIE["moduleorder"])) {
-      $sortedModuleIDs = explode(",", $_COOKIE["moduleorder"]);
-      $unsortedModuleIDs = array_diff(array_keys($modules), $sortedModuleIDs);
-            
-      $sortedModules = array();
-      foreach (array_merge($sortedModuleIDs, $unsortedModuleIDs) as $moduleID) {
-        if (isset($modules[$moduleID])) {
-          $sortedModules[$moduleID] = $modules[$moduleID];
+    $d = dir(MODULES_DIR);
+    $modules = array();
+    while (false !== ($entry = $d->read())) {
+        if ($entry[0]!='.' && is_dir(sprintf("%s/%s", MODULES_DIR, $entry))) {
+            $module = Module::factory($entry);
+            $modules[$entry] = $module;
         }
-      }
-      $modules = $sortedModules;
-    }    
-    //error_log('$modules(): '.print_r(array_keys($modules), true));
-    return $modules;
+    }
+    ksort($modules);    
+    return $modules;        
   }
-  
-  protected function setHomeScreenModuleOrder($moduleIDs) {
-    $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
-    $value = implode(",", $moduleIDs);
-    
-    setcookie("moduleorder", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["moduleorder"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
+
+  public function getModuleConfig() {
+    static $moduleConfig;
+    if (!$moduleConfig) {
+        $moduleConfig = $this->getConfig($this->id, 'module');
+    }
+
+    return $moduleConfig;
   }
-  
-  protected function setHomeScreenVisibleModules($moduleIDs) {
-    $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
-    $value = count($moduleIDs) ? implode(",", $moduleIDs) : 'NONE';
+
+  public function getModuleData() {
+    static $moduleData;
+    if (!$moduleData) {
+        $moduleData = $this->getModuleDefaultData();
+        $config = $this->getModuleConfig();
+        $moduleData = array_merge($moduleData, $config->getSectionVars(true));
+    }
     
-    setcookie("visiblemodules", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["visiblemodules"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
+    return $moduleData;
   }
 
   //
@@ -429,6 +505,9 @@ abstract class Module {
   //
   protected function addInlineCSS($inlineCSS) {
     $this->inlineCSSBlocks[] = $inlineCSS;
+  }
+  protected function addExternalCSS($url) {
+    $this->externalCSSURLs[] = $url;
   }
   protected function addInlineJavascript($inlineJavascript) {
     $this->inlineJavascriptBlocks[] = $inlineJavascript;
@@ -492,15 +571,16 @@ abstract class Module {
   //
   private function loadPageConfig() {
     if (!isset($this->pageConfig)) {
+      $this->setPageTitle($this->moduleName);
+
       // Load site configuration and help text
-      $this->loadWebAppConfigFile('site', false);
+
+      $this->loadSiteConfigFile('strings', false);
       $this->loadWebAppConfigFile('help');
   
       // load module config file
-      $modulePageConfig = $this->loadWebAppConfigFile($this->id, "{$this->id}PageConfig", true);
+      $modulePageConfig = $this->loadWebAppConfigFile($this->id, "{$this->id}PageConfig");
     
-      $this->pageTitle = $this->moduleName;
-  
       if (isset($modulePageConfig[$this->page])) {
         $pageConfig = $modulePageConfig[$this->page];
         
@@ -526,6 +606,14 @@ abstract class Module {
     }
   }
   
+  protected function setTemplatePage($page, $moduleID=null)
+  {
+    $moduleID = is_null($moduleID) ? $this->id : $moduleID;
+    $this->templatePage = $page;
+    $this->templateModule = $moduleID;
+  }
+  
+  
   // Programmatic overrides for titles generated from backend data
   protected function setPageTitle($title) {
     $this->pageTitle = $title;
@@ -545,21 +633,35 @@ abstract class Module {
   }
 
   //
-  // Theme config files
+  // Config files
   //
   
-  protected function loadWebAppConfigFile($name, $keyName=null, $ignoreError=false) {
+  protected function getConfig($name, $type) {
+    $config = ConfigFile::factory($name, $type);
+    $GLOBALS['siteConfig']->addConfig($config);
+    return $config;
+  }
+
+  protected function loadSiteConfigFile($name, $keyName=null) {
+    $config = $this->getConfig($name, 'site');
+    if ($keyName === null) { $keyName = $name; }
+
+    return $this->loadConfigFile($config, $keyName);
+  }
+
+  protected function loadWebAppConfigFile($name, $keyName=null) {
+    $config = $this->getConfig($name, 'web');
+    if ($keyName === null) { $keyName = $name; }
+    return $this->loadConfigFile($config, $keyName);
+  }
+  
+  protected function loadConfigFile(Config $config, $keyName=null) {
     $this->loadTemplateEngineIfNeeded();
 
-    if ($keyName === null) { $keyName = $name; }
-    
-    if (!$GLOBALS['siteConfig']->loadWebAppFile($name, true, $ignoreError)) {
-      return array();
-    }
-        
-    $themeVars = $GLOBALS['siteConfig']->getWebAppVar($name);
+    $themeVars = $config->getSectionVars(true);
     
     if ($keyName === false) {
+    
       foreach($themeVars as $key => $value) {
         $this->templateEngine->assign($key, $value);
       }
@@ -615,7 +717,7 @@ abstract class Module {
     $this->assign('minify', $this->getMinifyUrls());
     
     // Google Analytics
-    $gaID = $GLOBALS['siteConfig']->getVar('GOOGLE_ANALYTICS_ID');
+    $gaID = $this->getSiteVar('GOOGLE_ANALYTICS_ID');
     $this->assign('GOOGLE_ANALYTICS_ID', $gaID);
     $this->assign('gaImageURL', $this->googleAnalyticsGetImageUrl($gaID));
     
@@ -629,6 +731,7 @@ abstract class Module {
 
     // Variables which may have been modified by the module subclass
     $this->assign('inlineCSSBlocks', $this->inlineCSSBlocks);
+    $this->assign('externalCSSURLs', $this->externalCSSURLs);
     $this->assign('inlineJavascriptBlocks', $this->inlineJavascriptBlocks);
     $this->assign('onOrientationChangeBlocks', $this->onOrientationChangeBlocks);
     $this->assign('onLoadBlocks', $this->onLoadBlocks);
@@ -650,7 +753,7 @@ abstract class Module {
       $helpConfig = $this->getTemplateVars('help');
       $this->assign('hasHelp', isset($helpConfig[$this->id]));
       
-      $template = 'modules/'.$this->id.'/'.$this->page;
+      $template = 'modules/'.$this->templateModule.'/'.$this->templatePage;
     }
     
     // Pager support

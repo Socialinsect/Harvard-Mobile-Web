@@ -70,6 +70,17 @@ class NewsModule extends Module {
         return '';
     }
   }
+
+  protected function prepareAdminForSection($section, &$adminModule) {
+    switch ($section)
+    {
+        case 'feeds':
+            $feeds = $this->loadFeedData();
+            $adminModule->assign('feeds', $feeds);
+            $adminModule->setTemplatePage('feedAdmin', $this->id);
+            break;
+    }
+  }
   
   public function getFeeds()
   {
@@ -81,7 +92,7 @@ class NewsModule extends Module {
     if (isset($this->feeds[$index])) {
         $feedData = $this->feeds[$index];
         $controller = RSSDataController::factory($feedData);
-        $controller->setDebugMode($GLOBALS['siteConfig']->getVar('DATA_DEBUG'));
+        $controller->setDebugMode($this->getSiteVar('DATA_DEBUG'));
         return $controller;
     } else {
         throw new Exception("Error getting news feed for index $index");

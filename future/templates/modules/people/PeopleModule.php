@@ -139,6 +139,38 @@ class PeopleModule extends Module {
     }
     return count($people);
   }
+
+/*
+[people]
+CONTROLLER_CLASS        = "LDAPDataController"
+HOST                    = "phonebook.harvard.edu"
+SEARCH_BASE             = "o=Harvard University,c=US"
+#PERSON_CLASS           = "LDAPPerson"
+*/
+
+  protected function prepareAdminForSection($section, &$adminModule) {
+    switch ($section)
+    {
+        case 'feeds':
+            $feeds = $this->loadFeedData();
+            $adminModule->assign('feeds', $feeds);
+            $adminModule->setTemplatePage('feedAdmin', $this->id);
+            $formListItems = array();
+            foreach ($feeds as $feed=>$data) {
+                foreach ($data as $key=>$value) {
+                    $formListItems[] = array(
+                        'label'=>$key,
+                        'type'=>'text',
+                        'name'=>sprintf("moduleData[feeds][%s][%s]", $feed, $key),
+                        'value'=>$value
+                    );
+                }
+            }
+            
+            $adminModule->assign('peopleAdminListItems', $formListItems);
+            break;
+    }
+  }
   
   protected function getFeed($index)
   {
@@ -146,7 +178,7 @@ class PeopleModule extends Module {
         $feedData = $this->feeds[$index];
         $controller = PeopleController::factory($feedData);
         $controller->setAttributes($this->detailAttributes);
-        $controller->setDebugMode($GLOBALS['siteConfig']->getVar('DATA_DEBUG'));
+        $controller->setDebugMode($this->getSiteVar('DATA_DEBUG'));
         return $controller;
     } else {
         throw new Exception("Error getting people feed for index $index");
@@ -165,7 +197,7 @@ class PeopleModule extends Module {
   protected function initializeForPage() {
     $PeopleController = $this->getFeed('people');
     
-    if ($GLOBALS['siteConfig']->getVar('LDAP_DEBUG')) {
+    if ($this->getSiteVar('LDAP_DEBUG')) {
       $this->addModuleDebugString($PeopleController->debugInfo());
     }
     
