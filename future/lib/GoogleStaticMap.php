@@ -184,6 +184,11 @@ class GoogleStaticMap extends StaticMapImageController {
         }
     }
 
+    public function enableAllLayers()
+    {
+        $this->enabledLayers = self::$availableLayers;
+    }
+
     protected function isEnabledLayer($layer) {
         $layerParts = explode(' ', $layer);
         $layerName = $layerParts[0];
@@ -253,13 +258,13 @@ class GoogleStaticMap extends StaticMapImageController {
 
         // specify disabled layers
         foreach (self::$availableLayers as $aLayer) {
-            if (!$this->isEnabledLayer($layer)) {
-                if ($this->isEnabledLayer($layer.' geometry'))
-                    $styles[] = 'feature:'.$layer.'|element:labels|visibility:off';
-                else if ($this->isEnabledLayer($layer.' labels'))
-                    $styles[] = 'feature:'.$layer.'|element:geometry|visibility:off';
+            if (!$this->isEnabledLayer($aLayer)) {
+                if ($this->isEnabledLayer($aLayer.' geometry'))
+                    $styles[] = 'feature:'.$aLayer.'|element:labels|visibility:off';
+                else if ($this->isEnabledLayer($aLayer.' labels'))
+                    $styles[] = 'feature:'.$aLayer.'|element:geometry|visibility:off';
                 else
-                    $styles[] = 'feature:'.$layer.'|element:all|visibility:off';
+                    $styles[] = 'feature:'.$aLayer.'|element:all|visibility:off';
             }
         }
         // specify styled layers

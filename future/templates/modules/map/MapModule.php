@@ -388,11 +388,11 @@ JS;
     ), $addBreadcrumb);
   }
   
-  private function detailURL($name, $category, $info, $addBreadcrumb=true) {
+  private function detailURL($name, $category,/* $info,*/ $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', array(
       'selectvalues' => $name,
       'category'     => $category,
-      'info'         => $info,
+      //'info'         => $info,
     ), $addBreadcrumb);
   }
   
@@ -538,7 +538,7 @@ JS;
             $title = $feature->getTitle();
             $places[] = array(
               'title' => $title,
-              'url'   => $this->detailURL($title, $category, $info),
+              'url'   => $this->detailURL($title, $category/*, $info*/),
             );
           }
 
@@ -557,7 +557,7 @@ JS;
         $tabJavascripts = array();
         
         $name    = $this->args['selectvalues'];
-        $details = $this->args['info'];
+        //$details = $this->args['info'];
         
         // Map Tab
         $tabKeys[] = 'map';

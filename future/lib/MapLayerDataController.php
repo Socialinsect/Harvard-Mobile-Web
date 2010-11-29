@@ -17,6 +17,7 @@ class MapLayerDataController extends DataController
     // this so we don't need switch statements everywhere
     protected $parserClass = null;
     protected $DEFAULT_PARSER_CLASS = 'KMLDataParser';
+    protected $items = null;
 
     protected function cacheFolder()
     {

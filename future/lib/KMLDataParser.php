@@ -33,7 +33,7 @@ class KMLDocument extends XMLElement
                 $this->title = $value;
                 break;
             case 'DESCRIPTION':
-                $this->description = $description;
+                $this->description = $value;
                 break;
             default:
                 parent::addElement($element);
