@@ -408,23 +408,40 @@ JS;
   }
   
   private function getTitleForSearchResult($result) {
+    return $result->getTitle();
+    /*
     if (isset($result->attributes->{'Building Name'})) {
       return $result->attributes->{'Building Name'};
     } else {
       return $result->value;
     }
+    */
   }
-  
+
+  /*  
   private function detailURLArgsForResult($result) {
     return array(
       'selectvalues' => $this->getTitleForSearchResult($result),
       'info'         => $result->attributes,
     );
   }
+  */
+
+  private function detailURLArgsForResult($title, $category) {
+    return array(
+      'selectvalues' => $title,
+      'category' => $category,
+      //'selectvalues' => $this->getTitleForSearchResult($result),
+      //'info'         => $result->attributes,
+    );
+  }
   
-  private function detailURLForResult($result, $addBreadcrumb=true) {
+  //private function detailURLForResult($result, $addBreadcrumb=true) {
+  //  return $this->buildBreadcrumbURL('detail', 
+  //    $this->detailURLArgsForResult($result), $addBreadcrumb);
+  private function detailURLForResult($title, $category, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', 
-      $this->detailURLArgsForResult($result), $addBreadcrumb);
+      $this->detailURLArgsForResult($title, $category), $addBreadcrumb);
   }
 
   private function detailUrlForPan($direction, $mapController) {
@@ -509,24 +526,49 @@ JS;
       case 'search':
         if (isset($this->args['filter'])) {
           $searchTerms = $this->args['filter'];
-          
+          /*
           if (isset($this->args['loc'])) {
             $searchResults = searchCampusMapForCourseLoc($searchTerms);
           } else {
             $searchResults = searchCampusMap($searchTerms);
           }
-          
-          if (count($searchResults->results) == 1) {
-            $this->redirectTo('detail', $this->detailURLArgsForResult($searchResults->results[0]));
+          */
+          //if (count($searchResults->results) == 1) {
+          if (!$this->feeds)
+              $this->feeds = $this->loadFeedData();
 
+          $searchResults = array();
+          $numResults = 0;
+          foreach ($this->feeds as $id => $feed) {
+              $layer = $this->getLayer($id);
+              $results = $layer->search($searchTerms);
+              if (count($results)) {
+                  $searchResults[$id] = $layer->search($searchTerms);
+                  $numResults += count($searchResults[$id]);
+                  $lastSearchedLayer = $id;
+              }
+          }
+
+          //if (count($searchResults) == 1) {
+          if ($numResults == 1) {
+                      //$this->redirectTo('detail', $this->detailURLArgsForResult($searchResults->results[0]));
+            //$this->redirectTo('detail', $this->detailURLArgsForResult($searchResults[0]));
+            $title = $this->getTitleForSearchResult($searchResults[$lastSearchedLayer][0]);
+            $this->redirectTo('detail', $this->detailURLArgsForResult($title, $lastSearchedLayer));
           } else {
             $places = array();
-            foreach ($searchResults->results as $result) {
-              $place = array(
-                'title' => $this->getTitleForSearchResult($result),
-                'url'   => $this->detailURLForResult($result),
-              );
-              $places[] = $place;
+            //foreach ($searchResults->results as $result) {
+            foreach ($searchResults as $category => $results) {
+              foreach ($results as $result) {
+                $title = $this->getTitleForSearchResult($result);
+                $place = array(
+                  //'title' => $this->getTitleForSearchResult($result),
+                  'title' => $title,
+                  //'url'   => $this->detailURLForResult($result),
+                  'url' => $this->detailURLForResult($title, $category),
+                );
+                $places[] = $place;
+              }
             }
             
             $this->assign('searchTerms', $searchTerms);
@@ -628,6 +670,7 @@ JS;
         if (isset($this->args['zoom'])) {
             $zoomLevel = $this->args['zoom'];
         } else {
+            // TODO get default zoom level based on static map class
             $zoomLevel = 14;
         }
         $mapController->setZoomLevel($zoomLevel);

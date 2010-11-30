@@ -44,6 +44,20 @@ class MapLayerDataController extends DataController
         }
     }
 
+    // not sure this is a good place for this function
+    public function search($searchText) {
+        if (!$this->items) {
+            $data = $this->getData();
+            $this->items = $this->parseData($data);
+        }
+
+        $results = array();
+        if ($this->parser->canSearch()) {
+            $results = $this->parser->search($searchText);
+        }
+        return $results;
+    }
+
     public function getFeatureList() {
         return $this->items();
     }
