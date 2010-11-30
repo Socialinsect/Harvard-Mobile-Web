@@ -387,12 +387,23 @@ JS;
       'category' => isset($category) ? $category : $_REQUEST['category'],
     ), $addBreadcrumb);
   }
-  
-  private function detailURL($name, $category,/* $info,*/ $addBreadcrumb=true) {
+
+  /*  
+  private function detailURL($args, $addBreadcrumb=true) {
+    return $this->buildBreadcrumbURL('detail', array(
+      'selectvalues' => $args['name'],
+      'category'     => $args['category'],
+      'center'       => $args['center'],
+      'zoom'         => $args['zoom']
+    ), $addBreadcrumb);
+  }
+  */
+
+  private function detailURL($name, $category, $info=null, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', array(
       'selectvalues' => $name,
       'category'     => $category,
-      //'info'         => $info,
+      'info'         => $info,
     ), $addBreadcrumb);
   }
   
@@ -415,7 +426,20 @@ JS;
     return $this->buildBreadcrumbURL('detail', 
       $this->detailURLArgsForResult($result), $addBreadcrumb);
   }
-        
+
+  private function detailUrlForPan($direction, $mapController) {
+    $args = $this->args;
+    $center = $mapController->getCenterForPanning($direction);
+    $args['center'] = $center['lat'] .','. $center['lon'];
+    return $this->buildBreadcrumbURL('detail', $args, false);
+  }
+
+  private function detailUrlForZoom($direction, $mapController) {
+    $args = $this->args;
+    $args['zoom'] = $mapController->getLevelForZooming($direction);
+    return $this->buildBreadcrumbURL('detail', $args, false);
+  }
+
   private function detailUrlForBBox($bbox=null) {
     $args = $this->args;
     if (isset($bbox)) {
@@ -569,15 +593,22 @@ JS;
             $this->feeds = $this->loadFeedData();
 
         $layer = $this->getLayer($this->args['category']);
-        $feature = $layer->getFeature($name);
 
         $mapClass = $layer->getMapControllerClass();
         $mapController = new $mapClass();
 
-        // TODO all this should be moved to initializeMap() once its working
+        $feature = $layer->getFeature($name);
         $geometry = $feature->getGeometry();
-        $center = $geometry->getCenterCoordinate();
-        $mapController->setCenter($center['lat'], $center['lon']);
+
+
+        // TODO all this should be moved to initializeMap() once its working
+        if (isset($this->args['center'])) {
+            $latlon = explode(",", $this->args['center']);
+            $center = array('lat' => $latlon[0], 'lon' => $latlon[1]);
+        } else {
+            $center = $geometry->getCenterCoordinate();
+        }
+        $mapController->setCenter($center);
         $style = $feature->getStyleAttribs();
         switch ($geometry->getType()) {
             case 'Point':
@@ -594,7 +625,12 @@ JS;
                 break;
         }
 
-        $mapController->setZoomLevel(14);
+        if (isset($this->args['zoom'])) {
+            $zoomLevel = $this->args['zoom'];
+        } else {
+            $zoomLevel = 14;
+        }
+        $mapController->setZoomLevel($zoomLevel);
 
         switch ($this->pagetype) {
             case 'compliant':
@@ -616,6 +652,14 @@ JS;
         $this->assign('imageWidth',  $imageWidth);
 
         $this->assign('imageUrl', $mapController->getImageURL());
+
+        $this->assign('scrollNorth', $this->detailUrlForPan('n', $mapController));
+        $this->assign('scrollEast', $this->detailUrlForPan('e', $mapController));
+        $this->assign('scrollSouth', $this->detailUrlForPan('s', $mapController));
+        $this->assign('scrollWest', $this->detailUrlForPan('w', $mapController));
+
+        $this->assign('zoomInUrl', $this->detailUrlForZoom('in', $mapController));
+        $this->assign('zoomOutUrl', $this->detailUrlForZoom('out', $mapController));
         
         /*
         // Photo Tab

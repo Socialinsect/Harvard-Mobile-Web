@@ -12,6 +12,9 @@ class GoogleStaticMap extends StaticMapImageController {
     protected $canAddPaths = true;
     protected $canAddLayers = true;
 
+    protected $maxZoomLevel = 21;
+    protected $minZoomLevel = 0;
+
     // image format
     protected static $supportedImageFormats = array( // default: png8
         'png', 'jpg', 'gif', 'png32', 'png8', 'jpg-baseline');

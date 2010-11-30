@@ -1,13 +1,17 @@
 <?php
 
-class StaticMapImageController
+abstract class StaticMapImageController
 {
     protected $initialBoundingBox;
     protected $boundingBox;
 
     protected $baseURL;
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
+
     protected $zoomLevel = null;
+    protected $maxZoomLevel;
+    protected $minZoomLevel;
+
     protected $imageWidth = 300;
     protected $imageHeight = 300;
 
@@ -26,10 +30,7 @@ class StaticMapImageController
     protected $canAddLayers = false;
 
     // final function that generates url for the img src argument
-    public function getImageURL()
-    {
-        return null;
-    }
+    abstract public function getImageURL();
 
     public static function factory($imageClass)
     {
@@ -87,6 +88,44 @@ class StaticMapImageController
         return $this->canAddlayers;
     }
 
+    // n, s, e, w, ne, nw, se, sw
+    public function getCenterForPanning($direction) {
+        if (preg_match('/[ns]/', $direction, $matches)) {
+            $vertical = $matches[0];
+        }
+        if (preg_match('/[ew]/', $direction, $matches)) {
+            $horizontal = $matches[0];
+        }
+
+        $center = $this->center;
+
+        if ($horizontal == 'e') {
+            $center['lon'] += $this->getHorizontalRange() / 2;
+        } else if ($horizontal == 'w') {
+            $center['lon'] -= $this->getHorizontalRange() / 2;
+        }
+
+        if ($vertical == 'n') {
+            $center['lat'] += $this->getVerticalRange() / 2;
+        } else if ($vertical == 's') {
+            $center['lat'] -= $this->getVerticalRange() / 2;
+        }
+
+        return $center;
+    }
+
+    public function getLevelForZooming($direction) {
+        $zoomLevel = $this->zoomLevel;
+        if ($direction == 'in') {
+            if ($zoomLevel < $this->maxZoomLevel)
+                $zoomLevel += 1;
+        } else if ($direction == 'out') {
+            if ($zoomLevel > $this->minZoomLevel)
+                $zoomLevel -= 1;
+        }
+        return $zoomLevel;
+    }
+
     // overlays
     public function addAnnotation($latitude, $longitude, $style=null)
     {
@@ -139,11 +178,13 @@ class StaticMapImageController
         }
     }
 
-    public function setCenter($latitude, $longitude) {
-        $this->center = array(
-            'lat' => $latitude,
-            'lon' => $longitude,
-            );
+    public function setCenter($center) {
+        if (is_array($center)
+            && isset($center['lat'])
+            && isset($center['lon']))
+        {
+            $this->center = $center;
+        }
     }
 
     public function setImageWidth($width) {
@@ -154,41 +195,9 @@ class StaticMapImageController
         $this->imageHeight = $height;
     }
 
-    // n, s, e, w, ne, nw, se, sw
-    public function pan($direction) {
-        if (preg_match('[ns]', $direction, $matches)) {
-            $vertical = $matches[0];
-        }
-        if (preg_match('[ew]', $direction, $matches)) {
-            $horizontal = $matches[0];
-        }
-
-        if ($horizontal == 'e') {
-            $this->center['lon'] += $this->getHorizontalRange();
-        } else if ($horizontal == 'w') {
-            $this->center['lon'] -= $this->getHorizontalRange();
-        }
-
-        if ($vertical == 'n') {
-            $this->center['lat'] += $this->getVerticalRange();
-        } else if ($vertical == 's') {
-            $this->center['lat'] -= $this->getVerticalRange();
-        }
-    }
-
     public function setZoomLevel($zoomLevel)
     {
         $this->zoomLevel = $zoomLevel;
-    }
-
-    public function zoomIn()
-    {
-        $this->setZoomLevel($this->zoomLevel + 1);
-    }
-
-    public function zoomOut()
-    {
-        $this->setZoomLevel($this->zoomLevel - 1);
     }
 
     public function setBoundingBox($bbox)
