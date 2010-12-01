@@ -54,11 +54,11 @@ class KMLStyle extends XMLElement
 {
     protected $isSimpleStyle = true;
 
-    protected $iconStyle; // color, colorMode, scale, heading, hotSpot, icon>href
-    protected $balloonStyle; // bgColor, textColor, text, displayMode
-    protected $lineStyle; // color, colorMode, width
-    protected $labelStyle;
-    protected $listStyle;
+    protected $iconStyle = array(); // color, colorMode, scale, heading, hotSpot, icon>href
+    protected $balloonStyle = array(); // bgColor, textColor, text, displayMode
+    protected $lineStyle = array(); // color, colorMode, width
+    protected $labelStyle = array();
+    protected $listStyle = array();
 
     // pointers to simple style objects
     protected $normalStyle;

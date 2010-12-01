@@ -90,6 +90,9 @@ abstract class StaticMapImageController
 
     // n, s, e, w, ne, nw, se, sw
     public function getCenterForPanning($direction) {
+        $vertical = null;
+        $horizontal = null;
+
         if (preg_match('/[ns]/', $direction, $matches)) {
             $vertical = $matches[0];
         }
