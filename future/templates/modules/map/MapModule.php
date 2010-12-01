@@ -541,11 +541,13 @@ JS;
           $numResults = 0;
           foreach ($this->feeds as $id => $feed) {
               $layer = $this->getLayer($id);
-              $results = $layer->search($searchTerms);
-              if (count($results)) {
-                  $searchResults[$id] = $layer->search($searchTerms);
-                  $numResults += count($searchResults[$id]);
-                  $lastSearchedLayer = $id;
+              if ($layer->canSearch()) {
+                  $results = $layer->search($searchTerms);
+                  if (count($results)) {
+                      $searchResults[$id] = $layer->search($searchTerms);
+                      $numResults += count($searchResults[$id]);
+                      $lastSearchedLayer = $id;
+                  }
               }
           }
 

@@ -36,11 +36,19 @@ class MapLayerDataController extends DataController
         switch ($this->parserClass) {
             case 'ArcGISServer':
                 return ''; // TODO determine what default suffix is
-                break;
             case 'KMLDataParser':
             default:
                 return '.kml';
-                break;
+        }
+    }
+
+    public function canSearch() {
+        switch ($this->parserClass) {
+            case 'KMLDataParser':
+                return true;
+            case 'ArcGISServer': // TODO implement
+            default:
+                return false;
         }
     }
 
@@ -52,9 +60,10 @@ class MapLayerDataController extends DataController
         }
 
         $results = array();
-        if ($this->parser->canSearch()) {
-            $results = $this->parser->search($searchText);
+        if ($this->parserClass == 'KMLDataParser') {
+            $results = $this->parser->searchByTitle($searchText);
         }
+
         return $results;
     }
 

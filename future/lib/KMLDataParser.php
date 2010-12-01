@@ -337,11 +337,7 @@ class KMLDataParser extends XMLDataParser
     }
     */
 
-    public function canSearch() {
-        return true;
-    }
-
-    public function search($searchText) {
+    public function searchByTitle($searchText) {
         $results = array();
         $tokens = explode(' ', $searchText);
         $validTokens = array();
@@ -353,17 +349,18 @@ class KMLDataParser extends XMLDataParser
                 $validTokens[] = $pattern;
             }
         }
-        foreach ($this->items as $item) {
-            $matched = true;
-            $title = $item->getTitle();
-            foreach ($validTokens as $token) {
-                if (!preg_match($token, $title)) {
-                    $matched = false;
-                } else {
+        if (count($validTokens)) {
+            foreach ($this->items as $item) {
+                $matched = true;
+                $title = $item->getTitle();
+                foreach ($validTokens as $token) {
+                    if (!preg_match($token, $title)) {
+                        $matched = false;
+                    }
                 }
-            }
-            if ($matched) {
-                $results[] = $item;
+                if ($matched) {
+                    $results[] = $item;
+                }
             }
         }
         return $results;
