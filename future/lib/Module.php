@@ -8,6 +8,7 @@ abstract class Module {
   protected $id = 'none';
   protected $moduleName = '';
   protected $hasFeeds = false;
+  protected $feedFields = array();
   
   protected $session;
   
@@ -265,14 +266,14 @@ abstract class Module {
   //
   // Configuration
   //
-  protected function getSiteVar($var)
+  protected function getSiteVar($var, $log_error=true)
   {
-      return $GLOBALS['siteConfig']->getVar($var);
+      return $GLOBALS['siteConfig']->getVar($var, true, $log_error);
   }
 
-  protected function getSiteSection($var)
+  protected function getSiteSection($var, $log_error=true)
   {
-      return $GLOBALS['siteConfig']->getSection($var);
+      return $GLOBALS['siteConfig']->getSection($var, $log_error);
   }
 
   protected function getModuleVar($var)
@@ -284,6 +285,11 @@ abstract class Module {
   public function hasFeeds()
   {
      return $this->hasFeeds;
+  }
+  
+  public function getFeedFields()
+  {
+     return $this->feedFields;
   }
   
   public function removeFeed($index)
@@ -347,10 +353,18 @@ abstract class Module {
   protected function saveConfig($moduleData, $section=null)
   {
         $type = $section == 'feeds' ? 'feeds' : 'module';
-        $moduleConfigFile = ConfigFile::factory($this->id, $section, true);
+        $moduleConfigFile = ConfigFile::factory($this->id, $type, true);
         
         if ($section=='feeds') {
             $moduleData = $moduleData[$section];
+            // clear out empty values
+            foreach ($moduleData as $feed=>$feedData) {
+                foreach ($feedData as $var=>$value) {
+                    if (strlen($value)==0) {
+                        unset($moduleData[$feed][$var]);
+                    }
+                }
+            }
             $moduleConfigFile->setSectionVars($moduleData);
         } else {
             $moduleConfigFile->addSectionVars($moduleData, !$section);
@@ -365,17 +379,23 @@ abstract class Module {
   //
   public static function factory($id, $page='', $args=array()) {
     $className = ucfirst($id).'Module';
+
+    $modulePaths = array(
+      THEME_DIR."/modules/$id/Theme{$className}.php"=>"Theme" .$className,
+      MODULES_DIR."/$id/$className.php"=>$className
+    );
     
-    $moduleFile = realpath_exists(MODULES_DIR."/$id/$className.php");
-    if ($moduleFile && include_once($moduleFile)) {
-      $module = new $className();
-      if ($page) {
-          $module->factoryInit($page, $args);
+    foreach($modulePaths as $path=>$className){ 
+      $moduleFile = realpath_exists($path);
+      if ($moduleFile && include_once($moduleFile)) {
+        $module = new $className();
+        if ($page) {
+            $module->factoryInit($page, $args);
+        }
+        return $module;
       }
-      return $module;
-    } else {
-      throw new PageNotFound("Module '$id' not found while handling '{$_SERVER['REQUEST_URI']}'");
     }
+    throw new PageNotFound("Module '$id' not found while handling '{$_SERVER['REQUEST_URI']}'");
    }
    
    public function factoryInit($page, $args)
@@ -469,6 +489,7 @@ abstract class Module {
     $item = array(
         'label'=>ucfirst($key),
         'name'=>"moduleData[$key]",
+        'typename'=>"moduleData][$key",
         'value'=>$value,
         'type'=>'text'
     );
@@ -763,10 +784,11 @@ abstract class Module {
     // Minify URLs
     $this->assign('minify', $this->getMinifyUrls());
     
-    // Google Analytics
-    $gaID = $this->getSiteVar('GOOGLE_ANALYTICS_ID');
-    $this->assign('GOOGLE_ANALYTICS_ID', $gaID);
-    $this->assign('gaImageURL', $this->googleAnalyticsGetImageUrl($gaID));
+    // Google Analytics. This probably needs to be moved
+    if ($gaID = $this->getSiteVar('GOOGLE_ANALYTICS_ID', false)) {
+        $this->assign('GOOGLE_ANALYTICS_ID', $gaID);
+        $this->assign('gaImageURL', $this->googleAnalyticsGetImageUrl($gaID));
+    }
     
     // Breadcrumbs
     $this->loadBreadcrumbs();

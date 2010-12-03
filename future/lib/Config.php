@@ -18,19 +18,29 @@ abstract class Config {
   
   /* merges together config variables by section */
   public function addSectionVars($sectionVars, $merge=true) {
-
+    $first = true;
+    
     foreach ($sectionVars as $var=>$value) {
         if (!is_array($value)) {
             $_var = $var;
             $var = 'No Section';
             $value = array($_var=>$value);
+            if ($first && !$merge) {
+                $this->sectionVars['No Section'] = array();
+            }
         }
         
-        if (isset($this->sectionVars[$var]) && is_array($this->sectionVars[$var]) && $merge) {
-            $this->sectionVars[$var] = array_merge($this->sectionVars[$var], $value);
+        if ($merge || $var=='No Section') {
+            if (isset($this->sectionVars[$var]) && is_array($this->sectionVars[$var])) {
+                $this->sectionVars[$var] = array_merge($this->sectionVars[$var], $value);
+            } else {
+                $this->sectionVars[$var] = $value;
+            }
         } else {
             $this->sectionVars[$var] = $value;
         }
+        
+        $first = false;
     }
   }
 
@@ -60,13 +70,17 @@ abstract class Config {
     }
   }
 
-  public function getSection($key) {
+  public function getSection($key, $log_error=true) {
 
     if (isset($this->sectionVars[$key])) {
       return $this->sectionVars[$key];
     }
     
-    error_log(__FUNCTION__."(): config section '$key' not set");
+    if ($log_error) {
+        $bt = debug_backtrace();
+        $call = sprintf("%s:%s", $bt[0]['file'], $bt[0]['line']);
+        error_log(__FUNCTION__."(): config section '$key' not set (Called $call)");
+    }
     
     return null;
   }
@@ -82,7 +96,7 @@ abstract class Config {
       return $value;
   }
   
-  public function getVar($key, $expand = true) {
+  public function getVar($key, $expand = true, $log_error=true) {
     if (isset($this->vars[$key])) {
         $value = $this->vars[$key];
         if ($expand) {
@@ -92,7 +106,11 @@ abstract class Config {
         return $value;
     }
     
-    error_log(__FUNCTION__."(): config variable '$key' not set");
+    if ($log_error) {
+        $bt = debug_backtrace();
+        $call = sprintf("%s:%s", $bt[0]['file'], $bt[0]['line']);
+        error_log(__FUNCTION__."(): config variable '$key' not set (Called $call)");
+    }
     
     return null;
   }
