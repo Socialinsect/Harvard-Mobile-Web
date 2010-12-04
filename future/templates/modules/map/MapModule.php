@@ -644,7 +644,6 @@ JS;
         $feature = $layer->getFeature($name);
         $geometry = $feature->getGeometry();
 
-
         // TODO all this should be moved to initializeMap() once its working
         if (isset($this->args['center'])) {
             $latlon = explode(",", $this->args['center']);
@@ -705,7 +704,40 @@ JS;
 
         $this->assign('zoomInUrl', $this->detailUrlForZoom('in', $mapController));
         $this->assign('zoomOutUrl', $this->detailUrlForZoom('out', $mapController));
-        
+
+        // TODO:
+        // allow switching between google and other maps
+        // turn off for noncompliant browsers
+        // need better way to fill in javascript vars
+        $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=false');
+        $script = <<<JS
+
+            var map;
+
+            var initLat = {$center['lat']};
+            var initLon = {$center['lon']};
+
+            var mapImageW = "{$imageWidth}px";
+            var mapImageH = "{$imageHeight}px";
+
+            var initZoom = {$zoomLevel};
+
+JS;
+        $this->addInlineJavascript($script);
+
+        $footerScript = <<<JS
+
+            loadMap();
+            map.zoom = initZoom;
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(initLat,initLon), 
+                map: map, 
+                title: "{$name}"
+            });
+
+JS;
+        $this->addInlineJavascriptFooter($footerScript);
+
         /*
         // Photo Tab
         $photoFile = null;
