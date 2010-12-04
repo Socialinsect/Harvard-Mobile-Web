@@ -389,7 +389,7 @@ abstract class Module {
       $moduleFile = realpath_exists($path);
       if ($moduleFile && include_once($moduleFile)) {
         $module = new $className();
-        if ($page) {
+        if ($page || $args['_path'] == '/api/') { // TODO separate init function for API calls
             $module->factoryInit($page, $args);
         }
         return $module;
