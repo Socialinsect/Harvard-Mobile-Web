@@ -85,6 +85,11 @@ class MapLayerDataController extends DataController
         }
         
         $items = $this->getFeatureList();
+        if (isset($items[$name]))
+            return $items[$name];
+
+        // TODO: get rid of anything that's getting items
+        // by title, since titles are poor unique identifiers
         foreach ($items as $item) {
             if ($item->getTitle() == $name) {
                 return $item;

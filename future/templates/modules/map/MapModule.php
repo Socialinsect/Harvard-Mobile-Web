@@ -567,7 +567,7 @@ JS;
                   //'title' => $this->getTitleForSearchResult($result),
                   'title' => $title,
                   //'url'   => $this->detailURLForResult($result),
-                  'url' => $this->detailURLForResult($title, $category),
+                  'url' => $this->detailURLForResult($result->getIndex(), $category),
                 );
                 $places[] = $place;
               }
@@ -606,7 +606,7 @@ JS;
             $title = $feature->getTitle();
             $places[] = array(
               'title' => $title,
-              'url'   => $this->detailURL($title, $category/*, $info*/),
+              'url'   => $this->detailURL($feature->getIndex(), $category),
             );
           }
 
@@ -624,7 +624,8 @@ JS;
         $tabKeys = array();
         $tabJavascripts = array();
         
-        $name    = $this->args['selectvalues'];
+        
+        $index    = $this->args['selectvalues'];
         //$details = $this->args['info'];
         
         // Map Tab
@@ -641,7 +642,8 @@ JS;
 
         $layer = $this->getLayer($this->args['category']);
 
-        $feature = $layer->getFeature($name);
+        $feature = $layer->getFeature($index);
+        $name = $feature->getTitle();
         $geometry = $feature->getGeometry();
         $style = $feature->getStyleAttribs();
         $style['title'] = $name;
@@ -730,42 +732,6 @@ JS;
             }
 
         }
-
-        // uncomment between the next /* */
-        /*
-        // TODO:
-        // allow switching between google and other maps
-        // turn off for noncompliant browsers
-        // need better way to fill in javascript vars
-        $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=false');
-        $script = <<<JS
-
-            var map;
-
-            var initLat = {$center['lat']};
-            var initLon = {$center['lon']};
-
-            var mapImageW = "{$imageWidth}px";
-            var mapImageH = "{$imageHeight}px";
-
-            var initZoom = {$zoomLevel};
-
-JS;
-        $this->addInlineJavascript($script);
-
-        $footerScript = <<<JS
-
-            loadMap();
-            map.zoom = initZoom;
-            var marker = new google.maps.Marker({
-                position: new google.maps.LatLng(initLat,initLon), 
-                map: map, 
-                title: "{$name}"
-            });
-
-JS;
-        $this->addInlineJavascriptFooter($footerScript);
-        */
 
         /*
         // Photo Tab

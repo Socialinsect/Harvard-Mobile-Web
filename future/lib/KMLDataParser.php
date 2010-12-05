@@ -44,10 +44,6 @@ class KMLDocument extends XMLElement
     public function getTitle() {
         return $this->title;
     }
-
-    public function getPlacemarks() {
-        return $this->placemarks;
-    }
 }
 
 class KMLStyle extends XMLElement
@@ -146,6 +142,9 @@ class KMLStyle extends XMLElement
 class KMLPlacemark extends XMLElement implements MapFeature
 {
     protected $name = 'Placemark';
+    // placemarks have no unique identifiers,
+    // so we assign this based on its position in the feed
+    protected $index;
     protected $description;
     protected $title; // use this for "name" element
     protected $style;
@@ -170,6 +169,14 @@ class KMLPlacemark extends XMLElement implements MapFeature
 
     public function setStyle(KMLStyle $style) {
         $this->style = $style;
+    }
+    
+    public function getIndex() {
+        return $this->index;
+    }
+    
+    public function setIndex($index) {
+        $this->index = $index;
     }
 
     public function getStyleAttribs() {
@@ -434,6 +441,7 @@ class KMLDataParser extends XMLDataParser
                 $this->styles[$element->getAttrib('ID')] = $element;
                 break;
             case 'PLACEMARK':
+                $element->setIndex(count($this->items));
                 $this->items[] = $element;
                 break;
             case 'STYLEURL':
