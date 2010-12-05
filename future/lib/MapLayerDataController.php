@@ -3,24 +3,37 @@
 // for KML, each KML file is a category
 // for ArcGIS, each layer (or service instance?) is a category
 
+// TODO move these interfaces to a separate file if
+// we create maps without using MapLayerDataController
+
 interface MapFeature
 {
     public function getTitle();
     public function getGeometry();
     public function getDescription();
+    public function getStyleAttribs();
+}
+
+interface MapGeometry
+{
+    public function getCenterCoordinate();
+    public function getType();
 }
 
 class MapLayerDataController extends DataController
 {
     protected $parser = null;
-    // TODO make KMLDataParser and ArcGISServer subclasses of 
-    // this so we don't need switch statements everywhere
     protected $parserClass = null;
     protected $DEFAULT_PARSER_CLASS = 'KMLDataParser';
+    protected $DEFAULT_MAP_CLASS = 'GoogleStaticMap';
     protected $items = null;
+    protected $mapBaseUrl = null;
+    protected $searchable = false;
+    
+    const COMMON_WORDS = 'the of to and in is it you that he was for on are with as his they be at one have this from or had by hot but some what there we can out other were all your when up use word how said an each she which do their time if will way about many then them would write like so these her long make thing see him two has look more day could go come did my no most who over know than call first people may down been now find any new take get place made where after back only me our under';
 
     protected $staticMapClass;
-    protected $dynamicMapClass;
+    protected $dynamicMapClass = null;
 
     protected function cacheFolder()
     {
@@ -36,37 +49,45 @@ class MapLayerDataController extends DataController
 
     protected function cacheFileSuffix()
     {
-        switch ($this->parserClass) {
-            case 'ArcGISServer':
-                return ''; // TODO determine what default suffix is
-            case 'KMLDataParser':
-            default:
-                return '.kml';
-        }
+        return null;
     }
 
-    public function canSearch() {
-        switch ($this->parserClass) {
-            case 'KMLDataParser':
-                return true;
-            case 'ArcGISServer': // TODO implement
-            default:
-                return false;
-        }
+    public function canSearch()
+    {
+        return $this->searchable;
     }
 
-    // not sure this is a good place for this function
-    public function search($searchText) {
-        if (!$this->items) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
-        }
-
+    // default search implementation loops through all relevant features
+    public function search($searchText)
+    {
         $results = array();
-        if ($this->parserClass == 'KMLDataParser') {
-            $results = $this->parser->searchByTitle($searchText);
+        
+        if ($this->searchable) {
+            $tokens = explode(' ', $searchText);
+            $validTokens = array();
+            foreach ($tokens as $token) {
+                if (strlen($token) <= 1)
+                    continue;
+                $pattern = "/\b$token\b/i";
+                if (!preg_match($pattern, self::$COMMON_WORDS)) {
+                    $validTokens[] = $pattern;
+                }
+            }
+            if (count($validTokens)) {
+                foreach ($this->items() as $item) {
+                    $matched = true;
+                    $title = $item->getTitle();
+                    foreach ($validTokens as $token) {
+                        if (!preg_match($token, $title)) {
+                            $matched = false;
+                        }
+                    }
+                    if ($matched) {
+                        $results[] = $item;
+                    }
+                }
+            }
         }
-
         return $results;
     }
 
@@ -80,10 +101,6 @@ class MapLayerDataController extends DataController
 
     public function getItem($name)
     {
-        if (!$name) {
-            return null;
-        }
-        
         $items = $this->getFeatureList();
         if (isset($items[$name]))
             return $items[$name];
@@ -120,8 +137,13 @@ class MapLayerDataController extends DataController
         $this->parserClass = $parserClass;
     }
 
-    public function getStaticMapClass() {
-        return $this->staticMapClass;
+    public function getStaticMapController() {
+        if ($this->staticMapClass == 'WMSStaticMap') {
+            $controller = new WMSStaticMap($this->parser);
+        } else {
+            $controller = new $this->staticMapClass();
+        }
+        return $controller;
     }
 
     public function supportsDynamicMap() {
@@ -129,8 +151,9 @@ class MapLayerDataController extends DataController
         return ($this->dynamicMapClass !== null);
     }
 
-    public function getDynamicMapClass() {
-        return $this->dynamicMapClass;
+    public function getDynamicMapController() {
+        $controller = new $this->dynamicMapClass();
+        return $controller;
     }
 
     protected function init($args)
@@ -138,8 +161,19 @@ class MapLayerDataController extends DataController
         parent::init($args);
 
         // static map support required; dynamic optional
-        $this->staticMapClass = isset($args['STATIC_MAP_CLASS']) ? $args['STATIC_MAP_CLASS'] : 'GoogleStaticMap';
-        $this->dynamicMapClass = isset($args['JS_MAP_CLASS']) ? $args['JS_MAP_CLASS'] : null;
+        if (isset($args['STATIC_MAP_CLASS']))
+            $this->staticMapClass = $args['STATIC_MAP_CLASS'];
+        else
+            $this->staticMapClass = $this->DEFAULT_MAP_CLASS;
+
+        if (isset($args['JS_MAP_CLASS']))
+            $this->dynamicMapClass = $args['JS_MAP_CLASS'];
+        
+        if (isset($args['MAP_BASE_URL'])) {
+            $this->mapBaseUrl = $args['MAP_BASE_URL'];
+        }
+        
+        $this->searchable = ($args['SEARCHABLE'] == 1);
     }
 
 
@@ -147,17 +181,19 @@ class MapLayerDataController extends DataController
     {
         $parserClass = isset($args['PARSER_CLASS']) ? $args['PARSER_CLASS'] : $this->DEFAULT_PARSER_CLASS;
         switch ($parserClass) {
-            case 'ArcGISServer':
-                require_once realpath(LIB_DIR.'/ArcGISServer.php');
+            case 'ArcGISParser':
+                require_once realpath(LIB_DIR.'/ArcGISParser.php');
+                $controller = new ArcGISDataController();
                 break;
             case 'KMLDataParser':
                 require_once realpath(LIB_DIR.'/KMLDataParser.php');
+                $controller = new KMLDataController();
                 break;
             default:
-                require_once realpath(LIB_DIR.'/'.$DEFAULT_PARSER_CLASS.'.php');
+                require_once realpath(LIB_DIR.'/'.$parserClass.'.php');
+                $controller = new MapLayerDataController();
                 break;
         }
-        $controller = new MapLayerDataController();
         $controller->init($args);
         $controller->setParser($parserClass);
         return $controller;

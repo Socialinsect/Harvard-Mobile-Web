@@ -16,7 +16,7 @@ class GoogleStaticMap extends StaticMapImageController {
     protected $minZoomLevel = 0;
 
     // image format
-    protected static $supportedImageFormats = array( // default: png8
+    protected $supportedImageFormats = array( // default: png8
         'png', 'jpg', 'gif', 'png32', 'png8', 'jpg-baseline');
 
     // custom overlays

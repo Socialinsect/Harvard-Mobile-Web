@@ -27,21 +27,6 @@ function hideMapTabChildren() {
             break;
         }
     }
-    /*
-    var mapImage = document.getElementById("mapimage");
-    mapImage.style.display = "block";
-    mapImage.style.width = mapImageW;
-    mapImage.style.height = mapImageH;
-
-    var latlng = new google.maps.LatLng(initLat, initLon);
-    var options = {
-      zoom: 8,
-      center: latlng,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    //var map = new google.maps.Map(mapImage, options);
-    map = new google.maps.Map(mapImage, options);
-    */
 }
 
 function loadPhoto(imageURL,imageID) {

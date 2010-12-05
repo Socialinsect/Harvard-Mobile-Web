@@ -506,8 +506,6 @@ JS;
         break;
         
       case 'index':
-        //$layers = ArcGISServer::getLayers();
-
         if (!$this->feeds)
             $this->feeds = $this->loadFeedData();
 
@@ -526,14 +524,6 @@ JS;
       case 'search':
         if (isset($this->args['filter'])) {
           $searchTerms = $this->args['filter'];
-          /*
-          if (isset($this->args['loc'])) {
-            $searchResults = searchCampusMapForCourseLoc($searchTerms);
-          } else {
-            $searchResults = searchCampusMap($searchTerms);
-          }
-          */
-          //if (count($searchResults->results) == 1) {
           if (!$this->feeds)
               $this->feeds = $this->loadFeedData();
 
@@ -551,22 +541,16 @@ JS;
               }
           }
 
-          //if (count($searchResults) == 1) {
           if ($numResults == 1) {
-                      //$this->redirectTo('detail', $this->detailURLArgsForResult($searchResults->results[0]));
-            //$this->redirectTo('detail', $this->detailURLArgsForResult($searchResults[0]));
             $title = $this->getTitleForSearchResult($searchResults[$lastSearchedLayer][0]);
             $this->redirectTo('detail', $this->detailURLArgsForResult($title, $lastSearchedLayer));
           } else {
             $places = array();
-            //foreach ($searchResults->results as $result) {
             foreach ($searchResults as $category => $results) {
               foreach ($results as $result) {
                 $title = $this->getTitleForSearchResult($result);
                 $place = array(
-                  //'title' => $this->getTitleForSearchResult($result),
                   'title' => $title,
-                  //'url'   => $this->detailURLForResult($result),
                   'url' => $this->detailURLForResult($result->getIndex(), $category),
                 );
                 $places[] = $place;
@@ -598,8 +582,10 @@ JS;
           }
 
           $layer = $this->getLayer($category);
-            
-          //$layer = ArcGISServer::getLayer($category);
+          
+          // TODO some categories have subcategories
+          // they will return lists of categories instead of lists of features
+          
           $features = $layer->getFeatureList();
           $places = array();
           foreach ($features as $feature) {
@@ -681,15 +667,14 @@ JS;
         $this->assign('imageHeight', $imageHeight);
         $this->assign('imageWidth',  $imageWidth);
 
-        $mapClasses = array();
-        $mapClasses[] = $layer->getStaticMapClass();
+        $mapControllers = array();
+        $mapControllers[] = $layer->getStaticMapController();
         if ($this->pagetype == 'compliant' && $layer->supportsDynamicMap()) {
-            $mapClasses[] = $layer->getDynamicMapClass();
+            $mapControllers[] = $layer->getDynamicMapController();
         }
 
-        foreach ($mapClasses as $mapClass) {
+        foreach ($mapControllers as $mapController) {
 
-            $mapController = new $mapClass();
             $mapController->setCenter($center);
             $mapController->setZoomLevel($zoomLevel);
 
@@ -711,7 +696,7 @@ JS;
             $mapController->setImageWidth($imageWidth);
             $mapController->setImageHeight($imageHeight);
 
-            if ($mapClass == $layer->getStaticMapClass()) {
+            if ($mapController->isStatic()) {
 
                 $this->assign('imageUrl', $mapController->getImageURL());
 

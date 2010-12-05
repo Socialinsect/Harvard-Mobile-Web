@@ -6,10 +6,6 @@ abstract class MapImageController
     const STYLE_LINE_ALPHA = 'alpha';
     const STYLE_LINE_COLOR = 'color';
 
-    //protected $initialBoundingBox;
-    //protected $boundingBox;
-
-    //protected $baseURL;
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
 
     protected $zoomLevel = null;
@@ -19,12 +15,8 @@ abstract class MapImageController
     protected $imageWidth = 300;
     protected $imageHeight = 300;
 
-    //protected $imageFormat = 'png';
-    //protected static $supportedImageFormats = array('png', 'jpg');
-
     // layers are sets of overlays that span the full range of the map
     // as opposed to a selection
-    protected static $availableLayers = array(); // array of all map layers
     protected $enabledLayers = array(); // array of map layers to show
     protected $layerStyles = array(); // id => styleName
 
@@ -33,9 +25,7 @@ abstract class MapImageController
     protected $canAddPaths = false;
     protected $canAddLayers = false;
 
-    // final function that generates url for the img src argument
-    //abstract public function getImageURL();
-
+    // TODO decide if we will use the factory function or get rid of it
     public static function factory($imageClass)
     {
         switch ($imageClass) {
@@ -70,19 +60,9 @@ abstract class MapImageController
         return $this->center;
     }
 
-    //public function getHorizontalRange()
-    //{
-    //    return 0.01;
-    //}
-
-    //public function getVerticalRange()
-    //{
-    //    return 0.01;
-    //}
-
-    public function getLayerNames()
+    public function getAvailableLayers()
     {
-        return self::$availableLayers;
+        return array();
     }
 
     public function canAddAnnotations()
@@ -99,49 +79,6 @@ abstract class MapImageController
     {
         return $this->canAddlayers;
     }
-
-    /*
-    // n, s, e, w, ne, nw, se, sw
-    public function getCenterForPanning($direction) {
-        $vertical = null;
-        $horizontal = null;
-
-        if (preg_match('/[ns]/', $direction, $matches)) {
-            $vertical = $matches[0];
-        }
-        if (preg_match('/[ew]/', $direction, $matches)) {
-            $horizontal = $matches[0];
-        }
-
-        $center = $this->center;
-
-        if ($horizontal == 'e') {
-            $center['lon'] += $this->getHorizontalRange() / 2;
-        } else if ($horizontal == 'w') {
-            $center['lon'] -= $this->getHorizontalRange() / 2;
-        }
-
-        if ($vertical == 'n') {
-            $center['lat'] += $this->getVerticalRange() / 2;
-        } else if ($vertical == 's') {
-            $center['lat'] -= $this->getVerticalRange() / 2;
-        }
-
-        return $center;
-    }
-
-    public function getLevelForZooming($direction) {
-        $zoomLevel = $this->zoomLevel;
-        if ($direction == 'in') {
-            if ($zoomLevel < $this->maxZoomLevel)
-                $zoomLevel += 1;
-        } else if ($direction == 'out') {
-            if ($zoomLevel > $this->minZoomLevel)
-                $zoomLevel -= 1;
-        }
-        return $zoomLevel;
-    }
-    */
 
     // overlays
     public function addAnnotation($latitude, $longitude, $style=null)
@@ -172,7 +109,7 @@ abstract class MapImageController
 
     public function enableAllLayers()
     {
-        $this->enabledLayers = self::$availableLayers;
+        $this->enabledLayers = $this->getAvailableLayers();
     }
 
     public function disableAllLayers()
@@ -185,15 +122,8 @@ abstract class MapImageController
     }
 
     protected function isAvailableLayer($layer) {
-        return in_array($layer, self::$availableLayers);
+        return in_array($layer, $this->getAvailableLayers());
     }
-
-    // setters
-    //public function setImageFormat($format) {
-    //    if (in_array($format, self::$supportedImageFormats)) {
-    //        $this->imageFormat = $format;
-    //    }
-    //}
 
     public function setCenter($center) {
         if (is_array($center)
