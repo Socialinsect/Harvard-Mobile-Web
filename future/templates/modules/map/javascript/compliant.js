@@ -11,7 +11,7 @@ var minZoom = -8;	// integer: max zoom-out level
 
 var loadedImages = {};
 
-function loadMap() {
+function hideMapTabChildren() {
     var mapTab = document.getElementById("mapTab");
     for (var i = 0; i < mapTab.childNodes.length; i++) {
         var node = mapTab.childNodes[i];
@@ -27,7 +27,7 @@ function loadMap() {
             break;
         }
     }
-
+    /*
     var mapImage = document.getElementById("mapimage");
     mapImage.style.display = "block";
     mapImage.style.width = mapImageW;
@@ -41,6 +41,7 @@ function loadMap() {
     };
     //var map = new google.maps.Map(mapImage, options);
     map = new google.maps.Map(mapImage, options);
+    */
 }
 
 function loadPhoto(imageURL,imageID) {

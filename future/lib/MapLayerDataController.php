@@ -19,6 +19,9 @@ class MapLayerDataController extends DataController
     protected $DEFAULT_PARSER_CLASS = 'KMLDataParser';
     protected $items = null;
 
+    protected $staticMapClass;
+    protected $dynamicMapClass;
+
     protected function cacheFolder()
     {
         return CACHE_DIR . "/Maps";
@@ -112,15 +115,26 @@ class MapLayerDataController extends DataController
         $this->parserClass = $parserClass;
     }
 
-    public function getMapControllerClass() {
-        return $this->mapClass;
+    public function getStaticMapClass() {
+        return $this->staticMapClass;
+    }
+
+    public function supportsDynamicMap() {
+        //return false;
+        return ($this->dynamicMapClass !== null);
+    }
+
+    public function getDynamicMapClass() {
+        return $this->dynamicMapClass;
     }
 
     protected function init($args)
     {
         parent::init($args);
 
-        $this->mapClass = isset($args['MAP_IMAGE_CLASS']) ? $args['MAP_IMAGE_CLASS'] : 'GoogleStaticMap';
+        // static map support required; dynamic optional
+        $this->staticMapClass = isset($args['STATIC_MAP_CLASS']) ? $args['STATIC_MAP_CLASS'] : 'GoogleStaticMap';
+        $this->dynamicMapClass = isset($args['JS_MAP_CLASS']) ? $args['JS_MAP_CLASS'] : null;
     }
 
 

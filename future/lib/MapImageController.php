@@ -1,11 +1,15 @@
 <?php
 
-abstract class StaticMapImageController
+abstract class MapImageController
 {
-    protected $initialBoundingBox;
-    protected $boundingBox;
+    const STYLE_LINE_WEIGHT = 'weight';
+    const STYLE_LINE_ALPHA = 'alpha';
+    const STYLE_LINE_COLOR = 'color';
 
-    protected $baseURL;
+    //protected $initialBoundingBox;
+    //protected $boundingBox;
+
+    //protected $baseURL;
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
 
     protected $zoomLevel = null;
@@ -15,8 +19,8 @@ abstract class StaticMapImageController
     protected $imageWidth = 300;
     protected $imageHeight = 300;
 
-    protected $imageFormat = 'png';
-    protected static $supportedImageFormats = array('png', 'jpg');
+    //protected $imageFormat = 'png';
+    //protected static $supportedImageFormats = array('png', 'jpg');
 
     // layers are sets of overlays that span the full range of the map
     // as opposed to a selection
@@ -30,7 +34,7 @@ abstract class StaticMapImageController
     protected $canAddLayers = false;
 
     // final function that generates url for the img src argument
-    abstract public function getImageURL();
+    //abstract public function getImageURL();
 
     public static function factory($imageClass)
     {
@@ -43,6 +47,10 @@ abstract class StaticMapImageController
                 require_once realpath(LIB_DIR.'/ArcGISStaticMap.php');
                 $controller = new ArcGISStaticMap();
                 break;
+            case 'GoogleJSMap':
+                require_once realpath(LIB_DIR.'/GoogleJSMap.php');
+                $controller = new GoogleJSMap();
+                break;
             case 'GoogleStaticMap':
             default:
                 require_once realpath(LIB_DIR.'/GoogleStaticMap.php');
@@ -53,20 +61,24 @@ abstract class StaticMapImageController
     }
 
     // query functions
+    public function isStatic() {
+        return false;
+    }
+
     public function getCenter()
     {
         return $this->center;
     }
 
-    public function getHorizontalRange()
-    {
-        return 0.01;
-    }
+    //public function getHorizontalRange()
+    //{
+    //    return 0.01;
+    //}
 
-    public function getVerticalRange()
-    {
-        return 0.01;
-    }
+    //public function getVerticalRange()
+    //{
+    //    return 0.01;
+    //}
 
     public function getLayerNames()
     {
@@ -88,6 +100,7 @@ abstract class StaticMapImageController
         return $this->canAddlayers;
     }
 
+    /*
     // n, s, e, w, ne, nw, se, sw
     public function getCenterForPanning($direction) {
         $vertical = null;
@@ -128,13 +141,14 @@ abstract class StaticMapImageController
         }
         return $zoomLevel;
     }
+    */
 
     // overlays
     public function addAnnotation($latitude, $longitude, $style=null)
     {
     }
 
-    public function addPath($points, $lineColor, $lineWeight)
+    public function addPath($points, $style=null)
     {
     }
 
@@ -175,11 +189,11 @@ abstract class StaticMapImageController
     }
 
     // setters
-    public function setImageFormat($format) {
-        if (in_array($format, self::$supportedImageFormats)) {
-            $this->imageFormat = $format;
-        }
-    }
+    //public function setImageFormat($format) {
+    //    if (in_array($format, self::$supportedImageFormats)) {
+    //        $this->imageFormat = $format;
+    //    }
+    //}
 
     public function setCenter($center) {
         if (is_array($center)

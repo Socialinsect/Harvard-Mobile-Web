@@ -5,7 +5,7 @@ require_once realpath(LIB_DIR.'/Module.php');
 //require_once realpath(LIB_DIR.'/feeds/MapSearch.php');
 //require_once realpath(LIB_DIR.'/feeds/WMSServer.php');
 require_once realpath(LIB_DIR.'/MapLayerDataController.php');
-require_once realpath(LIB_DIR.'/StaticMapDataController.php');
+require_once realpath(LIB_DIR.'/StaticMapImageController.php');
 
 // detail-basic: $imageUrl $imageWidth $imageHeight $scrollNorth $scrollSouth $scrollEast $scrollWest $zoomInUrl $zoomOutUrl $photoUrl $photoWidth
 // detail: $hasMap $mapPane $photoPane $detailPane $imageWidth $imageHeight $imageUrl $name $details
@@ -629,6 +629,9 @@ JS;
         
         // Map Tab
         $tabKeys[] = 'map';
+
+        // TODO all this should be moved to initializeMap() once its working
+
         //$hasMap = $this->initializeMap($name, $details);
         $hasMap = true;
         $this->assign('hasMap', $hasMap);
@@ -638,44 +641,28 @@ JS;
 
         $layer = $this->getLayer($this->args['category']);
 
-        $mapClass = $layer->getMapControllerClass();
-        $mapController = new $mapClass();
-
         $feature = $layer->getFeature($name);
         $geometry = $feature->getGeometry();
+        $style = $feature->getStyleAttribs();
+        $style['title'] = $name;
 
-        // TODO all this should be moved to initializeMap() once its working
+        // center
         if (isset($this->args['center'])) {
             $latlon = explode(",", $this->args['center']);
             $center = array('lat' => $latlon[0], 'lon' => $latlon[1]);
         } else {
             $center = $geometry->getCenterCoordinate();
         }
-        $mapController->setCenter($center);
-        $style = $feature->getStyleAttribs();
-        switch ($geometry->getType()) {
-            case 'Point':
-                if ($mapController->canAddAnnotations()) {
-                    $mapController->addAnnotation($center['lat'], $center['lon'], $style);
-                }
-                break;
-            case 'Polyline':
-                if ($mapController->canAddPaths()) {
-                    $mapController->addPath($geometry->getPoints(), $style);
-                }
-                break;
-            default:
-                break;
-        }
 
+        // zoom
         if (isset($this->args['zoom'])) {
             $zoomLevel = $this->args['zoom'];
         } else {
             // TODO get default zoom level based on static map class
             $zoomLevel = 14;
         }
-        $mapController->setZoomLevel($zoomLevel);
 
+        // image size
         switch ($this->pagetype) {
             case 'compliant':
                 $imageWidth = 290; $imageHeight = 190;
@@ -689,22 +676,63 @@ JS;
                 }
                 break;
         }
-        $mapController->setImageWidth($imageWidth);
-        $mapController->setImageHeight($imageHeight);
-
         $this->assign('imageHeight', $imageHeight);
         $this->assign('imageWidth',  $imageWidth);
 
-        $this->assign('imageUrl', $mapController->getImageURL());
+        $mapClasses = array();
+        $mapClasses[] = $layer->getStaticMapClass();
+        if ($this->pagetype == 'compliant' && $layer->supportsDynamicMap()) {
+            $mapClasses[] = $layer->getDynamicMapClass();
+        }
 
-        $this->assign('scrollNorth', $this->detailUrlForPan('n', $mapController));
-        $this->assign('scrollEast', $this->detailUrlForPan('e', $mapController));
-        $this->assign('scrollSouth', $this->detailUrlForPan('s', $mapController));
-        $this->assign('scrollWest', $this->detailUrlForPan('w', $mapController));
+        foreach ($mapClasses as $mapClass) {
 
-        $this->assign('zoomInUrl', $this->detailUrlForZoom('in', $mapController));
-        $this->assign('zoomOutUrl', $this->detailUrlForZoom('out', $mapController));
+            $mapController = new $mapClass();
+            $mapController->setCenter($center);
+            $mapController->setZoomLevel($zoomLevel);
 
+            switch ($geometry->getType()) {
+                case 'Point':
+                    if ($mapController->canAddAnnotations()) {
+                        $mapController->addAnnotation($center['lat'], $center['lon'], $style);
+                    }
+                    break;
+                case 'Polyline':
+                    if ($mapController->canAddPaths()) {
+                        $mapController->addPath($geometry->getPoints(), $style);
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            $mapController->setImageWidth($imageWidth);
+            $mapController->setImageHeight($imageHeight);
+
+            if ($mapClass == $layer->getStaticMapClass()) {
+
+                $this->assign('imageUrl', $mapController->getImageURL());
+
+                $this->assign('scrollNorth', $this->detailUrlForPan('n', $mapController));
+                $this->assign('scrollEast', $this->detailUrlForPan('e', $mapController));
+                $this->assign('scrollSouth', $this->detailUrlForPan('s', $mapController));
+                $this->assign('scrollWest', $this->detailUrlForPan('w', $mapController));
+
+                $this->assign('zoomInUrl', $this->detailUrlForZoom('in', $mapController));
+                $this->assign('zoomOutUrl', $this->detailUrlForZoom('out', $mapController));
+
+            } else {
+                $mapController->setMapElement('mapimage');
+                $this->addExternalJavascript($mapController->getIncludeScript());
+                $this->addInlineJavascript($mapController->getHeaderScript());
+                $this->addInlineJavascriptFooter('hideMapTabChildren();');
+                $this->addInlineJavascriptFooter($mapController->getFooterScript());
+            }
+
+        }
+
+        // uncomment between the next /* */
+        /*
         // TODO:
         // allow switching between google and other maps
         // turn off for noncompliant browsers
@@ -737,6 +765,7 @@ JS;
 
 JS;
         $this->addInlineJavascriptFooter($footerScript);
+        */
 
         /*
         // Photo Tab

@@ -127,7 +127,7 @@ class GoogleStaticMap extends StaticMapImageController {
         }
 
         $styleArgs = array();
-        if (isset($style['color']))  $styleArgs[] = 'color:' .$style['color'];
+        if (isset($style['color']))  $styleArgs[] = 'color:0x' .$style['color'];
         if (isset($style['weight'])) $styleArgs[] = 'weight:'.$style['weight'];
 
         $this->paths[] = implode('|', $styleArgs).'|enc:'.$polyline;
