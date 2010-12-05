@@ -69,7 +69,7 @@ class MapLayerDataController extends DataController
                 if (strlen($token) <= 1)
                     continue;
                 $pattern = "/\b$token\b/i";
-                if (!preg_match($pattern, self::$COMMON_WORDS)) {
+                if (!preg_match($pattern, self::COMMON_WORDS)) {
                     $validTokens[] = $pattern;
                 }
             }
