@@ -57,6 +57,7 @@ class ArcGISFeature implements MapFeature
 {
     private $index;
     private $attributes;
+    private $geometry;
     private $titleField;
     private $geometryType;
     
@@ -64,9 +65,10 @@ class ArcGISFeature implements MapFeature
     // TODO put this in a more accessible place
     private $blackList;
     
-    public function __construct($attributes)
+    public function __construct($attributes, $geometry=null)
     {
         $this->attributes = $attributes;
+        $this->geometry = $geometry;
     }
     
     public function setId($id) {
@@ -79,7 +81,7 @@ class ArcGISFeature implements MapFeature
         $this->index = $index;
     }
 
-    public function getIndex($index)
+    public function getIndex()
     {
         return $this->index;
     }
@@ -106,10 +108,10 @@ class ArcGISFeature implements MapFeature
         $geometry = null;
         switch ($this->geometryType) {
         case 'esriGeometryPoint':
-            $geometry = new ArcGISPoint($this->attributes['geometry']);
+            $geometry = new ArcGISPoint($this->geometry);
             break;
         case 'esriGeometryPolygon':
-            $geometry = new ArcGISPolygon($this->attributes['geometry']);
+            $geometry = new ArcGISPolygon($this->geometry);
             break;
         }
         return $geometry;
@@ -158,7 +160,7 @@ class ArcGISParser extends DataParser
             $this->serviceDescription = $data['serviceDescription'];
             $this->mapName = $data['mapName'];
 
-            $this->spatialRef = $data['spatialReference'];
+            $this->spatialRef = $data['spatialReference']['wkid'];
             $this->initialExtent = $data['initialExtent'];
 
             $this->fullExtent = $data['fullExtent'];
@@ -181,6 +183,11 @@ class ArcGISParser extends DataParser
         } else {
             $this->selectedLayer->parseData($contents);
         }
+    }
+    
+    public function getProjection()
+    {
+        return $this->spatialRef;
     }
     
     public function isPopulated() {
@@ -324,9 +331,9 @@ class ArcGISLayer {
                 foreach ($attribs as $name => $value) {
                     $displayAttribs[$this->fieldNames[$name]] = $value;
                 }
-                $feature = new ArcGISFeature($displayAttribs);
+                $feature = new ArcGISFeature($displayAttribs, $featureInfo['geometry']);
                 $feature->setIndex(count($result));
-                $feature->setTitleField($this->displayField);
+                $feature->setTitleField($this->fieldNames[$this->displayField]);
                 $feature->setGeometryType($this->geometryType);
                 $result[$feature->getIndex()] = $feature;
             }
@@ -362,7 +369,7 @@ class ArcGISLayer {
             'where'          => '',
             'returnGeometry' => 'true',
             'outSR'          => '',
-            'outFields'      => implode(',', array_keys($this->fields)),
+            'outFields'      => implode(',', array_keys($this->fieldNames)),
             'f'              => 'json',
         );
         

@@ -9,6 +9,14 @@ class ArcGISDataController extends MapLayerDataController
     {
         return '.js'; // json
     }
+    
+    public function projectsFeatures() {
+        return true;
+    }
+    
+    public function getProjection() {
+        return $this->parser->getProjection();
+    }
 
     public function getSubLayerNames() {
         return $this->parser->getSubLayerNames();

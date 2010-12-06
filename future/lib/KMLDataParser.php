@@ -337,37 +337,6 @@ class KMLDataParser extends XMLDataParser
     }
     */
 
-    /*
-    public function searchByTitle($searchText) {
-        $results = array();
-        $tokens = explode(' ', $searchText);
-        $validTokens = array();
-        foreach ($tokens as $token) {
-            if (strlen($token) <= 1)
-                continue;
-            $pattern = "/\b$token\b/i";
-            if (!preg_match($pattern, self::$COMMON_WORDS)) {
-                $validTokens[] = $pattern;
-            }
-        }
-        if (count($validTokens)) {
-            foreach ($this->items as $item) {
-                $matched = true;
-                $title = $item->getTitle();
-                foreach ($validTokens as $token) {
-                    if (!preg_match($token, $title)) {
-                        $matched = false;
-                    }
-                }
-                if ($matched) {
-                    $results[] = $item;
-                }
-            }
-        }
-        return $results;
-    }
-    */
-
     public function getTitle() {
         return $this->document->getTitle();
     }

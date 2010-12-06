@@ -98,6 +98,10 @@ class MapLayerDataController extends DataController
     public function getFeature($name) {
         return $this->getItem($name);
     }
+    
+    public function projectsFeatures() {
+        return false;
+    }
 
     public function getItem($name)
     {

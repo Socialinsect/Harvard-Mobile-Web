@@ -646,8 +646,7 @@ JS;
         if (isset($this->args['zoom'])) {
             $zoomLevel = $this->args['zoom'];
         } else {
-            // TODO get default zoom level based on static map class
-            $zoomLevel = 14;
+            $zoomLevel = 15;
         }
 
         // image size
@@ -675,6 +674,10 @@ JS;
 
         foreach ($mapControllers as $mapController) {
 
+            if ($layer->projectsFeatures() && $mapController->supportsProjections()) {
+                $mapController->setProjection($layer->getProjection());
+            }
+            
             $mapController->setCenter($center);
             $mapController->setZoomLevel($zoomLevel);
 

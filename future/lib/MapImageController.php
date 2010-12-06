@@ -8,9 +8,9 @@ abstract class MapImageController
 
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
 
-    protected $zoomLevel = null;
-    protected $maxZoomLevel;
-    protected $minZoomLevel;
+    protected $zoomLevel = 14;
+    protected $maxZoomLevel = 20;
+    protected $minZoomLevel = 0;
 
     protected $imageWidth = 300;
     protected $imageHeight = 300;
@@ -24,6 +24,7 @@ abstract class MapImageController
     protected $canAddAnnotations = false;
     protected $canAddPaths = false;
     protected $canAddLayers = false;
+    protected $supportsProjections = false;
 
     // TODO decide if we will use the factory function or get rid of it
     public static function factory($imageClass)
@@ -78,6 +79,15 @@ abstract class MapImageController
     public function canAddLayers()
     {
         return $this->canAddlayers;
+    }
+    
+    public function supportsProjections()
+    {
+        return $this->supportsProjections;
+    }
+    
+    public function setProjection($proj)
+    {
     }
 
     // overlays
@@ -145,11 +155,6 @@ abstract class MapImageController
     public function setZoomLevel($zoomLevel)
     {
         $this->zoomLevel = $zoomLevel;
-    }
-
-    public function setBoundingBox($bbox)
-    {
-        $this->boundingBox = $bbox;
     }
 }
 
