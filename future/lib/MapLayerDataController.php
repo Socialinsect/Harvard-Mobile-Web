@@ -27,7 +27,8 @@ class MapLayerDataController extends DataController
     protected $DEFAULT_PARSER_CLASS = 'KMLDataParser';
     protected $DEFAULT_MAP_CLASS = 'GoogleStaticMap';
     protected $items = null;
-    protected $mapBaseUrl = null;
+    protected $staticMapBaseURL = null;
+    protected $dynamicMapBaseURL = null;
     protected $searchable = false;
     
     const COMMON_WORDS = 'the of to and in is it you that he was for on are with as his they be at one have this from or had by hot but some what there we can out other were all your when up use word how said an each she which do their time if will way about many then them would write like so these her long make thing see him two has look more day could go come did my no most who over know than call first people may down been now find any new take get place made where after back only me our under';
@@ -142,11 +143,7 @@ class MapLayerDataController extends DataController
     }
 
     public function getStaticMapController() {
-        if ($this->staticMapClass == 'WMSStaticMap') {
-            $controller = new WMSStaticMap($this->parser);
-        } else {
-            $controller = new $this->staticMapClass();
-        }
+        $controller = MapImageController::factory($this->staticMapClass, $this->staticMapBaseURL);
         return $controller;
     }
 
@@ -156,7 +153,7 @@ class MapLayerDataController extends DataController
     }
 
     public function getDynamicMapController() {
-        $controller = new $this->dynamicMapClass();
+        $controller = MapImageController::factory($this->dynamicMapClass, $this->dynamicMapBaseURL);
         return $controller;
     }
 
@@ -170,12 +167,15 @@ class MapLayerDataController extends DataController
         else
             $this->staticMapClass = $this->DEFAULT_MAP_CLASS;
 
+        // other optional fields
         if (isset($args['JS_MAP_CLASS']))
             $this->dynamicMapClass = $args['JS_MAP_CLASS'];
         
-        if (isset($args['MAP_BASE_URL'])) {
-            $this->mapBaseUrl = $args['MAP_BASE_URL'];
-        }
+        if (isset($args['STATIC_MAP_BASE_URL']))
+            $this->staticMapBaseURL = $args['STATIC_MAP_BASE_URL'];
+        
+        if (isset($args['DYNAMIC_MAP_BASE_URL']))
+            $this->dynamicMapBaseURL = $args['DYNAMIC_MAP_BASE_URL'];
         
         $this->searchable = ($args['SEARCHABLE'] == 1);
     }

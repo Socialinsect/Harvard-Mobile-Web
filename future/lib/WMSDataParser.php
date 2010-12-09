@@ -13,7 +13,6 @@ class WMSLayer extends XMLElement
     private $title;
     private $abstract;
     private $projections = array();
-    private $geoBBox; // bbox in lat/lon
     private $bboxes = array(); // bboxes in available projections
     private $styles = array();
     private $minScaleDenom = null;
@@ -34,6 +33,8 @@ class WMSLayer extends XMLElement
     }
     
     public function getBBoxForProjection($proj) {
+        if ($proj === null)
+            $proj = GEOGRAPHIC_PROJECTION;
         if (isset($this->projections[$proj]))
             $proj = $this->projections[$proj];
         return $this->bboxes[$proj];

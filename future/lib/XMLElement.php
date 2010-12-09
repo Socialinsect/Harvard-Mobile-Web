@@ -76,8 +76,8 @@ class XMLElement
         if (in_array($var, $this->standardAttributes())) {
             $method = "get" . $var;
             return $this->$method();
-        } elseif (array_key_exists(/*strtoupper(*/$var/*)*/, $this->properties)) {
-            return $this->properties[/*strtoupper(*/$var/*)*/]->value();
+        } elseif (array_key_exists(strtoupper($var), $this->properties)) {
+            return $this->properties[strtoupper($var)]->value();
         }
     }
  
@@ -96,7 +96,7 @@ class XMLElement
             $this->properties[$name][] = $element;
         } else {
             $this->properties[$name] = $element;
-       }
+        }
     }
     
 }

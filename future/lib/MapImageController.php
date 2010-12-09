@@ -2,10 +2,17 @@
 
 abstract class MapImageController
 {
+    protected $baseURL = null;
+
     const STYLE_LINE_WEIGHT = 'weight';
     const STYLE_LINE_ALPHA = 'alpha';
     const STYLE_LINE_COLOR = 'color';
-
+    const STYLE_LINE_CONSISTENCY = 'consistency'; // dotted, dashed, etc
+    
+    const STYLE_POINT_COLOR = 'color';
+    const STYLE_POINT_SIZE = 'size';
+    const STYLE_POINT_ICON = 'icon';
+    
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
 
     protected $zoomLevel = 14;
@@ -27,20 +34,25 @@ abstract class MapImageController
     protected $supportsProjections = false;
 
     // TODO decide if we will use the factory function or get rid of it
-    public static function factory($imageClass)
+    public static function factory($imageClass, $baseURL)
     {
         switch ($imageClass) {
             case 'WMSStaticMap':
                 require_once realpath(LIB_DIR.'/WMSStaticMap.php');
-                $controller = new WMSStaticMap();
+                $controller = new WMSStaticMap($baseURL);
                 break;
-            case 'ArcGISStaticMap':
-                require_once realpath(LIB_DIR.'/ArcGISStaticMap.php');
-                $controller = new ArcGISStaticMap();
-                break;
+            // TODO implement this section
+            //case 'ArcGISStaticMap':
+            //    require_once realpath(LIB_DIR.'/ArcGISStaticMap.php');
+            //    $controller = new ArcGISStaticMap($baseURL);
+            //    break;
             case 'GoogleJSMap':
                 require_once realpath(LIB_DIR.'/GoogleJSMap.php');
                 $controller = new GoogleJSMap();
+                break;
+            case 'ArcGISJSMap':
+                require_once realpath(LIB_DIR.'/ArcGISJSMap.php');
+                $controller = new ArcGISJSMap($baseURL);
                 break;
             case 'GoogleStaticMap':
             default:

@@ -1,24 +1,20 @@
 <?php
 
-class GoogleJSMap extends MapImageController {
+class GoogleJSMap extends JavascriptMapImageController {
 
 // http://code.google.com/apis/maps/documentation/javascript/overlays.html
 
     private $locatesUser = false;
-    private $mapElement; // required
 
     protected $canAddAnnotations = true;
     protected $canAddPaths = true;
     protected $canAddLayers = true;
 
     protected $markers = array();
+    protected $paths = array();
 
-    function setLocatesUser($locatesUser) {
+    public function setLocatesUser($locatesUser) {
         $this->locatesUser = ($locatesUser == true);
-    }
-
-    function setMapElement($mapElement) {
-        $this->mapElement = $mapElement;
     }
 
     ////////////// overlays ///////////////
@@ -90,12 +86,12 @@ JS;
     ////////////// output ///////////////
 
     // url of script to include in <script src="...
-    function getIncludeScript() {
+    public function getIncludeScript() {
         return 'http://maps.google.com/maps/api/js?sensor='
              . ($this->locatesUser ? 'true' : 'false');
     }
 
-    function getHeaderScript() {
+    public function getHeaderScript() {
 
         $script = <<<JS
 
@@ -123,7 +119,7 @@ JS;
         return $script;
     }
 
-    function getFooterScript() {
+    public function getFooterScript() {
 
         $script = <<<JS
 

@@ -91,7 +91,12 @@ class KMLStyle extends XMLElement
         switch ($name)
         {
             case 'ICONSTYLE':
-                $this->iconStyle = array('icon' => $element->getProperty('ICON'));
+                $this->iconStyle = array(
+                    'icon' => $element->getURL(),
+                    'width' => $element->getWidth(),
+                    'height' => $element->getHeight(),
+                    'scale' => $element->getScale(),
+                    );
                 break;
             case 'BALLOONSTYLE':
                 $this->balloonStyle = array(
@@ -130,6 +135,37 @@ class KMLStyle extends XMLElement
     {
         $this->isSimpleStyle = ($name === 'STYLE');
         $this->setAttribs($attribs);
+    }
+}
+
+class KMLIconStyle extends XMLElement {
+
+    protected $scale;
+    protected $width;
+    protected $height;
+    protected $url;
+    
+    public function getScale() { return $this->scale; }
+    public function getWidth() { return $this->width; }
+    public function getHeight() { return $this->height; }
+    public function getURL() { return $this->url; }
+    
+    protected function elementMap() {
+        return array( 'SCALE' => 'scale');
+    }
+    
+    public function addElement(XMLElement $element)
+    {
+        $name = $element->name();
+        $value = $element->value();
+        
+        if ($name == 'ICON') {
+            $this->url = $element->getProperty('HREF');
+            $this->weight = $element->getProperty('W');
+            $this->height = $element->getProperty('H');
+        } else {
+            parent::addElement($element);
+        }
     }
 }
 
@@ -328,7 +364,7 @@ class KMLDataParser extends XMLDataParser
     protected $document;
 
     // whitelists
-    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING');
+    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING', 'ICONSTYLE');
     protected static $endElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','STYLEURL');
 
     /*    
@@ -379,6 +415,9 @@ class KMLDataParser extends XMLDataParser
                 break;
             case 'LINESTRING':
                 $this->elementStack[] = new KMLLineString($name, $attribs);
+                break;
+            case 'ICONSTYLE':
+                $this->elementStack[] = new KMLIconStyle($name, $attribs);
                 break;
         }
     }

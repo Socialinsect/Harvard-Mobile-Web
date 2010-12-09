@@ -15,14 +15,14 @@ class WMSStaticMap extends StaticMapImageController {
     protected $availableLayers = null;
     private $wmsParser;
     private $diskCache;
-    private $projection;
+    private $projection = null;
+    private $defaultProjection = 'CRS:84';
     private $unitsPerMeter = null;
 
-    public function __construct() {
+    public function __construct($baseURL) {
+        $this->baseURL = $baseURL;
         $this->diskCache = new DiskCache($GLOBALS['siteConfig']->getVar('WMS_CACHE'), 86400 * 7, true);
         $this->diskCache->preserveFormat();
-        // TODO allow baseURL to be set for multiple WMS instances
-        $this->baseURL = $GLOBALS['siteConfig']->getVar('WMS_SERVER');
         $filename = md5($this->baseURL);
         $metafile = $filename.'-meta.txt';
         
@@ -38,10 +38,10 @@ class WMSStaticMap extends StaticMapImageController {
         } else {
             $contents = $this->diskCache->read($filename);
         }
-        
         $this->wmsParser = new WMSDataParser();
         $this->wmsParser->parseData($contents);
         $this->enableAllLayers();
+        $this->setProjection(null);
     }
 
     public function getHorizontalRange()
@@ -102,6 +102,7 @@ class WMSStaticMap extends StaticMapImageController {
     public function setProjection($proj)
     {
         $this->projection = $proj;
+        $this->unitsPerMeter = null;
 
         // arbitrarily set initial bounding box to the center (1/10)^2 of the containing map
         $bbox = $this->wmsParser->getBBoxForProjection($this->projection);
@@ -114,6 +115,10 @@ class WMSStaticMap extends StaticMapImageController {
         $this->initialBBox = $bbox;
         $this->bbox = $bbox;
         $this->zoomLevel = $this->zoomLevelForScale($this->getCurrentScale());
+        $this->center = array(
+            'lat' => ($this->bbox['ymin'] + $this->bbox['ymax']) / 2,
+            'lon' => ($this->bbox['xmin'] + $this->bbox['xmax']) / 2,
+            );
     }
     
     public function setCenter($center)
@@ -174,7 +179,6 @@ class WMSStaticMap extends StaticMapImageController {
         // TODO figure out if maxScale and minScale in the XMl feed
         // are based on meters or the feed's inherent units
         $currentScale = $this->getCurrentScale()*$this->unitsPerMeter;
-        
         foreach ($this->enabledLayers as $layerName) {
             // exclude if out of bounds
             $aLayer = $this->wmsParser->getLayer($layerName);
@@ -185,7 +189,7 @@ class WMSStaticMap extends StaticMapImageController {
                 || $bbox['ymax'] < $this->center['lat'])
                 continue;
 
-            if (!$aLayer->canDrawAtScale($currentScale) )//&& !in_array($layerName, array(12,13,14,15,16,17)))
+            if (!$aLayer->canDrawAtScale($currentScale) )
                 continue;
             $layers[] = $aLayer->getLayerName();
             $styles[] = $aLayer->getDefaultStyle()->getStyleName();
@@ -202,6 +206,8 @@ class WMSStaticMap extends StaticMapImageController {
             'layers' => implode(',', $layers),
             'styles' => implode(',', $styles),
             );
+            
+        if (!isset($params['crs'])) $params['crs'] = $this->defaultProjection;
 
         return $this->baseURL.'?'.http_build_query($params);
     }

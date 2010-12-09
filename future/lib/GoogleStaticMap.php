@@ -103,10 +103,13 @@ class GoogleStaticMap extends StaticMapImageController {
         }
 
         $styleArgs = array();
-        if (isset($style['color']))  $styleArgs[] = 'color:' .$style['color'];
+        if (isset($style[MapImageController::STYLE_POINT_COLOR]))
+            $styleArgs[] = 'color:' .$style[MapImageController::STYLE_POINT_COLOR];
+        if (isset($style[MapImageController::STYLE_POINT_SIZE]))
+            $styleArgs[] = 'size:'  .$style[MapImageController::STYLE_POINT_SIZE];
+        if (isset($style[MapImageController::STYLE_POINT_ICON]))
+            $styleArgs[] = 'icon:'  .$style[MapImageController::STYLE_POINT_ICON];
         if (isset($style['label']))  $styleArgs[] = 'label:' .$style['label'];
-        if (isset($style['size']))   $styleArgs[] = 'size:'  .$style['size'];
-        if (isset($style['icon']))   $styleArgs[] = 'icon:'  .$style['icon'];
         if (isset($style['shadow'])) $styleArgs[] = 'shadow:'.$style['shadow'];
 
         $styleString = implode('|', $styleArgs);
