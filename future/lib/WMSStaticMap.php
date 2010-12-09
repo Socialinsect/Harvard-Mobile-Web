@@ -1,265 +1,221 @@
 <?php
 
-require_once realpath(LIB_DIR.'/DiskCache.php');
-
-define('WMS_METERS_PER_PIXEL', 0.00028); // WMS standard definition
-
-// for all methods below, mandatory means the WMS server must implement
-// the corresponding service; optional means the server might impelemnt
-// the corresponding service; neither means it is not in the WMS spec.
 class WMSStaticMap extends StaticMapImageController {
 
+    const LIFE_SIZE_METERS_PER_PIXEL = 0.00028; // standard definition at 1:1 scale
+    const NO_PROJECTION = -1;
     // how much context to provide around a building relative to its size
-    private final $objectPadding = 1.0;
+    const OBJECT_PADDING = 1.0;
 
+    protected $canAddAnnotations = false;
+    protected $canaddPaths = false;
+    protected $canAddLayers = true;
+    protected $supportsProjections = true;
+
+    protected $availableLayers = null;
+    private $wmsParser;
     private $diskCache;
-    private $layers = array();
-    private $styles = array();
-    private $crs; // coord ref sys
-    private $layersByTitle = array();
-    private $disabledLayers = array();
+    protected $projection = null;
+    private $defaultProjection = 'CRS:84';
+    protected $unitsPerMeter = null;
 
-    public function __construct() {
-      $this->diskCache = new DiskCache($GLOBALS['siteConfig']->getVar('WMS_CACHE'), 86400 * 7);
-      $this->diskCache->preserveFormat();
-      $this->getCapabilities();
+    public function __construct($baseURL) {
+        $this->baseURL = $baseURL;
+        $this->diskCache = new DiskCache($GLOBALS['siteConfig']->getVar('WMS_CACHE'), 86400 * 7, true);
+        $this->diskCache->preserveFormat();
+        $filename = md5($this->baseURL);
+        $metafile = $filename.'-meta.txt';
+        
+        if (!$this->diskCache->isFresh($filename)) {
+            $params = array(
+                'request' => 'GetCapabilities',
+                'service' => 'WMS',
+                );
+            $query = $this->baseURL.'?'.http_build_query($params);
+            file_put_contents($this->diskCache->getFullPath($metafile), $query);
+            $contents = file_get_contents($query);
+            $this->diskCache->write($contents, $filename);
+        } else {
+            $contents = $this->diskCache->read($filename);
+        }
+        $this->wmsParser = new WMSDataParser();
+        $this->wmsParser->parseData($contents);
+        $this->enableAllLayers();
+        $this->setProjection(null);
     }
 
-  public function getLayerTitles() {
-    $layerTitles = array();
-    foreach ($this->layersByTitle as $title => $layers) {
-      // don't allow certain layers to be disable-able
-      if (substr($title, 0, 8) != 'Map Text'
-          && $title != 'Harvard Campus Map'
-          && $title != 'Background'
-          && $title != 'Cambridge Area Towns'
-          && $title != 'Street Block'
-          && $title != 'Small scale text')
-      {
-        $layerTitles[$title] = $layers;
-      }
-    }
-    return $layerTitles;
-  }
-
-  public function disableLayer($layerTitle) {
-    $layerTitles = $this->getLayerTitles();
-    if (array_key_exists($layerTitle, $layerTitles)
-        && !in_array($layerTitle, $this->disabledLayers))
+    public function getHorizontalRange()
     {
-      $this->disabledLayers[] = $layerTitle;
-    }
-  }
-
-  public function disableAllLayers() {
-    $layerTitles = $this->getLayerTitles();
-    foreach ($layerTitles as $title => $layers) {
-      if (!in_array($title, $this->disabledLayers)) {
-        $this->disabledLayers[] = $title;
-      }
-    }
-  }
-
-  public function enableLayer($layerTitle) {
-    if ($key = array_search($layerTitle, $this->disabledLayers)) {
-       unset($this->disabledLayers[$key]);
-    }
-  }
-
-  public function enableAllLayers() {
-    $this->disabledLayers = array();
-  }
-
-
-    ///////////// ISO/DIS 19128 //////////////
-
-  private function getCapabilities() {
-
-    if (!$this->diskCache->isFresh()) {
-      $params = array(
-        'request' => 'GetCapabilities',
-        'service' => 'WMS',
-        );
-      $query = $GLOBALS['siteConfig']->getVar('WMS_SERVER').'?'.http_build_query($params);
-      $contents = file_get_contents($query);
-      $this->diskCache->write($contents);
+        return $this->bbox['xmax'] - $this->bbox['xmin'];
     }
 
-    $xml = new DOMDocument();
-    $xml->load($this->diskCache->getFullPath());
-
-    foreach ($xml->getElementsByTagName('Layer') as $layerXml) {
-      $aLayer = new WMSLayer($layerXml);
-      $this->layers[$aLayer->name] = $aLayer;
-      $title = $aLayer->title;
-      if (!array_key_exists($title, $this->layersByTitle)) {
-        $this->layersByTitle[$title] = array();
-      }
-      $this->layersByTitle[$title][] = $aLayer->name;
+    public function getVerticalRange()
+    {
+        return $this->bbox['ymax'] - $this->bbox['ymin'];
     }
 
-    // layers may have different CRSes, but just assume they are
-    // all the same and adopt the first one
+    // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
+    protected function getCurrentScale()
+    {
+        if ($this->unitsPerMeter === null) {
+            $projCache = new DiskCache($GLOBALS['siteConfig']->getVar('PROJ_CACHE'), null, true);
+            $projCache->preserveFormat();
+            $filename = $this->projection;
+            if (!$projCache->isFresh($filename)) {
+                // mapfile is the easiest to parse of all formats offered at this website
+                $url = 'http://spatialreference.org/ref/epsg/'.$this->projection.'/mapfile/';
+                $contents = file_get_contents($url);
+                $projCache->write($contents, $filename);
+            } else {
+                $contents = $projCache->read($filename);
+            }
+
+            if (preg_match('/"to_meter=([\d\.]+)"/', $contents, $matches)) {
+                $this->unitsPerMeter = $matches[1];
+            } else {
+                $this->unitsPerMeter = self::NO_PROJECTION;
+            }
+        }
+        if ($this->unitsPerMeter != self::NO_PROJECTION) {
+            $metersPerPixel = $this->getHorizontalRange() / $this->imageWidth / $this->unitsPerMeter;
+            return $metersPerPixel / self::LIFE_SIZE_METERS_PER_PIXEL;
+        } else {
+            // TODO this isn't quite right, this won't allow us to use
+            // maxScaleDenom and minScaleDenom in any layers
+            return self::NO_PROJECTION;
+        }
+    }
     
-  }
+    protected function zoomLevelForScale($scale)
+    {
+        // not sure if ceil is the right rounding in both cases
+        if ($scale == self::NO_PROJECTION) {
+            $range = $this->getHorizontalRange();
+            return ceil(log(360 / $range, 2));
+        } else {
+            // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
+            return ceil(log(559082264 / $scale, 2));
+        }
+    }
+    
+    // currently the map will recenter as a side effect if projection is reset
+    public function setProjection($proj)
+    {
+        $this->projection = $proj;
+        $this->unitsPerMeter = null;
 
-  // mandatory
-  public function getMap($imageWidth, $imageHeight, $crs, $bbox=NULL) {
-    $baseUrl = $this->getMapBaseUrl();
-
-    if ($bbox === NULL) {
-      // default to bounding box of top layer
-      $bbox = end($this->layers)->bbox;
+        // arbitrarily set initial bounding box to the center (1/10)^2 of the containing map
+        $bbox = $this->wmsParser->getBBoxForProjection($this->projection);
+        $xrange = $bbox['xmax'] - $bbox['xmin'];
+        $yrange = $bbox['ymax'] - $bbox['ymin'];
+        $bbox['xmin'] += 0.4 * $xrange;
+        $bbox['xmax'] -= 0.4 * $xrange;
+        $bbox['ymin'] += 0.4 * $yrange;
+        $bbox['ymax'] -= 0.4 * $yrange;
+        $this->bbox = $bbox;
+        $this->zoomLevel = $this->zoomLevelForScale($this->getCurrentScale());
+        $this->center = array(
+            'lat' => ($this->bbox['ymin'] + $this->bbox['ymax']) / 2,
+            'lon' => ($this->bbox['xmin'] + $this->bbox['xmax']) / 2,
+            );
+    }
+    
+    public function setCenter($center)
+    {
+        if (is_array($center)
+            && isset($center['lat'])
+            && isset($center['lon']))
+        {
+            $xrange = $this->getHorizontalRange();
+            $yrange = $this->getVerticalRange();
+            $this->center = $center;
+            $this->bbox['xmin'] = $center['lon'] - $xrange / 2;
+            $this->bbox['xmax'] = $center['lon'] + $xrange / 2;
+            $this->bbox['ymin'] = $center['lat'] - $xrange / 2;
+            $this->bbox['ymax'] = $center['lat'] + $xrange / 2;
+        }
+    }
+    
+    public function setZoomLevel($zoomLevel)
+    {
+        $dZoom = $zoomLevel - $this->zoomLevel;
+        $this->zoomLevel = $zoomLevel;
+        // dZoom > 0 means decrease range
+        $newXRange = $this->getHorizontalRange() / pow(2, $dZoom);
+        $newYRange = $this->getVerticalRange() / pow(2, $dZoom);
+        $this->bbox['xmin'] = $this->center['lon'] - $newXRange / 2;
+        $this->bbox['xmax'] = $this->center['lon'] + $newXRange / 2;
+        $this->bbox['ymin'] = $this->center['lat'] - $newYRange / 2;
+        $this->bbox['ymax'] = $this->center['lat'] + $newYRange / 2;
     }
 
-    $bboxStr = $bbox['xmin'] . ',' 
-             . $bbox['ymin'] . ',' 
-             . $bbox['xmax'] . ',' 
-             . $bbox['ymax'];
-
-    $params = array(
-      'bbox' => $bboxStr,
-      'width' => $imageWidth,
-      'height' => $imageHeight,
-      'crs' => $crs,
-      );
-
-    $url = $baseUrl . '&' . http_build_query($params);
-    return $url;
-  }
-
-  // for clients who want to calculate width/height/bbox with javascript
-  public function getMapBaseUrl() {
-    // use all layers; for each layer use the first associated style
-    $layerNames = array();
-    $styleNames = array();
-    foreach ($this->layers as $layer) {
-      if (!in_array($layer->title, $this->disabledLayers)) {
-        $layerNames[] = $layer->name;
-        $styleNames[] = $layer->getDefaultStyle()->name;
-      }
+    public function setImageWidth($width) {
+        $ratio = $width / $this->imageWidth;
+        $range = $this->getHorizontalRange();
+        $this->imageWidth = $width;
+        $newRange = $range * $ratio;
+        $this->bbox['xmin'] = $this->center['lon'] - $newRange / 2;
+        $this->bbox['xmax'] = $this->center['lon'] + $newRange / 2;
     }
 
-    $params = array(
-      'request' => 'GetMap',
-      'version' => WMS_VERSION,
-      'layers' => implode(',', $layerNames),
-      'styles' => implode(',', $styleNames),
-      'format' => 'png',
-      );
-
-    $url = $GLOBALS['siteConfig']->getVar('WMS_SERVER') . '?' . http_build_query($params);
-    return $url;
-  }
-
-  // optional, and only on layers where queryable == 1.
-  // issued to get more information about features associated
-  // with a pixel on a map image returned by getMap()
-  public function getFeatureInfo() {
-  }
-
-  public function calculateBBox($imageWidth, $imageHeight, $bbox=NULL) {
-    if ($bbox === NULL) { // default to bounding box of top layer
-      $bbox = end($this->layers)->bbox;
-
-    } else { // add buffering to all sides
-      $xrange = $bbox['xmax'] - $bbox['xmin'];
-      $yrange = $bbox['ymax'] - $bbox['ymin'];
-
-      $imageRatio = $imageWidth / $imageHeight;
-      $bboxRatio = $xrange / $yrange;
-
-      if ($imageRatio > $bboxRatio) { // need more horizontal padding
-        $ypadding = $yrange * $objectPadding;
-        $xpadding = ($yrange * (1 + $objectPadding)) * $imageRatio - $xrange;
-      } else { // need more vertical padding
-        $xpadding = $xrange * $objectPadding;
-        $ypadding = ($xrange * (1 + $objectPadding)) / $imageRatio - $yrange;
-      }
-      
-      $bbox['ymin'] -= $ypadding / 2;
-      $bbox['ymax'] += $ypadding / 2;
-      $bbox['xmin'] -= $xpadding / 2;
-      $bbox['xmax'] += $xpadding / 2;
+    public function setImageHeight($height) {
+        $ratio = $height / $this->imageHeight;
+        $range = $this->getVerticalRange();
+        $this->imageHeight = $height;
+        $newRange = $range * $ratio;
+        $this->bbox['ymin'] = $this->center['lat'] - $newRange / 2;
+        $this->bbox['ymax'] = $this->center['lat'] + $newRange / 2;
     }
+    
+    public function getImageURL()
+    {
+        $bboxStr = $this->bbox['xmin'].','.$this->bbox['ymin'].','
+                  .$this->bbox['xmax'].','.$this->bbox['ymax'];
 
-    return $bbox;
-  }
+        $layers = array();
+        $styles = array();
+        
+        // TODO figure out if maxScale and minScale in the XMl feed
+        // are based on meters or the feed's inherent units
+        $currentScale = $this->getCurrentScale()*$this->unitsPerMeter;
+        foreach ($this->enabledLayers as $layerName) {
+            // exclude if out of bounds
+            $aLayer = $this->wmsParser->getLayer($layerName);
+            $bbox = $aLayer->getBBoxForProjection($this->projection);
+            if ($bbox['xmin'] > $this->center['lon']
+                || $bbox['xmax'] < $this->center['lon']
+                || $bbox['ymin'] > $this->center['lat']
+                || $bbox['ymax'] < $this->center['lat'])
+                continue;
 
-}
+            if (!$aLayer->canDrawAtScale($currentScale) )
+                continue;
+            $layers[] = $aLayer->getLayerName();
+            $styles[] = $aLayer->getDefaultStyle()->getStyleName();
+        }
 
-// contained within a WMSServer
-class WMSLayer {
-  public $title;
-  public $name;
-  public $queryable;
-  public $crs; // coordinate reference systems
-  public $bbox;
-  private $styles = array();
-  private $maxScaleDenom;
-  private $minScaleDenom;
-  
-  // optional
-  private $abstract;
-  private $keywordList = array();
+        $params = array(
+            'request' => 'GetMap',
+            'version' => '1.3.0',  // TODO allow config
+            'format'  => 'png',    // TODO allow config
+            'bbox' => $bboxStr,
+            'width' => $this->imageWidth,
+            'height' => $this->imageHeight,
+            'crs' => $this->projection,
+            'layers' => implode(',', $layers),
+            'styles' => implode(',', $styles),
+            );
+            
+        if (!isset($params['crs'])) $params['crs'] = $this->defaultProjection;
 
-  public function __construct($xmlNode) {
-    $maybeQueryable = $xmlNode->attributes->getNamedItem('queryable');
-    if ($maybeQueryable) {
-      $this->queryable = $maybeQueryable->nodeValue;
+        return $this->baseURL.'?'.http_build_query($params);
     }
-    $this->name = $xmlNode->getElementsByTagName('Name')->item(0)->nodeValue;
-    $this->title = $xmlNode->getElementsByTagName('Title')->item(0)->nodeValue;
-    $this->abstract = $this->getOptional('Abstract', $xmlNode);
-    $this->maxScaleDenom = $this->getOptional('MaxScaleDenominator', $xmlNode);
-    $this->minScaleDenom = $this->getOptional('MinScaleDenominator', $xmlNode);
-
-    // there can be multiple CRSes in each layer,
-    // but we only need to deal one at a time so use the first
-    $this->crs = $this->getOptional('CRS', $xmlNode);
-
-    // same for bounding box
-    $bboxes = $xmlNode->getElementsByTagName('BoundingBox');
-    if ($bboxes->length > 0) {
-      $aBbox = $bboxes->item(0);
-      $this->bbox = array(
-        'xmin' => $aBbox->attributes->getNamedItem('minx')->nodeValue,
-        'xmax' => $aBbox->attributes->getNamedItem('maxx')->nodeValue,
-        'ymin' => $aBbox->attributes->getNamedItem('miny')->nodeValue,
-        'ymax' => $aBbox->attributes->getNamedItem('maxy')->nodeValue,
-        );
+    
+    public function getAvailableLayers() {
+        if ($this->availableLayers === null) {
+            $this->availableLayers = $this->wmsParser->getLayerNames();
+        }
+        return $this->availableLayers;
     }
-
-    foreach ($xmlNode->getElementsByTagName('Style') as $style) {
-      $this->styles[] = new WMSStyle($style);
-    }
-
-  }
-
-  public function getDefaultStyle() {
-    return $this->styles[0];
-  }
-
-  private function getOptional($fieldName, $xmlNode) {
-    $maybeField = $xmlNode->getElementsByTagName($fieldName);
-    if ($maybeField->length > 0) {
-      return $maybeField->item(0)->nodeValue;
-    }
-    return NULL;
-  }
-
-}
-
-// contained with a WMSLayer
-class WMSStyle {
-
-  public $title;
-  public $name;
-
-  public function __construct($xmlNode) {
-    $this->title = $xmlNode->getElementsByTagName('Title')->item(0)->nodeValue;
-    $this->name = $xmlNode->getElementsByTagName('Name')->item(0)->nodeValue;
-  }
-
 }
 

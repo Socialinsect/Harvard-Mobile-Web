@@ -1,26 +1,29 @@
 <?php
 
-abstract class StaticMapImageController
+abstract class MapImageController
 {
-    protected $initialBoundingBox;
-    protected $boundingBox;
+    protected $baseURL = null;
 
-    protected $baseURL;
+    const STYLE_LINE_WEIGHT = 'weight';
+    const STYLE_LINE_ALPHA = 'alpha';
+    const STYLE_LINE_COLOR = 'color';
+    const STYLE_LINE_CONSISTENCY = 'consistency'; // dotted, dashed, etc
+    
+    const STYLE_POINT_COLOR = 'color';
+    const STYLE_POINT_SIZE = 'size';
+    const STYLE_POINT_ICON = 'icon';
+    
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
 
-    protected $zoomLevel = null;
-    protected $maxZoomLevel;
-    protected $minZoomLevel;
+    protected $zoomLevel = 14;
+    protected $maxZoomLevel = 20;
+    protected $minZoomLevel = 0;
 
     protected $imageWidth = 300;
     protected $imageHeight = 300;
 
-    protected $imageFormat = 'png';
-    protected static $supportedImageFormats = array('png', 'jpg');
-
     // layers are sets of overlays that span the full range of the map
     // as opposed to a selection
-    protected static $availableLayers = array(); // array of all map layers
     protected $enabledLayers = array(); // array of map layers to show
     protected $layerStyles = array(); // id => styleName
 
@@ -28,20 +31,26 @@ abstract class StaticMapImageController
     protected $canAddAnnotations = false;
     protected $canAddPaths = false;
     protected $canAddLayers = false;
+    protected $supportsProjections = false;
 
-    // final function that generates url for the img src argument
-    abstract public function getImageURL();
-
-    public static function factory($imageClass)
+    public static function factory($imageClass, $baseURL)
     {
         switch ($imageClass) {
             case 'WMSStaticMap':
                 require_once realpath(LIB_DIR.'/WMSStaticMap.php');
-                $controller = new WMSStaticMap();
+                $controller = new WMSStaticMap($baseURL);
                 break;
             case 'ArcGISStaticMap':
                 require_once realpath(LIB_DIR.'/ArcGISStaticMap.php');
-                $controller = new ArcGISStaticMap();
+                $controller = new ArcGISStaticMap($baseURL);
+                break;
+            case 'GoogleJSMap':
+                require_once realpath(LIB_DIR.'/GoogleJSMap.php');
+                $controller = new GoogleJSMap();
+                break;
+            case 'ArcGISJSMap':
+                require_once realpath(LIB_DIR.'/ArcGISJSMap.php');
+                $controller = new ArcGISJSMap($baseURL);
                 break;
             case 'GoogleStaticMap':
             default:
@@ -53,24 +62,18 @@ abstract class StaticMapImageController
     }
 
     // query functions
+    public function isStatic() {
+        return false;
+    }
+
     public function getCenter()
     {
         return $this->center;
     }
 
-    public function getHorizontalRange()
+    public function getAvailableLayers()
     {
-        return 0.01;
-    }
-
-    public function getVerticalRange()
-    {
-        return 0.01;
-    }
-
-    public function getLayerNames()
-    {
-        return self::$availableLayers;
+        return array();
     }
 
     public function canAddAnnotations()
@@ -87,46 +90,14 @@ abstract class StaticMapImageController
     {
         return $this->canAddlayers;
     }
-
-    // n, s, e, w, ne, nw, se, sw
-    public function getCenterForPanning($direction) {
-        $vertical = null;
-        $horizontal = null;
-
-        if (preg_match('/[ns]/', $direction, $matches)) {
-            $vertical = $matches[0];
-        }
-        if (preg_match('/[ew]/', $direction, $matches)) {
-            $horizontal = $matches[0];
-        }
-
-        $center = $this->center;
-
-        if ($horizontal == 'e') {
-            $center['lon'] += $this->getHorizontalRange() / 2;
-        } else if ($horizontal == 'w') {
-            $center['lon'] -= $this->getHorizontalRange() / 2;
-        }
-
-        if ($vertical == 'n') {
-            $center['lat'] += $this->getVerticalRange() / 2;
-        } else if ($vertical == 's') {
-            $center['lat'] -= $this->getVerticalRange() / 2;
-        }
-
-        return $center;
+    
+    public function supportsProjections()
+    {
+        return $this->supportsProjections;
     }
-
-    public function getLevelForZooming($direction) {
-        $zoomLevel = $this->zoomLevel;
-        if ($direction == 'in') {
-            if ($zoomLevel < $this->maxZoomLevel)
-                $zoomLevel += 1;
-        } else if ($direction == 'out') {
-            if ($zoomLevel > $this->minZoomLevel)
-                $zoomLevel -= 1;
-        }
-        return $zoomLevel;
+    
+    public function setProjection($proj)
+    {
     }
 
     // overlays
@@ -134,7 +105,7 @@ abstract class StaticMapImageController
     {
     }
 
-    public function addPath($points, $lineColor, $lineWeight)
+    public function addPath($points, $style=null)
     {
     }
 
@@ -158,7 +129,7 @@ abstract class StaticMapImageController
 
     public function enableAllLayers()
     {
-        $this->enabledLayers = self::$availableLayers;
+        $this->enabledLayers = $this->getAvailableLayers();
     }
 
     public function disableAllLayers()
@@ -171,14 +142,7 @@ abstract class StaticMapImageController
     }
 
     protected function isAvailableLayer($layer) {
-        return in_array($layer, self::$availableLayers);
-    }
-
-    // setters
-    public function setImageFormat($format) {
-        if (in_array($format, self::$supportedImageFormats)) {
-            $this->imageFormat = $format;
-        }
+        return in_array($layer, $this->getAvailableLayers());
     }
 
     public function setCenter($center) {
@@ -201,11 +165,6 @@ abstract class StaticMapImageController
     public function setZoomLevel($zoomLevel)
     {
         $this->zoomLevel = $zoomLevel;
-    }
-
-    public function setBoundingBox($bbox)
-    {
-        $this->boundingBox = $bbox;
     }
 }
 

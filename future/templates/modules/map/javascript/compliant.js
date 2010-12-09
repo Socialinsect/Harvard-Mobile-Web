@@ -11,6 +11,24 @@ var minZoom = -8;	// integer: max zoom-out level
 
 var loadedImages = {};
 
+function hideMapTabChildren() {
+    var mapTab = document.getElementById("mapTab");
+    for (var i = 0; i < mapTab.childNodes.length; i++) {
+        var node = mapTab.childNodes[i];
+        if (node.className == "image") {
+            mapTab.removeChild(node);
+            break;
+        }
+    }
+    for (var i = 0; i < mapTab.childNodes.length; i++) {
+        var node = mapTab.childNodes[i];
+        if (node.className == "scrollers") {
+            mapTab.removeChild(node);
+            break;
+        }
+    }
+}
+
 function loadPhoto(imageURL,imageID) {
   if (!loadedImages[imageID]) {
     // Loads an image from the given URL into the image with the specified ID

@@ -5,12 +5,6 @@
 
 require_once(LIB_DIR . '/XMLDataParser.php');
 
-interface MapGeometry
-{
-    public function getCenterCoordinate();
-    public function getType();
-}
-
 class KMLDocument extends XMLElement
 {
     protected $name = 'Document';
@@ -43,10 +37,6 @@ class KMLDocument extends XMLElement
 
     public function getTitle() {
         return $this->title;
-    }
-
-    public function getPlacemarks() {
-        return $this->placemarks;
     }
 }
 
@@ -101,7 +91,12 @@ class KMLStyle extends XMLElement
         switch ($name)
         {
             case 'ICONSTYLE':
-                $this->iconStyle = array('icon' => $element->getProperty('ICON'));
+                $this->iconStyle = array(
+                    'icon' => $element->getURL(),
+                    'width' => $element->getWidth(),
+                    'height' => $element->getHeight(),
+                    'scale' => $element->getScale(),
+                    );
                 break;
             case 'BALLOONSTYLE':
                 $this->balloonStyle = array(
@@ -143,9 +138,43 @@ class KMLStyle extends XMLElement
     }
 }
 
+class KMLIconStyle extends XMLElement {
+
+    protected $scale;
+    protected $width;
+    protected $height;
+    protected $url;
+    
+    public function getScale() { return $this->scale; }
+    public function getWidth() { return $this->width; }
+    public function getHeight() { return $this->height; }
+    public function getURL() { return $this->url; }
+    
+    protected function elementMap() {
+        return array( 'SCALE' => 'scale');
+    }
+    
+    public function addElement(XMLElement $element)
+    {
+        $name = $element->name();
+        $value = $element->value();
+        
+        if ($name == 'ICON') {
+            $this->url = $element->getProperty('HREF');
+            $this->weight = $element->getProperty('W');
+            $this->height = $element->getProperty('H');
+        } else {
+            parent::addElement($element);
+        }
+    }
+}
+
 class KMLPlacemark extends XMLElement implements MapFeature
 {
     protected $name = 'Placemark';
+    // placemarks have no unique identifiers,
+    // so we assign this based on its position in the feed
+    protected $index;
     protected $description;
     protected $title; // use this for "name" element
     protected $style;
@@ -170,6 +199,14 @@ class KMLPlacemark extends XMLElement implements MapFeature
 
     public function setStyle(KMLStyle $style) {
         $this->style = $style;
+    }
+    
+    public function getIndex() {
+        return $this->index;
+    }
+    
+    public function setIndex($index) {
+        $this->index = $index;
     }
 
     public function getStyleAttribs() {
@@ -317,7 +354,6 @@ class KMLLineString extends XMLElement implements MapGeometry
 class KMLDataParser extends XMLDataParser
 {
     // TODO this doesn't belong here
-    public static $COMMON_WORDS = 'the of to and in is it you that he was for on are with as his they be at one have this from or had by hot but some what there we can out other were all your when up use word how said an each she which do their time if will way about many then them would write like so these her long make thing see him two has look more day could go come did my no most who over know than call first people may down been now find any new take get place made where after back only me our under';
 
     protected $root;
     protected $elementStack = array();
@@ -328,7 +364,7 @@ class KMLDataParser extends XMLDataParser
     protected $document;
 
     // whitelists
-    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING');
+    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING', 'ICONSTYLE');
     protected static $endElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','STYLEURL');
 
     /*    
@@ -336,35 +372,6 @@ class KMLDataParser extends XMLDataParser
     {
     }
     */
-
-    public function searchByTitle($searchText) {
-        $results = array();
-        $tokens = explode(' ', $searchText);
-        $validTokens = array();
-        foreach ($tokens as $token) {
-            if (strlen($token) <= 1)
-                continue;
-            $pattern = "/\b$token\b/i";
-            if (!preg_match($pattern, self::$COMMON_WORDS)) {
-                $validTokens[] = $pattern;
-            }
-        }
-        if (count($validTokens)) {
-            foreach ($this->items as $item) {
-                $matched = true;
-                $title = $item->getTitle();
-                foreach ($validTokens as $token) {
-                    if (!preg_match($token, $title)) {
-                        $matched = false;
-                    }
-                }
-                if ($matched) {
-                    $results[] = $item;
-                }
-            }
-        }
-        return $results;
-    }
 
     public function getTitle() {
         return $this->document->getTitle();
@@ -409,6 +416,9 @@ class KMLDataParser extends XMLDataParser
             case 'LINESTRING':
                 $this->elementStack[] = new KMLLineString($name, $attribs);
                 break;
+            case 'ICONSTYLE':
+                $this->elementStack[] = new KMLIconStyle($name, $attribs);
+                break;
         }
     }
 
@@ -434,6 +444,7 @@ class KMLDataParser extends XMLDataParser
                 $this->styles[$element->getAttrib('ID')] = $element;
                 break;
             case 'PLACEMARK':
+                $element->setIndex(count($this->items));
                 $this->items[] = $element;
                 break;
             case 'STYLEURL':

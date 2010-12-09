@@ -2,6 +2,26 @@
 
 class SiteConfig extends ConfigGroup {
 
+  private $apiVars = array();
+
+  public function loadAPIFile($name, $section = true, $ignoreError = false) {
+    if (!in_array($name, array_keys($this->apiVars))) {
+      $file = realpath_exists(SITE_CONFIG_DIR."/api/$name.ini");
+      if ($file) {
+        $this->apiVars[$name] = parse_ini_file($file, $section);
+        $this->replaceAPIVariables($this->apiVars[$name]);
+        return true;
+
+      } else {
+        if (!$ignoreError) {
+          error_log(__FUNCTION__."(): no api configuration file for '$name'");
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
   function __construct() {
     // Load main configuration file
     $config = ConfigFile::factory(MASTER_CONFIG_DIR."/config.ini");
