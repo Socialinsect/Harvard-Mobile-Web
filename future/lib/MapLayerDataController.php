@@ -20,6 +20,8 @@ interface MapGeometry
     public function getType();
 }
 
+define('GEOGRAPHIC_PROJECTION', 4326);
+
 class MapLayerDataController extends DataController
 {
     protected $parser = null;
@@ -100,8 +102,8 @@ class MapLayerDataController extends DataController
         return $this->getItem($name);
     }
     
-    public function projectsFeatures() {
-        return false;
+    public function getProjection() {
+        return GEOGRAPHIC_PROJECTION;
     }
 
     public function getItem($name)

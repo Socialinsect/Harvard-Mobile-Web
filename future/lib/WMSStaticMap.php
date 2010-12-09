@@ -15,9 +15,9 @@ class WMSStaticMap extends StaticMapImageController {
     protected $availableLayers = null;
     private $wmsParser;
     private $diskCache;
-    private $projection = null;
+    protected $projection = null;
     private $defaultProjection = 'CRS:84';
-    private $unitsPerMeter = null;
+    protected $unitsPerMeter = null;
 
     public function __construct($baseURL) {
         $this->baseURL = $baseURL;
@@ -55,7 +55,7 @@ class WMSStaticMap extends StaticMapImageController {
     }
 
     // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
-    private function getCurrentScale()
+    protected function getCurrentScale()
     {
         if ($this->unitsPerMeter === null) {
             $projCache = new DiskCache($GLOBALS['siteConfig']->getVar('PROJ_CACHE'), null, true);
@@ -86,7 +86,7 @@ class WMSStaticMap extends StaticMapImageController {
         }
     }
     
-    private function zoomLevelForScale($scale)
+    protected function zoomLevelForScale($scale)
     {
         // not sure if ceil is the right rounding in both cases
         if ($scale == self::NO_PROJECTION) {
@@ -112,7 +112,6 @@ class WMSStaticMap extends StaticMapImageController {
         $bbox['xmax'] -= 0.4 * $xrange;
         $bbox['ymin'] += 0.4 * $yrange;
         $bbox['ymax'] -= 0.4 * $yrange;
-        $this->initialBBox = $bbox;
         $this->bbox = $bbox;
         $this->zoomLevel = $this->zoomLevelForScale($this->getCurrentScale());
         $this->center = array(

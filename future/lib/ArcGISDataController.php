@@ -10,6 +10,11 @@ class ArcGISDataController extends MapLayerDataController
         return '.js'; // json
     }
     
+    protected function cacheFolder()
+    {
+        return $GLOBALS['siteConfig']->getVar('ARCGIS_CACHE');
+    }
+
     public function projectsFeatures() {
         return true;
     }

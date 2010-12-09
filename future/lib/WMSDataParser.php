@@ -2,11 +2,10 @@
 
 require_once realpath(LIB_DIR.'/XMLElement.php');
 
-// making this up, assuming ESRI doesn't have something with this name
-define('GEOGRAPHIC_PROJECTION', 'WGS84');
-
 class WMSLayer extends XMLElement
 {
+    const GEOGRAPHIC_PROJECTION = 'WGS84'; // something unique
+
     protected $name = 'LAYER';
     private $layerName; // "name" in feed
     private $queryable;
@@ -34,7 +33,7 @@ class WMSLayer extends XMLElement
     
     public function getBBoxForProjection($proj) {
         if ($proj === null)
-            $proj = GEOGRAPHIC_PROJECTION;
+            $proj = self::GEOGRAPHIC_PROJECTION;
         if (isset($this->projections[$proj]))
             $proj = $this->projections[$proj];
         return $this->bboxes[$proj];
@@ -86,7 +85,7 @@ class WMSLayer extends XMLElement
                 $this->projections[$projNumber] = $value;
                 break;
             case 'EX_GEOGRAPHICBOUNDINGBOX':
-                $this->bboxes[GEOGRAPHIC_PROJECTION] = array(
+                $this->bboxes[self::GEOGRAPHIC_PROJECTION] = array(
                     'xmin' => $element->getProperty('WESTBOUNDLONGITUDE'),
                     'xmax' => $element->getProperty('EASTBOUNDLONGITUDE'),
                     'ymin' => $element->getProperty('SOUTHBOUNDLATITUDE'),

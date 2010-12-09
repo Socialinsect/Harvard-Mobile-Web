@@ -674,7 +674,7 @@ JS;
 
         foreach ($mapControllers as $mapController) {
 
-            if ($layer->projectsFeatures() && $mapController->supportsProjections()) {
+            if ($mapController->supportsProjections()) {
                 $mapController->setProjection($layer->getProjection());
             }
             

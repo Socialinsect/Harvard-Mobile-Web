@@ -33,7 +33,6 @@ abstract class MapImageController
     protected $canAddLayers = false;
     protected $supportsProjections = false;
 
-    // TODO decide if we will use the factory function or get rid of it
     public static function factory($imageClass, $baseURL)
     {
         switch ($imageClass) {
@@ -41,11 +40,10 @@ abstract class MapImageController
                 require_once realpath(LIB_DIR.'/WMSStaticMap.php');
                 $controller = new WMSStaticMap($baseURL);
                 break;
-            // TODO implement this section
-            //case 'ArcGISStaticMap':
-            //    require_once realpath(LIB_DIR.'/ArcGISStaticMap.php');
-            //    $controller = new ArcGISStaticMap($baseURL);
-            //    break;
+            case 'ArcGISStaticMap':
+                require_once realpath(LIB_DIR.'/ArcGISStaticMap.php');
+                $controller = new ArcGISStaticMap($baseURL);
+                break;
             case 'GoogleJSMap':
                 require_once realpath(LIB_DIR.'/GoogleJSMap.php');
                 $controller = new GoogleJSMap();

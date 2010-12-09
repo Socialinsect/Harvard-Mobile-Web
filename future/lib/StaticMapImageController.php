@@ -2,7 +2,6 @@
 
 abstract class StaticMapImageController extends MapImageController
 {
-    protected $initialBBox;
     protected $bbox;
 
     protected $baseURL;
@@ -73,11 +72,6 @@ abstract class StaticMapImageController extends MapImageController
         if (in_array($format, $this->supportedImageFormats)) {
             $this->imageFormat = $format;
         }
-    }
-
-    public function setBoundingBox($bbox)
-    {
-        $this->bbox = $bbox;
     }
 }
 

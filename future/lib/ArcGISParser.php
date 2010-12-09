@@ -137,11 +137,11 @@ class ArcGISFeature implements MapFeature
 
 class ArcGISParser extends DataParser
 {
-    public $singleFusedMapCache; // indicates whether we have map tiles
-    public $initialExtent;
-    public $fullExtent;
-    public $serviceDescription;
-    public $spatialRef;
+    private $singleFusedMapCache; // indicates whether we have map tiles
+    private $initialExtent;
+    private $fullExtent;
+    private $serviceDescription;
+    private $spatialRef;
     
     private $mapName;
     private $id;
@@ -188,6 +188,10 @@ class ArcGISParser extends DataParser
     public function getProjection()
     {
         return $this->spatialRef;
+    }
+    
+    public function getInitialExtent() {
+        return $this->initialExtent;
     }
     
     public function isPopulated() {
@@ -250,6 +254,10 @@ class ArcGISParser extends DataParser
             $result[$id] = $sublayer->getTitle();
         }
         return $result;
+    }
+    
+    public function getSubLayerIds() {
+        return array_keys($this->subLayers);
     }
 
     private function getSubLayer($layerId) {
