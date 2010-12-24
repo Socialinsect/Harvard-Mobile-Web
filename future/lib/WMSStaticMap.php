@@ -60,6 +60,7 @@ class WMSStaticMap extends StaticMapImageController {
         if ($this->unitsPerMeter === null) {
             $projCache = new DiskCache($GLOBALS['siteConfig']->getVar('PROJ_CACHE'), null, true);
             $projCache->preserveFormat();
+            $projCache->setSuffix('.mapfile');
             $filename = $this->projection;
             if (!$projCache->isFresh($filename)) {
                 // mapfile is the easiest to parse of all formats offered at this website

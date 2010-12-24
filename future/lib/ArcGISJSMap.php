@@ -3,7 +3,14 @@
 // http://help.arcgis.com/EN/webapi/javascript/arcgis/help/jshelp_start.htm
 // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi_start.htm
 
+// sandbox
+define("ESRI_PROJECTION_SERVER", 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer/project');
+
+require_once 'MapProjector.php';
+
 class ArcGISJSMap extends JavascriptMapImageController {
+    
+    const DEFAULT_PROJECTION = 4326;
     
     // capabilities
     protected $canAddAnnotations = true;
@@ -11,21 +18,50 @@ class ArcGISJSMap extends JavascriptMapImageController {
     protected $canAddLayers = true;
     protected $supportsProjections = true;
     
-    protected $projection = 4326;
+    protected $projection = self::DEFAULT_PROJECTION; // projection of features from data source
     protected $markers = array();
     protected $paths = array();
     
     private $apiVersion = '2.1';
     private $themeName = 'claro'; // claro, tundra, soria, nihilo
     
+    // map image projection data
+    private $projspec = NULL;
+    private $mapProjector;
+    
     public function __construct($baseURL)
     {
         $this->baseURL = $baseURL;
+        
+        // use the same filename generating algorithm as DataController
+        // since there is a chance someone else's ArcGISDataController
+        // has cached the same file.  also see ArcGISStaticMap which does the same.
+        // TODO make the filename algorithm more accessible if we use it this way
+        $diskCache = new DiskCache($GLOBALS['siteConfig']->getVar('ARCGIS_CACHE'), 86400 * 7, true);
+        $diskCache->preserveFormat();
+        $filename = md5($this->baseURL);
+        $metafile = $filename.'-meta.txt';
+        if (!$diskCache->isFresh($filename)) {
+            $params = array('f' => 'json');
+            $query = $this->baseURL.'?'.http_build_query($params);
+            file_put_contents($diskCache->getFullPath($metafile), $query);
+            $contents = file_get_contents($query);
+            $diskCache->write($contents, $filename);
+        } else {
+            $contents = $diskCache->read($filename);
+        }
+        
+        $json = json_decode($contents, true);
+        if (isset($json['spatialReference']) && isset($json['spatialReference']['wkid'])) {
+            $wkid = $json['spatialReference']['wkid'];
+            $this->mapProjector = new MapProjector(ESRI_PROJECTION_SERVER);
+            //$this->mapProjector = new MapProjector();
+            $this->mapProjector->setDstProj($wkid);
+        }
     }
     
     public function setProjection($proj)
     {
-        $this->projection = $proj;
     }
 
     ////////////// overlays ///////////////
@@ -34,7 +70,7 @@ class ArcGISJSMap extends JavascriptMapImageController {
 
     public function addAnnotation($latitude, $longitude, $style=null)
     {
-        $marker = array('x' => $longitude, 'y' => $latitude);
+        $marker = array('lon' => $longitude, 'lat' => $latitude);
         
         $filteredStyles = array();
         if ($style !== null) {
@@ -109,8 +145,8 @@ class ArcGISJSMap extends JavascriptMapImageController {
     {
         $js = <<<JS
 
-var lineSymbol;
-var polyline;
+    var lineSymbol;
+    var polyline;
 
 JS;
     
@@ -139,9 +175,9 @@ JS;
 
             $js .= <<<JS
 
-lineSymbol = new esri.symbol.SimpleLineSymbol({$symbolArgs});
-polyline = new esri.geometry.Polyline({$json});
-map.graphics.add(new esri.Graphic(polyline, lineSymbol));
+    lineSymbol = new esri.symbol.SimpleLineSymbol({$symbolArgs});
+    polyline = new esri.geometry.Polyline({$json});
+    map.graphics.add(new esri.Graphic(polyline, lineSymbol));
 
 JS;
 
@@ -154,8 +190,8 @@ JS;
     {
         $js = <<<JS
 
-var pointSymbol;
-var point;
+    var pointSymbol;
+    var point;
 
 JS;
     
@@ -168,7 +204,7 @@ JS;
             }
             if (isset($styles['icon'])) {
                 $symbolType = 'PictureMarkerSymbol';
-                $symbolArgs = '"'.$styles['icon'].'",null,null';
+                $symbolArgs = '"'.$styles['icon'].'",20,20'; // TODO allow size to be set
             
             } else {
                 $symbolType = 'SimpleMarkerSymbol';
@@ -183,11 +219,18 @@ JS;
             }
 
             foreach ($points as $point) {
+                if ($this->mapProjector) {
+                    $point = $this->mapProjector->projectPoint($point);
+                }
+                else {
+                    $point = array('x' => $point['lat'], 'y' => $point['lon']);
+                }
+            
                 $js .= <<<JS
 
-point = new esri.geometry.Point({$point['x']}, {$point['y']}, new esri.SpatialReference({ wkid: {$this->projection} }));
-pointSymbol = new esri.symbol.{$symbolType}({$symbolArgs});
-map.graphics.add(new esri.Graphic(point, pointSymbol));
+    point = new esri.geometry.Point({$point['x']}, {$point['y']}, spatialRef);
+    pointSymbol = new esri.symbol.{$symbolType}({$symbolArgs});
+    map.graphics.add(new esri.Graphic(point, pointSymbol));
 
 JS;
             }
@@ -195,12 +238,30 @@ JS;
         
         return $js;
     }
+    
+    private function getCenterJS() {
+        if ($this->mapProjector) {
+            $xy = $this->mapProjector->projectPoint($this->center);
+        }
+        else {
+            $xy = array('x' => $this->center['lat'], 'y' => $this->center['lon']);
+        }
+    
+        $js = 'new esri.geometry.Point('.$xy['x'].', '.$xy['y'].', spatialRef)';
+    
+        return $js;
+    }
+    
+    private function getSpatialRefJS() {
+        $wkid = $this->mapProjector->getDstProj();
+        return "var spatialRef = new esri.SpatialReference({ wkid: $wkid });";
+    }
 
     ////////////// output ///////////////
 
     // url of script to include in <script src="...
     function getIncludeScript() {
-        return 'http://serverapi.arcgisonline.com/jsapi/arcgis/?v='.$this->apiVersion;
+        return 'http://serverapi.arcgisonline.com/jsapi/arcgis/?v='.$this->apiVersion.'compact';
     }
     
     function getIncludeStyles() {
@@ -226,12 +287,12 @@ JS;
         $script = <<<JS
 
 dojo.require("esri.map");
-dojo.require("esri.geometry");
+dojo.addOnLoad(loadMap);
 
 var map;
 
 function loadMap() {
-    var mapImage = document.getElementById("{$this->mapElement}");
+    var mapImage = document.getElementById("mapimage");
     mapImage.style.display = "block";
     mapImage.style.width = "{$this->imageWidth}px";
     mapImage.style.height = "{$this->imageHeight}px";
@@ -240,19 +301,22 @@ function loadMap() {
     var basemapURL = "{$this->baseURL}";
     var basemap = new esri.layers.ArcGISTiledMapServiceLayer(basemapURL);
     map.addLayer(basemap);
+
+    dojo.connect(map, "onLoad", plotFeatures);
 }
 
-loadMap();
+function plotFeatures() {
+
+    {$this->getSpatialRefJS()}
+
+    {$this->getPathJS()}
+    
+    {$this->getMarkerJS()}
+
+    map.centerAndZoom({$this->getCenterJS()}, {$this->zoomLevel})
+}
 
 JS;
-
-        if ($this->paths) {
-            $script .= $this->getPathJS();
-        }
-
-        if ($this->markers) {
-            $script .= $this->getMarkerJS();
-        }
 
         return $script;
     }
