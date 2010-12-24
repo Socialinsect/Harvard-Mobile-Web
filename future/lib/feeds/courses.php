@@ -3,8 +3,6 @@
 require_once realpath(LIB_DIR.'/DiskCache.php');
 require_once realpath(LIB_DIR.'/feeds/html2text.php');
 
-define('TERM', 'Fall 2010');
-
 function compare_courseNumber($a, $b)
 {
   return strnatcmp($a['name'], $b['name']);
@@ -380,7 +378,7 @@ class CourseData {
   public static function get_term() {
     //$data = self::get_term_data();
     //return $data["season"] . $data["year"];
-      return TERM;
+      return $GLOBALS['siteConfig']->getVar('COURSES_CURRENT_TERM');
   }
 
   public static function get_term_text() {
@@ -396,6 +394,8 @@ class CourseData {
 
   public static function get_subject_details($subjectId) {
     $args = array('q' => 'id:'.$subjectId);
+    
+    self::addTermQueryToArgs($args);
     $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
 
     error_log("COURSE DEBUG: " . $urlString);
@@ -700,10 +700,8 @@ class CourseData {
   }
 
   public static function search_subjects($terms, $school, $courseTitle) {    
-    $args = array(
-      'q'    => str_replace(':', ' ', $terms),
-      'sort' => 'score desc,course_title asc',
-    );
+    $args = array();
+    
     self::addTermQueryToArgs($args);
     
     if (strlen($school)) {
@@ -718,10 +716,13 @@ class CourseData {
       }
     }
     
+    $args['q'] = '"'.str_replace(':', ' ', $terms).'"';
+    $args['sort'] = 'score desc,course_title asc';
+    
     $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
     $xml = file_get_contents($urlString);
     
-    // echo $urlString;
+    //error_log($urlString);
     //echo $xml;
     
     if($xml == "") {
@@ -733,7 +734,7 @@ class CourseData {
     $count = $xml_obj->courses['numFound']; // Number of Courses Found
     
     /* ONLY IF search results from the MAIN courses page are greater than 100 */
-    if (($count > 100)  && ($school == '')){
+    if (($count > 100) && ($school == '')){
     
       foreach($xml_obj->facets->facet as $fc) {
     
@@ -766,11 +767,12 @@ class CourseData {
     $subject_array = array();
     for ($index=0; $index < $iterations; $index=$index+1) {
       $args['start'] = $index * 25;
-      //printf(" Current = %d\n",$index*25);
+      //error_log(" Current = ".$index*25);
       
       $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
       $xml = file_get_contents($urlString);
-    
+      
+      //error_log($urlString);
     
       if($xml == "") {
         // if failed to grab xml feed, then run the generic error handler

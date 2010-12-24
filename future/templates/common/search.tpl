@@ -1,5 +1,3 @@
-{strip}
-
 {capture name="hiddenArgHTML" assign="hiddenArgHTML"}
   {if (!isset($searchPage) && ($page == 'search')) || ($page == $searchPage)}
     {$hiddenArgs = $breadcrumbSamePageArgs}
@@ -59,6 +57,3 @@
     </div>
   {/if}
 {/block}
-  
-
-{/strip}

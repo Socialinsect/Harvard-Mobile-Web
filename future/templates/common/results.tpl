@@ -1,5 +1,3 @@
-{strip}
-
 {block name="resultsStart"}
   <ul class="results">
 {/block}
@@ -25,5 +23,3 @@
 {block name="resultsEnd"}
   </ul>
 {/block}
-
-{/strip}

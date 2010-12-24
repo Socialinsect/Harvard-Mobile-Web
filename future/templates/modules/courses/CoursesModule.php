@@ -93,7 +93,7 @@ class CoursesModule extends Module {
       }
       
       $listItems[] = array(
-        'title' => $class['name'].' : '.$class['title'].$staffNamesIfNeeded,
+        'title' => "<strong>{$class['name']}:</strong> {$class['title']}".$staffNamesIfNeeded,
         'url'   => $this->buildBreadcrumbURL($detailPath, array(
           'class' => $class['masterId'],
         ), !$externalLink),
@@ -291,9 +291,9 @@ class CoursesModule extends Module {
           // from the top-level view where search results are > 100
           $schoolData = isset($data['schools']) ? $data['schools'] : NULL;
           foreach ($schoolData as $school) {
-            $schools[$class['school']] = array(
-              'title' => "{$class['short_name']} ({$school['count']})",
-              'url'   => $this->searchSchoolURL($searchTerms, $class['school'], $class['short_name']),
+            $schools[$school['name']] = array(
+              'title' => "{$school['name_short']} ({$school['count']})",
+              'url'   => $this->searchSchoolURL($searchTerms, $school['name'], $school['name_short']),
               'count' => $school['count'],
             );
           }

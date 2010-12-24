@@ -20,12 +20,13 @@ class TemplateEngine extends Smarty {
   
     $checkDirs = array(
       'THEME_DIR'     => THEME_DIR,
-      'TEMPLATES_DIR' => TEMPLATES_DIR,
+      'SITE_DIR'     => SITE_DIR,
+      'TEMPLATES_DIR' => TEMPLATES_DIR
     );
     $checkFiles = array(
       "$subDir$page-$pagetype-$platform.tpl", // platform-specific
       "$subDir$page-$pagetype.tpl",           // pagetype-specific
-      "$subDir$page.tpl",                     // default
+      "$subDir$page.tpl"                      // default
     );
     
     foreach ($checkDirs as $type => $dir) {
@@ -193,8 +194,12 @@ class TemplateEngine extends Smarty {
       array('TemplateEngine','smartyResourceIncludeGetTrusted')
     ));
     
+    // Postfilter to strip unnecessary whitespace (ignores <pre> and <script>)
+    $this->loadFilter('output','trimwhitespace');
+    
     // Postfilter to add url prefix to absolute urls
-    $this->registerFilter('output', array('TemplateEngine', 'smartyOutputfilterAddURLPrefix'));
+    $this->registerFilter('output', array('TemplateEngine', 
+      'smartyOutputfilterAddURLPrefix'));
     
     $this->registerPlugin('block', 'html_access_key_link',  
       'TemplateEngine::smartyBlockAccessKeyLink');

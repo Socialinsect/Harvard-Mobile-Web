@@ -4,7 +4,10 @@ require_once realpath(LIB_DIR.'/TemplateEngine.php');
 require_once realpath(LIB_DIR.'/HTMLPager.php');
 require_once realpath(LIB_DIR.'/User.php');
 
+define('MODULE_BREADCRUMB_PARAM', '_b');
+
 abstract class Module {
+
   protected $id = 'none';
   protected $moduleName = '';
   protected $hasFeeds = false;
@@ -331,12 +334,11 @@ abstract class Module {
        
   }
   
-  protected function loadFeedData()
-  {
+  protected function loadFeedData() {
     $data = null;
-    $feedConfigFile = realpath_exists(sprintf("%s/feeds/%s.ini", SITE_CONFIG_DIR, $this->id));
+    $feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/{$this->id}.ini");
     if ($feedConfigFile) {
-        $data = parse_ini_file($feedConfigFile, true);
+      $data = parse_ini_file($feedConfigFile, true);
     } 
     
     return $data;
@@ -382,6 +384,7 @@ abstract class Module {
 
     $modulePaths = array(
       THEME_DIR."/modules/$id/Theme{$className}.php"=>"Theme" .$className,
+      SITE_DIR."/modules/$id/Site{$className}.php"=>"Site" .$className,
       MODULES_DIR."/$id/$className.php"=>$className
     );
     
@@ -597,32 +600,71 @@ abstract class Module {
   // Breadcrumbs
   //
   private function loadBreadcrumbs() {
-    if (isset($this->args['breadcrumbs'])) {
-      $breadcrumbs = unserialize(rawurldecode($this->args['breadcrumbs']));
+    if (isset($this->args[MODULE_BREADCRUMB_PARAM])) {
+      $breadcrumbs = unserialize(urldecode($this->args[MODULE_BREADCRUMB_PARAM]));
       if (is_array($breadcrumbs)) {
+        for ($i = 0; $i < count($breadcrumbs); $i++) {
+          $b = $breadcrumbs[$i];
+          
+          $breadcrumbs[$i]['title'] = $b['t'];
+          $breadcrumbs[$i]['longTitle'] = $b['lt'];
+          
+          $breadcrumbs[$i]['url'] = "{$b['p']}.php";
+          if (strlen($b['a'])) {
+            $breadcrumbs[$i]['url'] .= "?{$b['a']}";
+          }
+          
+          $linkCrumbs = array_slice($breadcrumbs, 0, $i);
+          if (count($linkCrumbs)) { 
+            $this->cleanBreadcrumbs(&$linkCrumbs);
+            
+            $crumbParam = http_build_query(array(
+              MODULE_BREADCRUMB_PARAM => urlencode(serialize($linkCrumbs))
+            ));
+            if (strlen($crumbParam)) {
+              $breadcrumbs[$i]['url'] .= (strlen($b['a']) ? '&' : '?').$crumbParam;
+            }
+          }
+        }
+
         $this->breadcrumbs = $breadcrumbs;
+        
       }
     }
     //error_log(__FUNCTION__."(): loaded breadcrumbs ".print_r($this->breadcrumbs, true));
   }
   
+  private function cleanBreadcrumbs(&$breadcrumbs) {
+    foreach ($breadcrumbs as $index => $breadcrumb) {
+      unset($breadcrumbs[$index]['url']);
+      unset($breadcrumbs[$index]['title']);
+      unset($breadcrumbs[$index]['longTitle']);
+    }
+  }
+  
   private function getBreadcrumbString($addBreadcrumb=true) {
     $breadcrumbs = $this->breadcrumbs;
     
+    $this->cleanBreadcrumbs(&$breadcrumbs);
+    
     if ($addBreadcrumb && $this->page != 'index') {
+      $args = $this->args;
+      unset($args[MODULE_BREADCRUMB_PARAM]);
+      
       $breadcrumbs[] = array(
-        'title'     => $this->breadcrumbTitle,
-        'longTitle' => $this->breadcrumbLongTitle,
-        'url'       => self::buildURL($this->page, $this->args),
+        't'  => $this->breadcrumbTitle,
+        'lt' => $this->breadcrumbLongTitle,
+        'p'  => $this->page,
+        'a'  => http_build_query($args),
       );
     }
     //error_log(__FUNCTION__."(): saving breadcrumbs ".print_r($breadcrumbs, true));
-    return rawurlencode(serialize($breadcrumbs));
+    return urlencode(serialize($breadcrumbs));
   }
   
   private function getBreadcrumbArgs($addBreadcrumb=true) {
     return array(
-      'breadcrumbs' => $this->getBreadcrumbString($addBreadcrumb),
+      MODULE_BREADCRUMB_PARAM => $this->getBreadcrumbString($addBreadcrumb),
     );
   }
 

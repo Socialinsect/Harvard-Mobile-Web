@@ -24,6 +24,8 @@ $transloc = new TranslocReader();
 $data = Array();
 $command = $_REQUEST['command'];
 
+error_log("COMMAND {$_SERVER['REQUEST_URI']}");
+
 switch ($command) {
  case 'about':
    if ($_REQUEST['agency'] == 'harvard') {
@@ -204,7 +206,7 @@ switch ($command) {
    break;
 */
 }
-
+error_log(print_r($data, true));
 echo json_encode($data);
 
 function get_stops($translocObj) {

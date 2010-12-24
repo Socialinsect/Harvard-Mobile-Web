@@ -278,13 +278,13 @@ function rotateMapAlternate() {
 
 function checkIfMoved() {
 // Check to see if the map has been moved (zoomed or scrolled) away from its initial position, and disable/enable the 'recenter' button accordingly
-	hasMoved = !((mapBoxW == selectMapBoxW) && (mapBoxN == selectMapBoxN) && (mapBoxS == selectMapBoxS) && (mapBoxE == selectMapBoxE));
-	if(hasMoved) {
-		enable('recenter');
-	} else {
-		disable('recenter');
-	}
-
+// Deprecated
+//	hasMoved = !((mapBoxW == selectMapBoxW) && (mapBoxN == selectMapBoxN) && (mapBoxS == selectMapBoxS) && (mapBoxE == selectMapBoxE));
+//	if(hasMoved) {
+//		enable('recenter');
+//	} else {
+//		disable('recenter');
+//	}
 }
 
 

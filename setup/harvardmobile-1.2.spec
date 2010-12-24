@@ -1,6 +1,6 @@
 Summary: Harvard Mobile Web
 Name:    harvardmobile
-Version: 2.2
+Version: 1.2
 License: MIT License
 Group:   Applications/Web
 Source:  harvardmobile-%{version}-%{release}.tar.gz

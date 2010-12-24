@@ -1,17 +1,14 @@
 {include file="findInclude:common/header.tpl"}
 
 <div class="nonfocal">
-  {strip}
 	<h2>
 	  {block name="header"}
   	  Menu for <strong>{$current|date_format:"%a %b %e"}</strong>
   	{/block}
 	</h2>
-	{/strip}
 </div>
 
 {capture name="sideNav" assign="sideNav"}
-  {strip}
   <div class="{block name='sideNavClass'}sidenav{/block}">
     {if isset($prev)}
       <a href="{$prev['url']}">
@@ -25,7 +22,6 @@
       </a>
     {/if}
   </div>
-  {/strip}
 {/capture}
 
 {$sideNav}
@@ -76,7 +72,6 @@
 
   {block name="locationPane"}
     <div class="columns2">
-      {strip}
       {foreach $statusImages as $statusImage}
         <ul class="iconlegend col">
           <li>
@@ -85,7 +80,6 @@
           </li>
         </ul>    
       {/foreach}
-      {/strip}
       <div class="clear"></div>
     </div> <!-- class="columns" -->
   
@@ -111,7 +105,7 @@
 {block name="tabView"}
   <a name="scrolldown"> </a>
   <div class="nonfocal">
-    {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
+    {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies smallTabs=true}
   </div>
 {/block}
 

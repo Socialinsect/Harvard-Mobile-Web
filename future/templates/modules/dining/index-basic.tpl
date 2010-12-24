@@ -27,7 +27,6 @@
 {/block}
 
 {block name="locationPane"}
-  {strip}
   <p class="iconlegend"></p>
   {foreach $statusImages as $statusImage}
     <p>
@@ -49,6 +48,4 @@
       </a><span class="smallprint">: {$diningStatus['summary']}</span>
     </p>
   {/foreach}
-  {/strip}
 {/block}
-<p>

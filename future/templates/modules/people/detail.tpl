@@ -7,7 +7,6 @@
       <ul class="nav">
     {/block}        
         {foreach $section as $item}
-          {strip}
           {block name="detail"}
             <li>
               {if isset($item['url'])}
@@ -20,7 +19,6 @@
               {/if}
             </li>
           {/block}
-          {/strip}
         {/foreach}    
     {block name="sectionEnd"}
       </ul>

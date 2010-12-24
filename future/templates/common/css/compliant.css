@@ -92,6 +92,7 @@ strong {
 #footer {
 	clear: both;
 	min-height: 22px;
+	padding-top: 10px;
 	margin: 20px 12px 14px 12px;
 	font-weight: normal;
 }
@@ -154,7 +155,11 @@ select {
 	height: 30px;
 	padding: 4px 6px;
 	-webkit-appearance:textfield;
-	-webkit-border-radius: 5px;
+}
+
+*:first-child+html .forminput {
+	/* The return of IE CSS hacks makes me mad */
+	width: 90%;	
 }
 
 .inputcombo {
@@ -167,8 +172,6 @@ select {
 	padding: 4px 4px 8px 7px;
 	line-height: 24px;
 	border: 1px 0 1px 1px solid #666;
-	-webkit-border-bottom-left-radius: 11px;	
-	-webkit-border-top-left-radius: 11px;	
 	-webkit-border-bottom-right-radius: 0;	
 	-webkit-border-top-right-radius: 0;	
 }
@@ -189,8 +192,6 @@ select {
 
 .emphasized  .forminput {
 	border: 3px solid #666;
-	-webkit-border-bottom-left-radius: 13px;	
-	-webkit-border-top-left-radius: 13px;	
 	padding: 6px 4px 8px 7px;
 	height: 18px;
 }
@@ -230,6 +231,36 @@ a.formbutton div {
 	background-position: left;
 }
 
+input.formbutton {
+  -webkit-appearance: none;
+  display: inline-block;
+	color: #fff;
+	font-weight: bold;
+	font-size: 16px;
+	line-height: 26px;
+	text-decoration: none;
+	padding: 5px 5px 5px 14px;
+	margin-right: 0;
+  border: none;
+	height: 36px;
+	overflow: hidden;  
+	background-color: transparent;
+	background-image: url(/common/images/button-sd-l.png);
+	background-repeat: no-repeat;
+	background-position: center left;
+	-webkit-border-radius: 0px;
+}
+.formbuttonclose {
+  display: inline-block;
+	background-color: transparent;
+	background-image: url(/common/images/button-sd-r.png);
+	background-repeat: no-repeat;
+	background-position: center right;
+	margin: 0;
+	height: 36px;
+	padding-right: 7px;
+}
+
 .radiobutton {
 	width: 24px;
 	height: 24px;
@@ -266,33 +297,39 @@ a.formbutton div {
 	height: 100%;
 	line-height: 44px;
 	vertical-align: top;
-    margin-left: -7px; /* overlap by the width of the drillup art */
-    padding: 0 19px 0 3px; 
+    margin-left: -8px; /* overlap by the width of the drillup art */
+    padding: 0 18px 0 2px; 
     background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
 	background-position: top right;
 	text-decoration: none;
 	overflow: hidden;
-	text-overflow: ellipsis
+	text-overflow: ellipsis;
 }
 
 a.homelink {
     background-image: none;
     margin-left: -2px;
+    margin-right: -5px;
     padding: 0;
-    width: 58px;
+    width: 62px;
 }
+
 .breadcrumbs a.homelink img {
     padding: 0;
 }
 
 a.module img {
-	padding: 8px 3px 8px 4px;
+	padding: 8px 3px;
 }
 
 .homepage .moduleicon {
-    display: inline-block;
     padding: 8px 6px 8px 4px;
+}
+
+*:first-child+html .homepage .moduleicon {
+	/* The return of IE CSS hacks makes me mad */
+	float: left;
 }
 
 .crumb1 {
@@ -302,6 +339,7 @@ a.module img {
 .crumb2a  {
 	max-width: 60px;
 }
+
 .crumb2b  {
 	max-width: 60px;
 }
@@ -310,21 +348,26 @@ a.module img {
 	max-width: 40px;
   	display: none !important; /* hidden for now because it doesn't fit */
 }
+
 .crumb3b {
 	max-width: 60px;
 }
+
 .crumb3c {
 	max-width: 60px;
 }
 
 .pagetitle {
+	display: inline-block;
 	font-weight: bold;
-	margin-left: -4px;	
+	margin-left: -7px;	
 	vertical-align: top;
 	line-height: 44px;
+	height: 44px;
 }
 
 .homepage .pagetitle {
+	display: inline;
 	max-width: 210px;
 }
 
@@ -343,7 +386,7 @@ a.module img {
 
 .springboard {
 	margin: 0 auto;
-	padding: 0 4px;
+	padding: 5px;
 	margin-left: 2px;
 	clear: both;
 }
@@ -364,6 +407,7 @@ a.module img {
 	padding: 8px 5px;
 	word-wrap: normal;
 }
+
 .springboard a img {
   height: 50px;
   width: 50px;
@@ -372,7 +416,7 @@ a.module img {
 .springboard .separator {
 	display: block;
 	width: 100%;
-	height: 10px;
+	height: 18px;
 	clear:both;
 	margin: 0;
 	padding: 0;
@@ -414,6 +458,10 @@ a.module img {
 	border-top:0; 
 }
 
+.nav li div.smallprint {
+  padding-top: 2px;
+}
+
 .nav span.nolink {
 	display: block;
 	padding: 8px;
@@ -450,7 +498,7 @@ a.module img {
 }
 .nav li.icon a {
   position: relative;
-  margin: 0;
+  margin: 0 -7px 0 0;
   padding: 12px 5px 12px 58px;
   line-height: 30px;
 }
@@ -481,8 +529,17 @@ ul.focal li:first-child {
 }
 
 .tabbody .nav {
-	margin: -4px -11px;
+	margin: 0 -8px;
 	border: none;
+	-webkit-border-bottom-right-radius: 8px;	
+	-webkit-border-bottom-left-radius: 8px;	
+}
+
+.tabbody .results {
+	margin: 8px 4px 0 4px;
+	border-width: 1px 0 0 0;
+	-webkit-border-bottom-right-radius: 8px;	
+	-webkit-border-bottom-left-radius: 8px;	
 }
 
 .tabbody .nested {
@@ -531,6 +588,10 @@ ul.focal li:first-child {
 	padding: 0;
 }
 
+.results li div.smallprint {
+  padding-top: 2px;
+}
+
 .results li ul li {
 	list-style-type: none;
 	background-image: url(/common/images/bullet.png);
@@ -547,7 +608,7 @@ ul.focal li:first-child {
 }
 .results li.icon a {
   position: relative;
-  margin: 0;
+  margin: 0 -7px 0 0;
   padding: 13px 18px 13px 58px;
   line-height: 30px;
 }
@@ -631,7 +692,7 @@ ul.focal li:first-child {
 }
 
 .sidenav {
-	margin: 1.2em 8px;
+	margin: 12px 8px;
 	color: #a0a09f;
 }
 
@@ -729,6 +790,21 @@ ul.focal li:first-child {
 
 .value a {
 	background-position: 8px right;
+}
+
+.longlabel {
+	display: block;
+	font-size: 13px;
+	line-height: 15px;
+	font-weight: bold;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: auto;
+}
+.longlabel + .value {
+  margin-left: 0px;
 }
 
 .more {
@@ -931,7 +1007,7 @@ h2.icon {
 
 #tabs {
 	list-style-type: none;
-	margin: 0 0;
+	margin: 0;
 	padding: 0;
 }
 
@@ -942,13 +1018,13 @@ h2.icon {
 	-webkit-border-top-right-radius: 7px;	
 	-webkit-border-top-left-radius: 7px;	
 	text-align: center;
-	padding: 4px 10px 5px 10px;
+	padding: 6px 10px 7px 10px;
 }
 
 #tabs li.active {
-	margin-top: -2px;
-	padding-top: 5px;
-	padding-bottom: 6px;
+	margin-top: -1px;
+	padding-top: 7px;
+	padding-bottom: 8px;
 }
 
 #tabs li a {
@@ -965,21 +1041,26 @@ h2.icon {
 }
 
 #tabbodies {
-	margin: 0 -12px 0 -12px;
-	padding: 11px;
+	margin: -12px -12px 0 -12px;
 	clear: both;
 	border-top: 1px solid #bbb;
 	-webkit-border-bottom-right-radius: 8px;	
 	-webkit-border-bottom-left-radius: 8px;	
 }
 
+.shaded #tabbodies {
+	margin-top: -11px;
+}
+
 .tabbody {
 	position: relative;
 	min-height: 230px;
+	padding: 8px;
 }
 
 .tabbody h3 {
-	margin-top: 22px;
+	margin-top: 16px;
+	padding-top: 4px;
 }
 
 .tabbody h3:first-child {
@@ -1062,6 +1143,8 @@ h2.icon {
 	list-style-type: none;
 	padding: 0;
 	font-size: 70%;
+	margin: 0;
+	line-height: 1em;
 }
 
 .iconlegend img {

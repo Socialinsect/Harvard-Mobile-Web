@@ -1,7 +1,6 @@
 .springboard {
 	margin: 0 auto;
-	padding: 0;
-	margin-left: 2px;
+	padding: 56px;
 }
 .springboard div {
 	position: relative;
@@ -41,5 +40,5 @@
 	clear:both;
 	float: none;
 	width: 100%;
-	height: 10px;
+	height: 12px;
 }

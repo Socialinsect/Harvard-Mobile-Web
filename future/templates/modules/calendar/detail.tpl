@@ -5,9 +5,9 @@
 
 <div class="focal">
   {block name="firstField"}
-    <h2><strong>
+    <h2>
       {include file="findInclude:common/listItem.tpl" item=$firstField}
-    </strong></h2>
+    </h2>
   {/block}
   
   {block name="fields"}

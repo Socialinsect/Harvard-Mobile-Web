@@ -132,6 +132,11 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
     $id = $_REQUEST['module'];
     $api = realpath_exists(LIB_DIR."/api/$id.php");
     
+    if ($id == 'shuttles') {
+      $id = 'transit';
+      $api = realpath_exists(LIB_DIR."/api/$id.php");
+    }
+    
     if ($api) {
       PageViews::log_api($id, $GLOBALS['deviceClassifier']->getPlatform());
       

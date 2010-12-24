@@ -1,27 +1,53 @@
 .nav li.dininghall {
-	background-position: 6px 12px;
+	background-position: 6px 18px;
 	background-repeat: no-repeat;
 	background-size: 20px;
-	-webkit-background-size: 20px;
+    -o-background-size: 20px;
+  	-moz-background-size: 20px;
+  	-khtml-background-size: 20px;
+  	-webkit-background-size: 20px;
 }
 
 .nav li.dininghall a {
-	padding-left: 31px;
+	padding-left: 30px;
 }
 
 .nav li.open {
 	background-image: url(/modules/dining/images/dining-status-open@2x.png);
+	background-position: 6px 18px;
+	background-repeat: no-repeat;
 }
 
 .nav li.openrestrictions {
 	background-image: url(/modules/dining/images/dining-status-open-w-restrictions@2x.png);
+	background-position: 6px 18px;
+	background-repeat: no-repeat;
 }
 
 .nav li.closed {
 	background-image: url(/modules/dining/images/dining-status-closed@2x.png);
+	background-position: 6px 18px;
+	background-repeat: no-repeat;
 }
 
 .nav li.closedrestrictions {
 	background-image: url(/modules/dining/images/dining-status-closed-w-restrictions@2x.png);
+	background-position: 6px 18px;
+	background-repeat: no-repeat;
 }
+
+/* The return of IE CSS hacks makes me mad */
+*:first-child+html .nav li.open {
+	background-image: url(/modules/dining/images/dining-status-open.png);
+}
+*:first-child+html li.openrestrictions {
+	background-image: url(/modules/dining/images/dining-status-open-w-restrictions.png);
+}
+*:first-child+html .closed {
+	background-image: url(/modules/dining/images/dining-status-closed.png);
+}
+*:first-child+html .closedrestrictions {
+	background-image: url(/modules/dining/images/dining-status-closed-w-restrictions.png);
+}
+
 
