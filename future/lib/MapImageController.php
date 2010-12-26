@@ -32,6 +32,9 @@ abstract class MapImageController
     protected $canAddPaths = false;
     protected $canAddLayers = false;
     protected $supportsProjections = false;
+    
+    protected $dataProjection; // projection that source data is provided in
+    protected $mapProjection;  // projection to pass to map image generator
 
     public static function factory($imageClass, $baseURL)
     {
@@ -96,8 +99,9 @@ abstract class MapImageController
         return $this->supportsProjections;
     }
     
-    public function setProjection($proj)
+    public function setDataProjection($proj)
     {
+        $this->dataProjection = $proj;
     }
 
     // overlays

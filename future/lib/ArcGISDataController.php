@@ -2,6 +2,7 @@
 
 class ArcGISDataController extends MapLayerDataController
 {
+    protected $DEFAULT_PARSER_CLASS = 'ArcGISParser';
     protected $parserClass = 'ArcGISParser';
     protected $filters = array('f' => 'json');
 
@@ -64,6 +65,14 @@ class ArcGISDataController extends MapLayerDataController
         }
         return $this->parser->getFeatureList();
     }
-
+    
+    public static function parserFactory($baseURL) {
+        $throwawayController = new ArcGISDataController();
+        $throwawayController->init(array('BASE_URL' => $baseURL));
+        $data = $throwawayController->getData();
+        $throwawayController->parseData($data);
+        return $throwawayController->parser;
+    }
+    
 }
 

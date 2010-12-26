@@ -4,6 +4,7 @@
 // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi_start.htm
 
 // sandbox
+// TODO move this to config
 define("ESRI_PROJECTION_SERVER", 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer/project');
 
 require_once 'MapProjector.php';
@@ -18,7 +19,6 @@ class ArcGISJSMap extends JavascriptMapImageController {
     protected $canAddLayers = true;
     protected $supportsProjections = true;
     
-    protected $projection = self::DEFAULT_PROJECTION; // projection of features from data source
     protected $markers = array();
     protected $paths = array();
     
@@ -32,7 +32,10 @@ class ArcGISJSMap extends JavascriptMapImageController {
     public function __construct($baseURL)
     {
         $this->baseURL = $baseURL;
-        
+        $arcgisParser = ArcGISDataController::parserFactory($this->baseURL);
+        $wkid = $arcgisParser->getProjection();
+
+        /*        
         // use the same filename generating algorithm as DataController
         // since there is a chance someone else's ArcGISDataController
         // has cached the same file.  also see ArcGISStaticMap which does the same.
@@ -58,10 +61,9 @@ class ArcGISJSMap extends JavascriptMapImageController {
             //$this->mapProjector = new MapProjector();
             $this->mapProjector->setDstProj($wkid);
         }
-    }
-    
-    public function setProjection($proj)
-    {
+        */
+        $this->mapProjector = new MapProjector(ESRI_PROJECTION_SERVER);
+        $this->mapProjector->setDstProj($wkid);
     }
 
     ////////////// overlays ///////////////
@@ -141,6 +143,8 @@ class ArcGISJSMap extends JavascriptMapImageController {
         $this->paths[$styleString][] = $points;
     }
 
+    ////////////// output ///////////////
+
     private function getPathJS()
     {
         $js = <<<JS
@@ -168,7 +172,7 @@ JS;
             // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi/polyline.htm
             $jsonObj = array(
                 'points' => $paths,
-                'spatialReference' => array('wkid' => $this->projection)
+                'spatialReference' => array('wkid' => $this->mapProjection)
                 );
             
             $json = json-decode($jsonObj);
@@ -257,8 +261,6 @@ JS;
         return "var spatialRef = new esri.SpatialReference({ wkid: $wkid });";
     }
 
-    ////////////// output ///////////////
-
     // url of script to include in <script src="...
     function getIncludeScript() {
         return 'http://serverapi.arcgisonline.com/jsapi/arcgis/?v='.$this->apiVersion.'compact';
@@ -271,12 +273,7 @@ JS;
     }
 
     function getHeaderScript() {
-
-        $script = <<<JS
-
-JS;
-
-        return $script;
+        return '';
     }
 
     function getFooterScript() {

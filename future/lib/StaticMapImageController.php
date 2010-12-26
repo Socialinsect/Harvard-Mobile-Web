@@ -18,12 +18,12 @@ abstract class StaticMapImageController extends MapImageController
 
     public function getHorizontalRange()
     {
-        return 0.01;
+        return $this->bbox['xmax'] - $this->bbox['xmin'];
     }
 
     public function getVerticalRange()
     {
-        return 0.01;
+        return $this->bbox['ymax'] - $this->bbox['ymin'];
     }
 
     // n, s, e, w, ne, nw, se, sw
@@ -68,6 +68,54 @@ abstract class StaticMapImageController extends MapImageController
     }
 
     // setters
+    
+    public function setCenter($center)
+    {
+        if (is_array($center)
+            && isset($center['lat'])
+            && isset($center['lon']))
+        {
+            $xrange = $this->getHorizontalRange();
+            $yrange = $this->getVerticalRange();
+            $this->center = $center;
+            $this->bbox['xmin'] = $center['lon'] - $xrange / 2;
+            $this->bbox['xmax'] = $center['lon'] + $xrange / 2;
+            $this->bbox['ymin'] = $center['lat'] - $xrange / 2;
+            $this->bbox['ymax'] = $center['lat'] + $xrange / 2;
+        }
+    }
+    
+    public function setZoomLevel($zoomLevel)
+    {
+        $dZoom = $zoomLevel - $this->zoomLevel;
+        $this->zoomLevel = $zoomLevel;
+        // dZoom > 0 means decrease range
+        $newXRange = $this->getHorizontalRange() / pow(2, $dZoom);
+        $newYRange = $this->getVerticalRange() / pow(2, $dZoom);
+        $this->bbox['xmin'] = $this->center['lon'] - $newXRange / 2;
+        $this->bbox['xmax'] = $this->center['lon'] + $newXRange / 2;
+        $this->bbox['ymin'] = $this->center['lat'] - $newYRange / 2;
+        $this->bbox['ymax'] = $this->center['lat'] + $newYRange / 2;
+    }
+
+    public function setImageWidth($width) {
+        $ratio = $width / $this->imageWidth;
+        $range = $this->getHorizontalRange();
+        $this->imageWidth = $width;
+        $newRange = $range * $ratio;
+        $this->bbox['xmin'] = $this->center['lon'] - $newRange / 2;
+        $this->bbox['xmax'] = $this->center['lon'] + $newRange / 2;
+    }
+
+    public function setImageHeight($height) {
+        $ratio = $height / $this->imageHeight;
+        $range = $this->getVerticalRange();
+        $this->imageHeight = $height;
+        $newRange = $range * $ratio;
+        $this->bbox['ymin'] = $this->center['lat'] - $newRange / 2;
+        $this->bbox['ymax'] = $this->center['lat'] + $newRange / 2;
+    }
+    
     public function setImageFormat($format) {
         if (in_array($format, $this->supportedImageFormats)) {
             $this->imageFormat = $format;

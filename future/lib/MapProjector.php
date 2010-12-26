@@ -67,9 +67,8 @@ class MapProjector {
     public function setSrcProj($proj) {
         if ($proj != $this->srcProj) {
             if ($this->baseURL === NULL) {
-                $proj = $this->convertWkid($proj); // too bad this invalidates the check two lines above
-                
-                $projspecs = $this->getProjSpecs($proj);
+            var_dump('setting src '.$proj);
+                $projspecs = self::getProjSpecs($proj);
                 if ($projspecs) {
                     $this->srcProjSpec = trim($projspecs);
                     $this->srcProj = $proj;
@@ -84,9 +83,8 @@ class MapProjector {
     public function setDstProj($proj) {
         if ($proj != $this->dstProj) {
             if ($this->baseURL === NULL) {
-                $proj = $this->convertWkid($proj);
-            
-                $projspecs = $this->getProjSpecs($proj);
+            var_dump('setting dst '.$proj);
+                $projspecs = self::getProjSpecs($proj);
                 if ($projspecs) {
                     $this->dstProjSpec = trim($projspecs);
                     $this->dstProj = $proj;
@@ -98,10 +96,11 @@ class MapProjector {
         }
     }
     
-    private function getProjSpecs($wkid) {
+    public static function getProjSpecs($wkid) {
+        $wkid = self::convertWkid($wkid);
     
         $projCache = new DiskCache($GLOBALS['siteConfig']->getVar('PROJ_CACHE'), null, true);
-        $projCache->setSuffix('proj4');
+        $projCache->setSuffix('.proj4');
         $projCache->preserveFormat();
         $filename = $wkid;
         if (!$projCache->isFresh($filename)) {
@@ -116,7 +115,7 @@ class MapProjector {
         return $contents;
     }
     
-    private function convertWkid($wkid) {
+    private static function convertWkid($wkid) {
         
         // hack to convert ESRI-specific web mercator code
         // to standard code with the same spec.

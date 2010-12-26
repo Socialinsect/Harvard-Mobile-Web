@@ -142,6 +142,8 @@ class ArcGISParser extends DataParser
     private $fullExtent;
     private $serviceDescription;
     private $spatialRef;
+    private $supportedImageFormats;
+    private $units;
     
     private $mapName;
     private $id;
@@ -158,6 +160,8 @@ class ArcGISParser extends DataParser
             $data = json_decode($contents, true);
 
             $this->serviceDescription = $data['serviceDescription'];
+            $this->supportedImageFormats = explode(',', $data['supportedImageFormatTypes']);
+            $this->units = $data['units'];
             $this->mapName = $data['mapName'];
 
             $this->spatialRef = $data['spatialReference']['wkid'];
@@ -188,6 +192,14 @@ class ArcGISParser extends DataParser
     public function getProjection()
     {
         return $this->spatialRef;
+    }
+    
+    public function getSupportedImageFormats() {
+        return $this->supportedImageFormats;
+    }
+    
+    public function getUnits() {
+        return $this->units;
     }
     
     public function getInitialExtent() {
