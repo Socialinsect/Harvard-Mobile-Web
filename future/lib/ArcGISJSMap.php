@@ -3,10 +3,6 @@
 // http://help.arcgis.com/EN/webapi/javascript/arcgis/help/jshelp_start.htm
 // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi_start.htm
 
-// sandbox
-// TODO move this to config
-define("ESRI_PROJECTION_SERVER", 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer/project');
-
 require_once 'MapProjector.php';
 
 class ArcGISJSMap extends JavascriptMapImageController {
@@ -17,13 +13,17 @@ class ArcGISJSMap extends JavascriptMapImageController {
     protected $canAddAnnotations = true;
     protected $canAddPaths = true;
     protected $canAddLayers = true;
+    protected $canAddPolygons = true;
     protected $supportsProjections = true;
     
     protected $markers = array();
     protected $paths = array();
+    protected $polygons = array();
     
     private $apiVersion = '2.1';
     private $themeName = 'claro'; // claro, tundra, soria, nihilo
+    
+    private $permanentZoomLevel = null;
     
     // map image projection data
     private $projspec = NULL;
@@ -35,35 +35,18 @@ class ArcGISJSMap extends JavascriptMapImageController {
         $arcgisParser = ArcGISDataController::parserFactory($this->baseURL);
         $wkid = $arcgisParser->getProjection();
 
-        /*        
-        // use the same filename generating algorithm as DataController
-        // since there is a chance someone else's ArcGISDataController
-        // has cached the same file.  also see ArcGISStaticMap which does the same.
-        // TODO make the filename algorithm more accessible if we use it this way
-        $diskCache = new DiskCache($GLOBALS['siteConfig']->getVar('ARCGIS_CACHE'), 86400 * 7, true);
-        $diskCache->preserveFormat();
-        $filename = md5($this->baseURL);
-        $metafile = $filename.'-meta.txt';
-        if (!$diskCache->isFresh($filename)) {
-            $params = array('f' => 'json');
-            $query = $this->baseURL.'?'.http_build_query($params);
-            file_put_contents($diskCache->getFullPath($metafile), $query);
-            $contents = file_get_contents($query);
-            $diskCache->write($contents, $filename);
-        } else {
-            $contents = $diskCache->read($filename);
-        }
-        
-        $json = json_decode($contents, true);
-        if (isset($json['spatialReference']) && isset($json['spatialReference']['wkid'])) {
-            $wkid = $json['spatialReference']['wkid'];
-            $this->mapProjector = new MapProjector(ESRI_PROJECTION_SERVER);
-            //$this->mapProjector = new MapProjector();
-            $this->mapProjector->setDstProj($wkid);
-        }
-        */
-        $this->mapProjector = new MapProjector(ESRI_PROJECTION_SERVER);
+        $this->mapProjector = new MapProjector();
         $this->mapProjector->setDstProj($wkid);
+    }
+    
+    public function setDataProjection($proj)
+    {
+        $this->mapProjector->setSrcProj($proj);
+    }
+    
+    public function setPermanentZoomLevel($zoomLevel)
+    {
+        $this->permanentZoomLevel = $zoomLevel;
     }
 
     ////////////// overlays ///////////////
@@ -94,7 +77,7 @@ class ArcGISJSMap extends JavascriptMapImageController {
                 // TODO there isn't yet a good way to get valid values for this from outside
                 $filteredStyles[] = 'style='.$style['style'];
             } else {
-                $filteredStyles[] = 'style=STYLE_CIRCLE';
+                $filteredStyles[] = 'style=esri.symbol.SimplePSTYLE_CIRCLE';
             }
 
             // if they use an image
@@ -142,17 +125,52 @@ class ArcGISJSMap extends JavascriptMapImageController {
         }
         $this->paths[$styleString][] = $points;
     }
+    
+    public function addPolygon($rings, $style=null) {
+        // no style support for now
+        $this->polygons[] = $rings;
+    }
 
     ////////////// output ///////////////
 
-    private function getPathJS()
+    private function getPolygonJS()
     {
-        $js = <<<JS
+        $js = '';
+    
+        foreach ($this->polygons as $rings) {
+            $jsonParams = array(
+                'rings' => $rings,
+                'spatialReference' => array('wkid' => $this->mapProjection),
+                );
+            $json = json_encode($jsonParams);
 
-    var lineSymbol;
-    var polyline;
+            $js .= <<<JS
+
+    polygon = new esri.geometry.Polygon({$json});
+    map.graphics.add(new esri.Graphic(polygon, fillSymbol));
 
 JS;
+        }
+        
+        if ($js) {
+    
+            $js = <<<JS
+
+    var strokeSymbol = new esri.symbol.SimpleLineSymbol();
+    var color = new dojo.Color([255, 0, 0, 0.5]);
+    var fillSymbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, strokeSymbol, color);
+    var polygon;
+    $js
+
+JS;
+        }
+
+        return $js;
+    }
+
+    private function getPathJS()
+    {
+        $js = '';
     
         foreach ($this->paths as $styleString => $paths) {
             $styleParams = explode('|', $styleString);
@@ -186,25 +204,33 @@ JS;
 JS;
 
         }
+        
+        if ($js) {
+    
+            $js = <<<JS
+
+    var lineSymbol;
+    var polyline;
+    $js
+
+JS;
+        }
 
         return $js;
     }
     
     private function getMarkerJS()
     {
-        $js = <<<JS
-
-    var pointSymbol;
-    var point;
-
-JS;
+        $js = '';
     
         foreach ($this->markers as $styleString => $points) {
-            $styleParams = explode('|', $styleString);
             $styles = array();
-            foreach ($styleParams as $styleParam) {
-                $styleParts = explode('=', $styleParam);
-                $styles[$styleParts[0]] = $styleParts[1];
+            if ($styleString) {
+                $styleParams = explode('|', $styleString);
+                foreach ($styleParams as $styleParam) {
+                    $styleParts = explode('=', $styleParam);
+                    $styles[$styleParts[0]] = $styleParts[1];
+                }
             }
             if (isset($styles['icon'])) {
                 $symbolType = 'PictureMarkerSymbol';
@@ -239,6 +265,16 @@ JS;
 JS;
             }
         }
+        
+        if ($js) {
+            $js = <<<JS
+    var pointSymbol;
+    var point;
+    $js
+
+JS;
+        }
+    
         
         return $js;
     }
@@ -280,6 +316,8 @@ JS;
 
         // put dojo stuff in the footer since the header script
         // gets loaded before the included script
+        
+        $zoomLevel = $this->permanentZoomLevel ? $this->permanentZoomLevel : $this->zoomLevel;
 
         $script = <<<JS
 
@@ -305,12 +343,11 @@ function loadMap() {
 function plotFeatures() {
 
     {$this->getSpatialRefJS()}
+{$this->getPolygonJS()}
+{$this->getPathJS()}
+{$this->getMarkerJS()}
 
-    {$this->getPathJS()}
-    
-    {$this->getMarkerJS()}
-
-    map.centerAndZoom({$this->getCenterJS()}, {$this->zoomLevel})
+    map.centerAndZoom({$this->getCenterJS()}, {$zoomLevel})
 }
 
 JS;

@@ -131,6 +131,16 @@ class DiskCache {
 
     return FALSE;
   }
+  
+  public function delete($filename=NULL) {
+    $path = $this->getFullPath($filename);
+    $success = unlink($path);
+    if ($success) {
+       $this->error = "could not delete $path";
+       error_log($this->error);
+    }
+    return $success;
+  }
 
   public function getImageSize($filename=NULL) {
     $path = $this->getFullPath($filename);

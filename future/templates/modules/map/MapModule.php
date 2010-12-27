@@ -239,9 +239,6 @@ class MapModule extends Module {
         $tabKeys = array();
         $tabJavascripts = array();
         
-        
-        $index    = $this->args['selectvalues'];
-        
         // Map Tab
         $tabKeys[] = 'map';
 
@@ -256,11 +253,11 @@ class MapModule extends Module {
 
         $layer = $this->getLayer($this->args['category']);
 
+        $index = $this->args['selectvalues'];
         $feature = $layer->getFeature($index);
-        $name = $feature->getTitle();
+        $style['title'] = $feature->getTitle();
         $geometry = $feature->getGeometry();
         $style = $feature->getStyleAttribs();
-        $style['title'] = $name;
 
         // center
         if (isset($this->args['center'])) {
@@ -274,7 +271,7 @@ class MapModule extends Module {
         if (isset($this->args['zoom'])) {
             $zoomLevel = $this->args['zoom'];
         } else {
-            $zoomLevel = 16;
+            $zoomLevel = $layer->getDefaultZoomLevel();
         }
 
         // image size
@@ -318,6 +315,10 @@ class MapModule extends Module {
                 case 'Polyline':
                     if ($mapController->canAddPaths()) {
                         $mapController->addPath($geometry->getPoints(), $style);
+                    }
+                case 'Polygon':
+                    if ($mapController->canAddPolygons()) {
+                        $mapController->addPolygon($geometry->getRings(), $style);
                     }
                     break;
                 default:

@@ -30,6 +30,7 @@ abstract class MapImageController
     // capabilities
     protected $canAddAnnotations = false;
     protected $canAddPaths = false;
+    protected $canAddPolygons = false;
     protected $canAddLayers = false;
     protected $supportsProjections = false;
     
@@ -87,6 +88,11 @@ abstract class MapImageController
     public function canAddPaths()
     {
         return $this->canAddPaths;
+    }
+    
+    public function canAddPolygons()
+    {
+        return $this->canAddPolygons;
     }
 
     public function canAddLayers()

@@ -1,12 +1,5 @@
 <?php
 
-/****************************************************************
- *
- *  Copyright 2010 The President and Fellows of Harvard College
- *  Copyright 2010 Modo Labs Inc.
- *
- *****************************************************************/
-
 // sort addresses using natsort
 // but move numbers to the end first
 function addresscmp($addr1, $addr2) {
@@ -39,12 +32,40 @@ class ArcGISPoint implements MapGeometry
 
 class ArcGISPolygon implements MapGeometry
 {
+    private $rings;
+    private $centerCoordinate;
+
     public function __construct($geometry)
     {
+        // for center, just use outermost ring
+        $numVertices = 0;
+        $totalX = 0;
+        $totalY = 0;
+        $currentRing = array();
+        if (count($geometry['rings'])) {
+            $currentRing = $geometry['rings'][0];
+            $numVertices = count($currentRing);
+            foreach ($currentRing as $xy) {
+                $totalX += $xy[0];
+                $totalY += $xy[1];
+            }
+            $this->centerCoordinate = array('lat' => $totalY / $numVertices,
+                                            'lon' => $totalX / $numVertices);
+            $this->rings[] = $currentRing;
+        }
+
+        for ($i = 1; $i < count($geometry['rings']); $i++) {
+            $this->rings[] = $geometry['rings'][$i];
+        }
     }
 
     public function getCenterCoordinate()
     {
+        return $this->centerCoordinate;
+    }
+    
+    public function getRings() {
+        return $this->rings;
     }
     
     public function getType()
@@ -96,6 +117,14 @@ class ArcGISFeature implements MapFeature
         $this->titleField = $field;
     }
     
+    public function getField($fieldName)
+    {
+        if (isset($this->attributes[$fieldName])) {
+            return $this->attributes[$fieldName];
+        }
+        return null;
+    }
+    
     //////// MapFeature interface
 
     public function getTitle()
@@ -106,15 +135,22 @@ class ArcGISFeature implements MapFeature
     public function getGeometry()
     {
         $geometry = null;
-        switch ($this->geometryType) {
-        case 'esriGeometryPoint':
-            $geometry = new ArcGISPoint($this->geometry);
-            break;
-        case 'esriGeometryPolygon':
-            $geometry = new ArcGISPolygon($this->geometry);
-            break;
+        if ($this->geometry !== null) {
+            switch ($this->geometryType) {
+            case 'esriGeometryPoint':
+                $geometry = new ArcGISPoint($this->geometry);
+                break;
+            case 'esriGeometryPolygon':
+                $geometry = new ArcGISPolygon($this->geometry);
+                break;
+            }
         }
         return $geometry;
+    }
+    
+    public function readGeometry($json)
+    {
+        $this->geometry = $json;
     }
     
     public function getDescription()
@@ -144,9 +180,11 @@ class ArcGISParser extends DataParser
     private $spatialRef;
     private $supportedImageFormats;
     private $units;
+    private $baseURL;
     
     private $mapName;
     private $id;
+    private $defaultLayerId = 0;
     
     // sublayers are known to arcgis as layers
     // but we call them sublayers since we are known to our datacontroller as a layer
@@ -158,6 +196,8 @@ class ArcGISParser extends DataParser
     {
         if (!$this->isPopulated) { // initial parse
             $data = json_decode($contents, true);
+            if (!$data)
+                return false;
 
             $this->serviceDescription = $data['serviceDescription'];
             $this->supportedImageFormats = explode(',', $data['supportedImageFormatTypes']);
@@ -213,6 +253,10 @@ class ArcGISParser extends DataParser
     public function getMapName() {
         return $this->mapName;
     }
+    
+    public function setBaseURL($baseURL) {
+        $this->baseURL = $baseURL;
+    }
 
     ////// functions dispatched to selected layer
 
@@ -232,16 +276,16 @@ class ArcGISParser extends DataParser
         return $this->selectedLayer->isPopulated();
     }
     
-    public function getURLForSelectedLayer($baseURL) {
-        return $baseURL.'/'.$this->selectedLayer->getId();
+    public function getURLForSelectedLayer() {
+        return $this->baseURL.'/'.$this->selectedLayer->getId();
     }
     
     public function selectedLayerIsInitialized() {
         return $this->selectedLayer && $this->selectedLayer->isInitialized();
     }
     
-    public function getURLForLayerFeatures($baseURL) {
-        return $baseURL.'/'.$this->selectedLayer->getId().'/query';
+    public function getURLForLayerFeatures() {
+        return $this->baseURL.'/'.$this->selectedLayer->getId().'/query';
     }
     
     public function getFiltersForLayer() {
@@ -250,8 +294,12 @@ class ArcGISParser extends DataParser
     
     /////// sublayer functions
     
+    public function setDefaultLayer($layerId) {
+        $this->defaultLayerId = $layerId;
+    }
+    
     public function selectDefaultLayer() {
-        $this->selectSubLayer(0);
+        $this->selectSubLayer($this->defaultLayerId);
     }
     
     public function selectSubLayer($layerId) {
@@ -333,8 +381,8 @@ class ArcGISLayer {
                 'ymin' => $data['extent']['ymin'],
                 'ymax' => $data['extent']['ymax'],
             );
-            $this->spatialRef = $data['extent']['spatialReference'];
-        
+            $this->spatialRef = $data['extent']['spatialReference']['wkid'];
+
             foreach ($data['fields'] as $fieldInfo) {
                 $this->fieldNames[$fieldInfo['name']] = $fieldInfo['alias'];
             }
@@ -351,7 +399,9 @@ class ArcGISLayer {
                 foreach ($attribs as $name => $value) {
                     $displayAttribs[$this->fieldNames[$name]] = $value;
                 }
-                $feature = new ArcGISFeature($displayAttribs, $featureInfo['geometry']);
+                
+                $geometry = $this->geometryType ? $featureInfo['geometry'] : null;
+                $feature = new ArcGISFeature($displayAttribs, $geometry);
                 $feature->setIndex(count($result));
                 $feature->setTitleField($this->fieldNames[$this->displayField]);
                 $feature->setGeometryType($this->geometryType);

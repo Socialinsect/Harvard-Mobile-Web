@@ -32,6 +32,13 @@ class MapLayerDataController extends DataController
     protected $staticMapBaseURL = null;
     protected $dynamicMapBaseURL = null;
     protected $searchable = false;
+    protected $defaultZoomLevel = 16;
+    
+    // in theory all map images controllers should use the same
+    // zoom level, but if certain image servers (e.g. Harvard ArcGIS)
+    // have different definitions for zoom level, we need another
+    // field to specify this
+    protected $dynamicZoomLevel = null;
     
     const COMMON_WORDS = 'the of to and in is it you that he was for on are with as his they be at one have this from or had by hot but some what there we can out other were all your when up use word how said an each she which do their time if will way about many then them would write like so these her long make thing see him two has look more day could go come did my no most who over know than call first people may down been now find any new take get place made where after back only me our under';
 
@@ -138,10 +145,9 @@ class MapLayerDataController extends DataController
         }
         return $this->items;
     }
-
-    public function setParser($parserClass) {
-        $this->parser = new $parserClass();
-        $this->parserClass = $parserClass;
+    
+    public function getDefaultZoomLevel() {
+        return $this->defaultZoomLevel;
     }
 
     public function getStaticMapController() {
@@ -156,13 +162,15 @@ class MapLayerDataController extends DataController
 
     public function getDynamicMapController() {
         $controller = MapImageController::factory($this->dynamicMapClass, $this->dynamicMapBaseURL);
+        if ($this->dynamicMapClass == 'ArcGISJSMap' && $this->dynamicZoomLevel !== null) {
+            $controller->setPermanentZoomLevel($this->dynamicZoomLevel);
+        }
         return $controller;
     }
 
     protected function init($args)
     {
         parent::init($args);
-
         // static map support required; dynamic optional
         if (isset($args['STATIC_MAP_CLASS']))
             $this->staticMapClass = $args['STATIC_MAP_CLASS'];
@@ -179,7 +187,17 @@ class MapLayerDataController extends DataController
         if (isset($args['DYNAMIC_MAP_BASE_URL']))
             $this->dynamicMapBaseURL = $args['DYNAMIC_MAP_BASE_URL'];
         
-        $this->searchable = ($args['SEARCHABLE'] == 1);
+        $this->searchable = isset($args['SEARCHABLE']) ? ($args['SEARCHABLE'] == 1) : false;
+
+        if (isset($args['DEFAULT_ZOOM_LEVEL']))
+            $this->defaultZoomLevel = $args['DEFAULT_ZOOM_LEVEL'];
+
+        if (isset($args['DYNAMIC_ZOOM_LEVEL']))
+            $this->dynamicZoomLevel = $args['DYNAMIC_ZOOM_LEVEL'];
+        
+        if ($this->parserClass == 'ArcGISParser' && isset($args['ARCGIS_LAYER_ID']))
+            $this->parser->setDefaultLayer($args['ARCGIS_LAYER_ID']);
+
     }
 
 
@@ -200,8 +218,9 @@ class MapLayerDataController extends DataController
                 $controller = new MapLayerDataController();
                 break;
         }
+        $controller->parserClass = $parserClass;
+        $controller->setParser(new $parserClass());
         $controller->init($args);
-        $controller->setParser($parserClass);
         return $controller;
     }
 

@@ -10,12 +10,18 @@ class MapProjector {
     
     private $baseURL; // ESRI geometry service, if any
     
-    public function __construct($baseURL=NULL) {
-        if (!$baseURL && !function_exists('project_from_latlon')) {
-            die('No projection support found.');
+    public function __construct() {
+        $useServer = $GLOBALS['siteConfig']->getVar('GEOMETRY_SERVICE_ENABLED');
+        if ($useServer) {
+            $this->baseURL = $GLOBALS['siteConfig']->getVar('GEOMETRY_SERVICE');
         }
-
-        $this->baseURL = $baseURL;
+        
+        if (!$this->baseURL) {
+            $projEnabled = $GLOBALS['siteConfig']->getVar('PROJ_EXTENSION_ENABLED');
+            if (!$projEnabled || !function_exists('project_from_latlon')) {
+                die('No projection support found.');
+            }
+        }
     }
     
     public function projectPoint($point) {
@@ -33,7 +39,7 @@ class MapProjector {
                 'geometries' => '{"geometryType":"esriGeometryPoint","geometries":[{"x":'.$x.',"y":'.$y.'}]}',
                 'f' => 'json',
                 );
-            $query = ESRI_PROJECTION_SERVER.'?'.http_build_query($params);
+            $query = $this->baseURL.'?'.http_build_query($params);
             $response = file_get_contents($query);
             $json = json_decode($response, true);
             if ($json && isset($json['geometries']) && is_array($json['geometries'])) {

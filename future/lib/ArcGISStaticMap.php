@@ -33,7 +33,7 @@ class ArcGISStaticMap extends StaticMapImageController {
     public function __construct($baseURL, $parser=null) {
         $this->baseURL = $baseURL;
         $this->parser = ArcGISDataController::parserFactory($this->baseURL);
-        $this->mapProjector = new MapProjector(ESRI_PROJECTION_SERVER);
+        $this->mapProjector = new MapProjector();
         
         $this->supportedImageFormats = $this->parser->getSupportedImageFormats();
         $this->enableAllLayers();
