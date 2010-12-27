@@ -33,6 +33,7 @@ class MapLayerDataController extends DataController
     protected $dynamicMapBaseURL = null;
     protected $searchable = false;
     protected $defaultZoomLevel = 16;
+    protected $returnsGeometry = true;
     
     // in theory all map images controllers should use the same
     // zoom level, but if certain image servers (e.g. Harvard ArcGIS)
@@ -198,6 +199,8 @@ class MapLayerDataController extends DataController
         if ($this->parserClass == 'ArcGISParser' && isset($args['ARCGIS_LAYER_ID']))
             $this->parser->setDefaultLayer($args['ARCGIS_LAYER_ID']);
 
+        if (isset($args['RETURNS_GEOMETRY']))
+            $this->returnsGeometry = $args['RETURNS_GEOMETRY'];
     }
 
 

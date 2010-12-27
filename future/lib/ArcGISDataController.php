@@ -34,7 +34,7 @@ class ArcGISDataController extends MapLayerDataController
         $items = $this->getFeatureList();
         if (isset($items[$name])) {
             $theItem = $items[$name];
-            if ($theItem->getGeometry() === null) {
+            if (!$this->returnsGeometry || $theItem->getGeometry() == null) {
                 $featureInfo = $this->queryFeatureServer($theItem);
                 $theItem->setGeometryType($featureInfo['geometryType']);
                 $theItem->readGeometry($featureInfo['geometry']);
@@ -43,12 +43,10 @@ class ArcGISDataController extends MapLayerDataController
         return $theItem;
     }
     
-    // TODO this way of getting building geometries works for Harvard
-    // but not sure if this is a standard setup for ArcGIS server.
-    // also this assumes there is only one geometry server
+    // TODO this way of getting supplementary geometry is particular to Harvard's setup
     public function queryFeatureServer($feature) {
         $featureCache = new DiskCache($GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_CACHE'), 86400*7, true);
-        $searchFieldCandidates = array('Building Number', 'Building Name', 'Address');
+        $searchFieldCandidates = array('Building Number', 'Building Name', 'Building');
         foreach ($searchFieldCandidates as $field) {
             $searchField = $field;
             $bldgId = $feature->getField($field);
@@ -57,7 +55,11 @@ class ArcGISDataController extends MapLayerDataController
             }
         }
         if (!$featureCache->isFresh($bldgId)) {
-            $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
+            if (!$this->returnsGeometry) {
+                $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
+            } else {
+                $queryBase = $this->baseURL;
+            }
 
             $query = http_build_query(array(
                 'searchText'     => $bldgId,
