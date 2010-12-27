@@ -259,6 +259,9 @@ class MapModule extends Module {
         $geometry = $feature->getGeometry();
         $style = $feature->getStyleAttribs();
 
+        $this->assign('name', $feature->getTitle());
+        $this->assign('address', $feature->getSubtitle());
+
         // center
         if (isset($this->args['center'])) {
             $latlon = explode(",", $this->args['center']);

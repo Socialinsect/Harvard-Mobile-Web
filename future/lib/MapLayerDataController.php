@@ -9,6 +9,7 @@
 interface MapFeature
 {
     public function getTitle();
+    public function getSubtitle();
     public function getGeometry();
     public function getDescription();
     public function getStyleAttribs();

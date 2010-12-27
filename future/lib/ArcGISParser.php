@@ -132,6 +132,11 @@ class ArcGISFeature implements MapFeature
         return $this->attributes[$this->titleField];
     }
     
+    public function getSubtitle()
+    {
+        return $this->getField('Address');
+    }
+    
     public function getGeometry()
     {
         $geometry = null;
