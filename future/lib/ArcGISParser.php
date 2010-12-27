@@ -125,6 +125,15 @@ class ArcGISFeature implements MapFeature
         return null;
     }
     
+    public function setField($fieldName, $value)
+    {
+        $this->attributes[$fieldName] = $value;
+    }
+    
+    public function setBlackList($fields) {
+        $this->blackList = $fields;
+    }
+    
     //////// MapFeature interface
 
     public function getTitle()
@@ -162,7 +171,8 @@ class ArcGISFeature implements MapFeature
     {
         $description = '<ul>';
         foreach ($this->attributes as $name => $value) {
-            if ($name != 'Shape' && $name != 'geometry' && $name != $this->titleField) {
+            if (!in_array($name, $this->blackList)) {
+            //$name != 'Shape' && $name != 'geometry' && $name != $this->titleField) {
                 $description .= '<li><b>'.$name.':</b> '.$value.'</li>';
             }
         }

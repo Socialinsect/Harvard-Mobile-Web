@@ -353,28 +353,28 @@ class MapModule extends Module {
 
         }
 
-        /*
         // Photo Tab
-        $photoFile = null;
-        if (array_key_exists('PHOTO_FILE', $details)) {
-          $photoFile = rawurlencode($details['PHOTO_FILE']);
-          
-        } elseif (array_key_exists('Photo', $details)) {
-          $photoFile = rawurlencode($details['Photo']);
+        $photoServer = $GLOBALS['siteConfig']->getVar('MAP_PHOTO_SERVER');
+        // TODO this method of getting photo url is harvard-specific and
+        // further only works on data for ArcGIS features.
+        if ($photoServer) {
+            $photoFile = $feature->getField('Photo');
+            if (isset($photoFile) && $photoFile != 'Null') {
+                $tabKeys[] = 'photo';
+                $tabJavascripts['photo'] = "loadPhoto(photoURL,'photo');";
+                $photoUrl = $photoServer.$photoFile;
+                $this->assign('photoUrl', $photoUrl);
+                $this->addInlineJavascript("var photoURL = '{$photoUrl}';");
+            }
         }
-        
-        $photoUrl = '';
-        if (isset($photoFile) && $photoFile != 'Null') {
-          $tabKeys[] = 'photo';
-          $tabJavascripts['photo'] = "loadPhoto(photoURL,'photo');";
-          $photoUrl = $GLOBALS['siteConfig']->getVar('MAP_PHOTO_SERVER').$photoFile;
-          $this->assign('photoUrl', $photoUrl);
-        }
-        $this->addInlineJavascript("var photoURL = '{$photoUrl}';");
-        */        
         
         // Details Tab
         $tabKeys[] = 'detail';
+        $detailConfig = $this->loadWebAppConfigFile('map-detail', 'detailConfig');
+        if (get_class($layer) == 'ArcGISDataController') {
+            $feature->setBlackList($detailConfig['details']['suppress']);
+        }
+        
         $this->assign('details', $feature->getDescription());
         // for ArcGIS data, which comes back in key/value pairs, 
         // construct a list or table in the $details html

@@ -1,14 +1,3 @@
-// Set initial values for drawing the map image
-var mapW, mapH;	// integers: width and height of map image
-var zoom = 0; // integer: zoom level -- should always default to 0
-var mapBoxW = initMapBoxW;	// integer: western bound of map image (per IMS map API) 
-var mapBoxN = initMapBoxN;	// integer: northern bound of map image (per IMS map API)
-var mapBoxS = initMapBoxS;	// integer: southern bound of map image (per IMS map API)
-var mapBoxE = initMapBoxE;	// integer: eastern bound of map image (per IMS map API)
-var hasMoved = false;	// boolean: has the map been scrolled or zoomed?
-var maxZoom = 2;	// integer: max zoom-in level
-var minZoom = -8;	// integer: max zoom-out level
-
 var loadedImages = {};
 
 function hideMapTabChildren() {
@@ -43,7 +32,7 @@ function loadPhoto(imageURL,imageID) {
     loadedImages[imageID] = true;
   }
 }
-
+/*
 function loadImage(imageURL,imageID) {
 // Loads an image from the given URL into the image with the specified ID
 	var objMap = document.getElementById(imageID);
@@ -286,7 +275,7 @@ function checkIfMoved() {
 //		disable('recenter');
 //	}
 }
-
+*/
 
 function disable(strID) {
 // Visually dims and disables the anchor whose id is strID

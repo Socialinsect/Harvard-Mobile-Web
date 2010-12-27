@@ -39,6 +39,20 @@ class ArcGISDataController extends MapLayerDataController
                 $theItem->setGeometryType($featureInfo['geometryType']);
                 $theItem->readGeometry($featureInfo['geometry']);
             }
+
+            // TODO fragile way of getting photos
+            if ($theItem->getField('Photo') === null) {
+                if (!isset($featureInfo))
+                    $featureInfo = $this->queryFeatureServer($theItem);
+
+                $photoFields = array('PHOTO_FILE', 'Photo', 'Photo File');
+                foreach ($photoFields as $field) {
+                    if (isset($featureInfo['attributes'][$field])) {
+                        $theItem->setField('Photo', $featureInfo['attributes'][$field]);
+                        break;
+                    }
+                }
+            }
         }
         return $theItem;
     }
