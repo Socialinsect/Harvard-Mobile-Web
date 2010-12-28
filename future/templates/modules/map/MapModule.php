@@ -235,6 +235,9 @@ class MapModule extends Module {
 
         $categories = array();
         foreach ($this->feeds as $id => $feed) {
+            // TODO need better way to create search results controller
+            if ($feed['TITLE'] == 'Search Results') continue;
+        
             $categories[] = array(
                 'title' => $feed['TITLE'],
                 'url' => $this->categoryURL($id),
