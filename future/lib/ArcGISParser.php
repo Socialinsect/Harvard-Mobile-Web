@@ -274,6 +274,10 @@ class ArcGISParser extends DataParser
     }
 
     ////// functions dispatched to selected layer
+    
+    public function featureFromJSON($json) {
+        return $this->selectedLayer->featureFromJSON($json);
+    }
 
     public function query($text='') {
         return $this->selectedLayer->query($text);
@@ -408,18 +412,8 @@ class ArcGISLayer {
 
             $result = array();
             foreach ($data['features'] as $featureInfo) {
-                $attribs = $featureInfo['attributes'];
-                $displayAttribs = array();
-                // use human-readable field alias to construct feature details
-                foreach ($attribs as $name => $value) {
-                    $displayAttribs[$this->fieldNames[$name]] = $value;
-                }
-                
-                $geometry = $this->geometryType ? $featureInfo['geometry'] : null;
-                $feature = new ArcGISFeature($displayAttribs, $geometry);
+                $feature = $this->featureFromJSON($featureInfo);
                 $feature->setIndex(count($result));
-                $feature->setTitleField($this->fieldNames[$this->displayField]);
-                $feature->setGeometryType($this->geometryType);
                 $result[$feature->getIndex()] = $feature;
             }
             uksort($result, 'addresscmp');
@@ -427,6 +421,20 @@ class ArcGISLayer {
             $this->features = $result;
             $this->isPopulated = true;
         }
+    }
+    
+    public function featureFromJSON($featureInfo) {
+        $attribs = $featureInfo['attributes'];
+        $displayAttribs = array();
+        // use human-readable field alias to construct feature details
+        foreach ($attribs as $name => $value) {
+            $displayAttribs[$this->fieldNames[$name]] = $value;
+        }
+        $geometry = $this->geometryType ? $featureInfo['geometry'] : null;
+        $feature = new ArcGISFeature($displayAttribs, $geometry);
+        $feature->setTitleField($this->fieldNames[$this->displayField]);
+        $feature->setGeometryType($this->geometryType);
+        return $feature;
     }
 
     public function getGeometryType() {

@@ -57,24 +57,70 @@ class ArcGISDataController extends MapLayerDataController
         return $theItem;
     }
     
-    // TODO this way of getting supplementary geometry is particular to Harvard's setup
-    public function queryFeatureServer($feature) {
-        $featureCache = new DiskCache($GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_CACHE'), 86400*7, true);
-        $searchFieldCandidates = array('Building Number', 'Building Name', 'Building');
-        foreach ($searchFieldCandidates as $field) {
-            $searchField = $field;
-            $bldgId = $feature->getField($field);
-            if ($bldgId) {
-                break;
-            }
-        }
-        if (!$featureCache->isFresh($bldgId)) {
-            if (!$this->returnsGeometry) {
-                $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
-            } else {
-                $queryBase = $this->baseURL;
-            }
+    public function selectSubLayer($layerId) {
+        $this->parser->selectSubLayer($layerId);
+    }
 
+    public function getTitle() {
+        $this->initializeParser();
+        return $this->parser->getMapName();
+    }
+    
+    public function items() {
+        $this->initializeParser();
+        $this->initializeLayers();
+        $this->initializeFeatures();
+        return $this->parser->getFeatureList();
+    }
+    
+    private function initializeParser() {
+        if (!$this->parser->isPopulated()) {
+            $data = $this->getData();
+            $this->parseData($data);
+        }
+    }
+    
+    private function initializeFeatures() {
+        if (!$this->parser->selectedLayerIsPopulated()) {
+            $oldBaseURL = $this->baseURL;
+            $this->parser->setBaseURL($oldBaseURL);
+            $this->baseURL = $this->parser->getURLForLayerFeatures();
+            $oldFilters = $this->filters;
+            $this->filters = $this->parser->getFiltersForLayer();
+            $data = $this->getData();
+            $this->parseData($data);
+            $this->filters = $oldFilters;
+            $this->baseURL = $oldBaseURL;
+        }
+    }
+    
+    private function initializeLayers() {
+        if (!$this->parser->selectedLayerIsInitialized()) {
+            // set this directly so we don't interfere with cache
+            $oldBaseURL = $this->baseURL;
+            $this->parser->setBaseURL($oldBaseURL);
+            $this->baseURL = $this->parser->getURLForSelectedLayer();
+            $data = $this->getData();
+            $this->parseData($data);
+            $this->baseURL = $oldBaseURL;
+        }
+    }
+    
+    public static function parserFactory($baseURL) {
+        $throwawayController = new ArcGISDataController();
+        $throwawayController->init(array('BASE_URL' => $baseURL));
+        $data = $throwawayController->getData();
+        $throwawayController->parseData($data);
+        return $throwawayController->parser;
+    }
+    
+    // TODO in the following functions
+    // this way of getting supplementary geometry is particular to Harvard's setup
+    
+    private static function getSupplementaryFeatureData($bldgId, $searchField, $queryBase) {
+        // TODO don't use a shared cache file if queryBase isn't the default
+        $featureCache = new DiskCache($GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_CACHE'), 86400*7, true);
+        if (!$featureCache->isFresh($bldgId)) {
             $query = http_build_query(array(
                 'searchText'     => $bldgId,
                 'searchFields'   => $searchField,
@@ -100,52 +146,42 @@ class ArcGISDataController extends MapLayerDataController
         return $result;
     }
     
-    public function selectSubLayer($layerId) {
-        $this->parser->selectSubLayer($layerId);
+    public function getFeatureByField($searchField, $value) {
+        if (!$this->returnsGeometry) {
+            $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
+        } else {
+            $queryBase = $this->baseURL;
+        }
+        $this->initializeParser();
+        $this->initializeLayers();
+        $featureInfo = self::getSupplementaryFeatureData($value, $searchField, $queryBase);
+        $feature = $this->parser->featureFromJSON($featureInfo);
+        return $feature;
     }
 
-    public function getTitle() {
-        if (!$this->parser->isPopulated()) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
+    // TODO move searchField strings from the following two
+    // functions into config
+    private function queryFeatureServer($feature) {
+        if (!$this->returnsGeometry) {
+            $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
+        } else {
+            $queryBase = $this->baseURL;
         }
-        return $this->parser->getMapName();
+        
+        $searchFieldCandidates = array('Building Number', 'Building Name', 'Building');
+        foreach ($searchFieldCandidates as $field) {
+            $searchField = $field;
+            $bldgId = $feature->getField($field);
+            if ($bldgId) {
+                break;
+            }
+        }
+        return self::getSupplementaryFeatureData($bldgId, $searchField, $queryBase);
     }
     
-    public function items() {
-        if (!$this->parser->isPopulated()) {
-            $data = $this->getData();
-            $this->parseData($data);
-        }
-        if (!$this->parser->selectedLayerIsInitialized()) {
-            // set this directly so we don't interfere with cache
-            $oldBaseURL = $this->baseURL;
-            $this->parser->setBaseURL($oldBaseURL);
-            $this->baseURL = $this->parser->getURLForSelectedLayer();
-            $data = $this->getData();
-            $this->parseData($data);
-            $this->baseURL = $oldBaseURL;
-        }
-        if (!$this->parser->selectedLayerIsPopulated()) {
-            $oldBaseURL = $this->baseURL;
-            $this->parser->setBaseURL($oldBaseURL);
-            $this->baseURL = $this->parser->getURLForLayerFeatures();
-            $oldFilters = $this->filters;
-            $this->filters = $this->parser->getFiltersForLayer();
-            $data = $this->getData();
-            $this->parseData($data);
-            $this->filters = $oldFilters;
-            $this->baseURL = $oldBaseURL;
-        }
-        return $this->parser->getFeatureList();
-    }
-    
-    public static function parserFactory($baseURL) {
-        $throwawayController = new ArcGISDataController();
-        $throwawayController->init(array('BASE_URL' => $baseURL));
-        $data = $throwawayController->getData();
-        $throwawayController->parseData($data);
-        return $throwawayController->parser;
+    public static function getBldgByNumber($bldgId) {
+        $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
+        return ArcGISDataController::getSupplementaryFeatureData($bldgId, 'Building Number', $queryBase);
     }
     
 }
