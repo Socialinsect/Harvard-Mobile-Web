@@ -13,10 +13,10 @@
         <td>
           {if $info['disableable']}
             <a href="{$info['toggleDisabledURL']}">
-              {if $info['visible']}
-                <img src="/modules/{$moduleID}/images/check-on.gif" border="0" alt="Off">
-              {else}
+              {if $info['disabled']}
                 <img src="/modules/{$moduleID}/images/check-off.gif" border="0" alt="On">
+              {else}
+                <img src="/modules/{$moduleID}/images/check-on.gif" border="0" alt="Off">
               {/if}              
             </a>
           {/if}

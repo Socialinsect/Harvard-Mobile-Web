@@ -1,27 +1,9 @@
 <?php
 
-require_once realpath(MODULES_DIR.'/home/HomeModule.php');
+require_once realpath(LIB_DIR.'/Module.php');
 
-class CustomizeModule extends HomeModule {
+class CustomizeModule extends Module {
   protected $id = 'customize';
-
-  protected function setHomeScreenModuleOrder($moduleIDs) {
-    $lifespan = $this->getSiteVar('MODULE_ORDER_COOKIE_LIFESPAN');
-    $value = implode(",", $moduleIDs);
-    
-    setcookie("moduleorder", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["moduleorder"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
-  }
-  
-  protected function setHomeScreenVisibleModules($moduleIDs) {
-    $lifespan = $this->getSiteVar('MODULE_ORDER_COOKIE_LIFESPAN');
-    $value = count($moduleIDs) ? implode(",", $moduleIDs) : 'NONE';
-    
-    setcookie("visiblemodules", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["visiblemodules"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
-  }
 
   private function handleRequest($args) {
     if (isset($args['action'])) {
@@ -54,9 +36,9 @@ class CustomizeModule extends HomeModule {
             
             foreach ($currentModules as $id => &$info) {
               if ($id == $args['module']) {
-                $info['visible'] = $args['action'] != 'on';
+                $info['disabled'] = $args['action'] != 'on';
               }
-              if ($info['visible']) { $visibleModuleIDs[] = $id; }
+              if (!$info['disabled']) { $visibleModuleIDs[] = $id; }
             }
             
             $this->setHomeScreenVisibleModules($visibleModuleIDs);
@@ -79,17 +61,21 @@ class CustomizeModule extends HomeModule {
     $newCount = 0;
 
     foreach ($this->getHomeScreenModules() as $moduleID => $info) {
-        $module = Module::factory($moduleID);
-        $info['disableable'] = $module->getModuleVar('disableable');
-        if ($info['primary'] ) {
-          $modules[$moduleID] = $info;
-          $moduleIDs[] = $moduleID;
+      if ($info['primary']) {
+        $modules[$moduleID] = $info;
+        
+        $moduleIDs[] = $moduleID;
+        if (!$info['disabled']) { 
           $activeModuleIDs[] = $moduleID; 
         }
+        
+        if ($info['new']) { 
+          $newCount++; 
+        }
+      }
     }
     
-    
-    switch($this->pagetype)  {
+    switch($this->pagetype) {
       case 'compliant':
         $this->addInlineJavascript('var httpRoot = "'.COOKIE_PATH.'"');
         $this->addInlineJavascriptFooter('init();');
@@ -110,7 +96,7 @@ class CustomizeModule extends HomeModule {
       case 'basic':
         foreach ($moduleIDs as $index => $id) {
           $modules[$id]['toggleDisabledURL'] = 'index.php?'.http_build_query(array(
-            'action' => $modules[$id]['visible'] ? 'on' : 'off',
+            'action' => $modules[$id]['disabled'] ? 'on' : 'off',
             'module' => $id,
           ));
           

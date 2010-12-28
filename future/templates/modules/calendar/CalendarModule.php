@@ -9,7 +9,6 @@ define('DAY_SECONDS', 24*60*60);
 class CalendarModule extends Module {
   protected $id = 'calendar';
   protected $feeds = array();
-  protected $hasFeeds = true;
   protected $timezone;
   
   public function timezone()
@@ -112,7 +111,7 @@ class CalendarModule extends Module {
       case 'phone':
         // add the local area code if missing
         if (preg_match('/^\d{3}-\d{4}/', $value)) {
-          $valueForType = $this->getSiteVar('LOCAL_AREA_CODE').$value;
+          $valueForType = $GLOBALS['siteConfig']->getVar('LOCAL_AREA_CODE').$value;
         }
         $valueForType = str_replace('-', '-&shy;', str_replace('.', '-', $value));
         break;
@@ -143,7 +142,7 @@ class CalendarModule extends Module {
       case 'phone':
         // add the local area code if missing
         if (preg_match('/^\d{3}-\d{4}/', $value)) {
-          $urlForType = $this->getSiteVar('LOCAL_AREA_CODE').$value;
+          $urlForType = $GLOBALS['siteConfig']->getVar('LOCAL_AREA_CODE').$value;
         }
     
         // remove all non-word characters from the number
@@ -262,18 +261,6 @@ class CalendarModule extends Module {
       'timeframe' => '0',
     ), false);
   }
-  
-  protected function prepareAdminForSection($section, &$adminModule) {
-    switch ($section)
-    {
-        case 'feeds':
-            $feeds = $this->loadFeedData();
-            $adminModule->assign('feeds', $feeds);
-            $adminModule->assign('showFeedLabels', true);
-            $adminModule->setTemplatePage('feedAdmin', $this->id);
-            break;
-    }
-  }
 
   protected function getFeedTitle($index)
   {
@@ -291,7 +278,7 @@ class CalendarModule extends Module {
     if (isset($this->feeds[$index])) {
         $feedData = $this->feeds[$index];
         $controller = CalendarDataController::factory($feedData);
-        $controller->setDebugMode($this->getSiteVar('DATA_DEBUG'));
+        $controller->setDebugMode($GLOBALS['siteConfig']->getVar('DATA_DEBUG'));
         return $controller;
     } else {
         throw new Exception("Error getting calendar feed for index $index");
@@ -300,7 +287,7 @@ class CalendarModule extends Module {
  
   protected function initialize() {
     $this->feeds      = $this->loadFeedData();
-    $this->timezone   = new DateTimeZone($this->getSiteVar('LOCAL_TIMEZONE'));
+    $this->timezone   = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
   }
 
   protected function initializeForPage() {
