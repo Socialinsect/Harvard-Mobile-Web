@@ -162,29 +162,9 @@ input, select, option {
 	font-size: 100%;
 }
 
-.inputcombo .forminput {
-	padding: 3px;
-	font-size: 100%;
-	width: 90%;
-	border: 2px solid #554c41;
-	float: none;
-}
-
-.imagebutton {
-	position: relative;
-	top: 0.5em;
-}
-
 /* Navigation and results listings */
 /* Many smartphones don't correctly interpret "display:block" for inline elements like <a> */
 
-.nav {
-	margin: 0.5em 0 1em 0;
-	padding: .67em;
-	background-color: #fff;
-	font-size: 100%;
-	line-height: 1.75em;
-}
 
 .secondary {
 	margin: 1em 0;
@@ -480,4 +460,12 @@ span.icon {
 
 .tabs a {
 	font-weight: normal;
+}
+
+.results {
+    padding: 0px;
+}
+
+.results li {
+    padding: .67em;
 }

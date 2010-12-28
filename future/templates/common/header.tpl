@@ -108,11 +108,13 @@
               </a>
             {/foreach}
           {/if}
+          {block name="pagetitle"}
           <span class="pagetitle">
             {if $isModuleHome}
               <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" class="moduleicon" />
             {/if}
             {$pageTitle}
+          {/block}
           </span>
         </div>
         {if $hasHelp}

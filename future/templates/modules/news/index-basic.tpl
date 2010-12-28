@@ -5,6 +5,8 @@
 {/block}
 
 {block name="newsFooter"}
-  {include file="findInclude:common/search.tpl" extraArgs=$hiddenArgs}
+    {block name="searchsection"}
+        {include file="findInclude:common/search.tpl" extraArgs=$hiddenArgs}
+    {/block}
   {include file="findInclude:common/footer.tpl" additionalLinks=$sections}
 {/block}

@@ -1,4 +1,6 @@
-{include file="findInclude:common/header.tpl"}
+{block name="header"}
+    {include file="findInclude:common/header.tpl"}
+{/block}
 
 {$tabBodies = array()}
 {capture name="infoPane" assign="infoPane"}

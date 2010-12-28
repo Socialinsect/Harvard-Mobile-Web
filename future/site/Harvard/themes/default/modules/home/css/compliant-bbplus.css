@@ -1,0 +1,62 @@
+body {
+	background-color: #ebe7dd; 
+	background-image: url('/common/images/background-tile.png');
+	font-family: Helvetica, Arial, sans-serif;
+	line-height: 1.33em;
+	color: #333;
+	width: 479px;
+}
+
+h1 {
+	padding: 17px 0 0px 0;
+	text-align: center;
+	color: #000;
+	font-size: 171%;
+}
+
+#homegrid div {
+	width: 76px;
+	height: 114px;
+	font-size: 16px;
+}
+#homegrid a {	
+	width: 76px;
+	height: 106px;
+	color: #333;
+}
+#homegrid a:hover {
+	border-color: #c00;
+}
+#homegrid a:active {
+	border-color: #900;
+}
+
+/* TODO: Move this to common/css/compliant-bbplus.css after testing on all pages. */
+/*.forminput {
+	border-color: #554c41;
+	width: 50%;
+	left: 40%;
+}
+*/
+
+.springboard a img {
+	margin-bottom: 1px;
+	border: none;
+    height: 64px;
+    width: 64px;
+}
+
+.springboard div.utility {
+	/* Overall size of one cell in the springboard's fixed utility-type items */
+	width: 32px;
+	height: 32px;
+	font-size: 12px;
+	line-height: 13px;
+}
+
+.springboard div.utility a img {
+	/* Size of actual item icon in the springboard's fixed utility-type items */
+	width: 64px;
+	height: 64px;
+}
+
