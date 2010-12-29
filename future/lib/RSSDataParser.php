@@ -61,7 +61,8 @@ class RSSDataParser extends XMLDataParser
             case 'ENTRY': //for atom feeds
                 $this->elementStack[] = new $this->itemClass($attribs);
                 break;
-            case 'ENCLOSURE';
+            case 'ENCLOSURE':
+            case 'MEDIA:CONTENT':
                 $this->elementStack[] = new $this->enclosureClass($attribs);
                 break;
             case 'IMAGE':

@@ -1,7 +1,23 @@
 <?php
 
-$peopleController = $GLOBALS['siteConfig']->getVar('PEOPLE_CONTROLLER_CLASS');
-$personClass      = $GLOBALS['siteConfig']->getVar('PEOPLE_PERSON_CLASS');
+$feedData = null;
+
+$feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/people.ini");
+if ($feedConfigFile) {
+  $feedConfig = parse_ini_file($feedConfigFile, true);
+  
+  if ($feedConfig && isset($feedConfig['people'])) {
+    $feedData = $feedConfig['people'];
+  }
+}
+
+if (!$feedData) {
+  $result = array('error' => 'Nothing Found');
+  $content = json_encode($result);
+  header('Content-Length: ' . strlen($content));
+  echo $content;
+  exit;
+}
 
 $displayFields = $GLOBALS['siteConfig']->getAPIVar($_REQUEST['module'], 'displayFields');
 
@@ -9,8 +25,7 @@ switch ($_REQUEST['command']) {
   case 'details':
     if (isset($_REQUEST['uid'])) {
 
-      $PeopleController = new $peopleController();
-      $PeopleController->setPersonClass($personClass);
+      $PeopleController = PeopleController::factory($feedData);
       $PeopleController->setAttributes(array_keys($displayFields));
       if ($person = $PeopleController->lookupUser($_REQUEST['uid'])) {
             $result = array(
@@ -32,8 +47,7 @@ switch ($_REQUEST['command']) {
   case 'search':
     if (isset($_REQUEST['q']) && strlen((trim($_REQUEST['q'])))) {
           $searchText = trim(stripslashes($_REQUEST['q']));
-          $PeopleController = new $peopleController();
-          $PeopleController->setPersonClass($personClass);
+          $PeopleController = PeopleController::factory($feedData);
           $PeopleController->setAttributes(array_keys($displayFields));
           
           $people = $PeopleController->search($searchText);

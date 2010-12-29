@@ -1,10 +1,29 @@
 <?php
 
+// TODO reduce duplication between this class and WMSStaticMap/ArcGISJSMap
+// by moving some methods to config, utility, or superclass
+
+// TODO move this to config
+define("ESRI_PROJECTION_SERVER", 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer/project');
+
 // http://resources.esri.com/help/9.3/arcgisserver/apis/rest/index.html
-class ArcGISStaticMap extends WMSStaticMap {
+class ArcGISStaticMap extends StaticMapImageController {
+
+    const LIFE_SIZE_METERS_PER_PIXEL = 0.00028; // standard definition at 1:1 scale
+    const NO_PROJECTION = -1;
     
     private $parser;
     private $layerFilters = array();
+
+    protected $canAddAnnotations = false;
+    protected $canaddPaths = false;
+    protected $canAddLayers = true;
+    protected $supportsProjections = true;
+
+    protected $availableLayers = null;
+    protected $unitsPerMeter = null;
+    
+    private $mapProjector;
     
     private $transparent = false;
     public function setTransparent($tranparent) {
@@ -13,48 +32,18 @@ class ArcGISStaticMap extends WMSStaticMap {
 
     public function __construct($baseURL, $parser=null) {
         $this->baseURL = $baseURL;
+        $this->parser = ArcGISDataController::parserFactory($this->baseURL);
+        $this->mapProjector = new MapProjector();
         
-        if ($parser === null) {
-            // if our controlling class is not ArcGISDataController
-            // there will not be a parser yet and we have to redo
-            // everything that ArcGISDataController would do for us
-            $this->diskCache = new DiskCache($GLOBALS['siteConfig']->getVar('ARCGIS_CACHE'), 86400 * 7, true);
-            $this->diskCache->preserveFormat();
-            $filename = md5($this->baseURL);
-            $metafile = $filename.'-meta.txt';
-        
-            if (!$this->diskCache->isFresh($filename)) {
-                $params = array('f' => 'json');
-                $query = $this->baseURL.'?'.http_build_query($params);
-                file_put_contents($this->diskCache->getFullPath($metafile), $query);
-                $contents = file_get_contents($query);
-                $this->diskCache->write($contents, $filename);
-            } else {
-                $contents = $this->diskCache->read($filename);
-            }
-            $this->parser = new ArcGISParser();
-            $this->parser->parseData($contents);
-        }
-        
-        // TODO support this in ArcGISParser
-        //$this->supportedImageFormats = $parser->getSupportedImageFormats();
-        $this->setProjection($this->parser->getProjection());
+        $this->supportedImageFormats = $this->parser->getSupportedImageFormats();
         $this->enableAllLayers();
-    }
-    
-    // currently the map will recenter as a side effect if projection is reset
-    public function setProjection($proj)
-    {
-        $this->projection = $proj;
+
+        // permanently set projection based on associated parser        
+        $this->mapProjection = $this->parser->getProjection();
+        $this->mapProjector->setDstProj($this->mapProjection);
         $this->unitsPerMeter = null;
 
-        if ($proj == $this->parser->getProjection()) {
-            $bbox = $this->parser->getInitialExtent();
-        } else {
-            // if they choose a non-geographic projection
-            // we can't do anything self-contained
-            $bbox = array('xmin' => 0, 'ymin' => 0, 'xmax' => 1, 'ymax' => 1);
-        }
+        $bbox = $this->parser->getInitialExtent();
 
         $xrange = $bbox['xmax'] - $bbox['xmin'];
         $yrange = $bbox['ymax'] - $bbox['ymin'];
@@ -68,6 +57,81 @@ class ArcGISStaticMap extends WMSStaticMap {
             'lat' => ($this->bbox['ymin'] + $this->bbox['ymax']) / 2,
             'lon' => ($this->bbox['xmin'] + $this->bbox['xmax']) / 2,
             );
+    }
+
+    // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
+    protected function getCurrentScale()
+    {
+        if ($this->unitsPerMeter === null) {
+            switch ($this->parser->getUnits()) {
+            case 'esriCentimeters':
+                $this->unitsPerMeter = 100;
+                break;
+            case 'esriDecimeters':
+                $this->unitsPerMeter = 0.1;
+                break;
+            case 'esriFeet':
+                $this->unitsPerMeter = 3.2808399;
+                break;
+            case 'esriInches':
+                $this->unitsPerMeter = 39.3700787;
+                break;
+            case 'esriKilometers':
+                $this->unitsPerMeter = 0.001;
+                break;
+            case 'esriMeters':
+                $this->unitsPerMeter = 1;
+                break;
+            case 'esriMiles':
+                $this->unitsPerMeter = 0.000621371192;
+                break;
+            case 'esriMillimeters':
+                $this->unitsPerMeter = 1000;
+                break;
+            case 'esriNauticalMiles':
+                $this->unitsPerMeter = 0.000539956803;
+                break;
+            case 'esriYards':
+                $this->unitsPerMeter = 1.0936133;
+                break;
+            default:
+                $this->unitsPerMeter = self::NO_PROJECTION;
+                break;
+            }
+        }
+        
+        if ($this->unitsPerMeter != self::NO_PROJECTION) {
+            $metersPerPixel = $this->getHorizontalRange() / $this->imageWidth / $this->unitsPerMeter;
+            return $metersPerPixel / self::LIFE_SIZE_METERS_PER_PIXEL;
+        } else {
+            // TODO this isn't quite right, this won't allow us to use
+            // maxScaleDenom and minScaleDenom in any layers
+            return self::NO_PROJECTION;
+        }
+    }
+    
+    protected function zoomLevelForScale($scale)
+    {
+        // not sure if ceil is the right rounding in both cases
+        if ($scale == self::NO_PROJECTION) {
+            $range = $this->getHorizontalRange();
+            return ceil(log(360 / $range, 2));
+        } else {
+            // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
+            return ceil(log(559082264 / $scale, 2));
+        }
+    }
+    
+    public function setDataProjection($proj) {
+        $this->mapProjector->setSrcProj($proj);
+    }
+    
+    // do conversion here since this and ArcGISJSMap are the
+    // only map image controllers that can project input
+    // features from other coordinate systems
+    public function setCenter($center) {
+        $newCenter = $this->mapProjector->projectPoint($center);
+        parent::setCenter(array('lat' => $newCenter['y'], 'lon' => $newCenter['x']));
     }
 
     ////////////// overlays ///////////////
@@ -98,8 +162,8 @@ class ArcGISStaticMap extends WMSStaticMap {
             'bbox' => $bboxStr,
             'size' => $this->imageWidth.','.$this->imageHeight,
             'dpi' => null, // default 96
-            'imageSR' => $this->projection,
-            'bboxSR' => $this->projection,
+            'imageSR' => $this->mapProjection,
+            'bboxSR' => $this->mapProjection,
             'format' => $this->imageFormat,
             'layerDefs' => $this->getLayerDefs(),
             'layers' => 'show:'.implode(',', $this->enabledLayers),

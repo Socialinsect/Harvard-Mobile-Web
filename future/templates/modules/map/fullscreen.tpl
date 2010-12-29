@@ -1,5 +1,4 @@
 {include file="findInclude:common/header.tpl" customHeader="" scalable=false}
-{strip}
 <div id="mapzoom">
   <a href="#" onclick="zoomin(); scrollTo(0,1); return false;" id="zoomin">
     <img src="/common/images/blank.png" width="40" height="34" alt="Zoom In" />
@@ -81,7 +80,6 @@
   </form>
   <div id="scrim">&nbsp;</div>
 </div>
-{/strip}
 
 {* footer *}
 </div>

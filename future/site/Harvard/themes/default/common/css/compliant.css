@@ -52,42 +52,16 @@ h4 {
 	color: #554c41;
 }
 
-dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
+dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
 	/* Accent text color for several types of secondary text that appears on white backgrounds, e.g., label in label/value pairs, e.g., People Directory detail screen and for labels in certain calendar listing screens */
 	/* Often the same as the secondary text color defined in the next rule */
 	color: #554c41;
 }
 
-.foundat, .address, #footer, .copyright, #footerlinks a, #footerlinks a:visited {
+.foundat, .address, #footer, #footer a, .copyright, #footerlinks a, #footerlinks a:visited {
 	/* Secondary text color for several types of secondary text that typically appear on the colored background */
 	color: #554c41;
 }
-
-/*
-#springboard a {
-	/* Text color for icon labels in springboard-type screens (grids of icon launchers) */
-	/*
-	color: #404346;
-	font-size: 12px;
-	line-height: 13px;
-}
-*/
-/*
-#springboard div {
-	/* Grid element size in springboard-type screens */
-	/*
-	position: relative;
-	width: 79px;
-	height: 88px;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	float: left;
-	text-align: center;		
-	vertical-align: top;
-}
-
-*/
 
 
 
@@ -140,21 +114,35 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fin
 }
 
 #footerlinks {
-	color: #fff
+	color: #554C41
 }
 
 
 /* Text input fields, e.g., search fields */
 .forminput {
 	border-color: #666; 	/* Should match the border color of image /common/images/mobile/search_button.png */
+	-webkit-border-radius: 5px;
 }
+
+.inputcombo .forminput {
+	border: 1px 0 1px 1px solid #666; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */
+	-webkit-border-bottom-left-radius: 11px;	
+	-webkit-border-top-left-radius: 11px;	
+}
+
+.emphasized  .forminput {
+	border: 3px solid #666; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */; border weight should be 2px greater than border weight of .inputcombo .forminput */	
+	-webkit-border-bottom-left-radius: 13px; 	/* Corner radius should be 2px greater than corner radius of .inputcombo .forminput */	
+	-webkit-border-top-left-radius: 13px;	
+}
+
 
 /* Springboards */
 
 .springboard div {
 	/* Overall size of one cell in the springboard */
-	width: 77px;
-	height: 100px;
+	width: 76px;
+	height: 94px;
 	font-size: 13px;
 	line-height: 14px;
 }
@@ -164,9 +152,9 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fin
 }
 
 .springboard a img {
-	/* Size of actual item icon in springboard */
-	width: 70px;
-	height: 70px;
+	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
+	width: 62px;
+	height: 62px;
 }
 
 .springboard div.utility {
@@ -178,9 +166,13 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fin
 }
 
 .springboard div.utility a img {
-	/* Size of actual item icon in the springboard's fixed utility-type items */
-	width: 44px;
-	height: 44px;
+	/* Size of actual item icon in the springboard's fixed utility-type items - for best results make actual PNGs match this size */
+	width: 36px;
+	height: 36px;
+}
+
+.springboard .separator {
+	height: 18px;
 }
 
 /* Navigation and results lists */

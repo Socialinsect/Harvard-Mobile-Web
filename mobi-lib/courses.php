@@ -5,8 +5,8 @@ require_once "DiskCache.inc";
 require_once 'html2text.php';
 
 define('CATEGORY_QUERY_BASE', 'fq_dept_area_category=dept_area_category:"');
-define('TERM_QUERY','&fq_coordinated_semester_yr=coordinated_semester_yr:"Sep+to+Dec+2010+(Fall+Term)"&');
-define('TERM', 'Fall 2010');
+define('TERM_QUERY','&fq_coordinated_semester_yr=coordinated_semester_yr:"Jan+to+May+2011+(Spring+Term)"&');
+define('TERM', 'Spring 2011');
 define('SCHOOL_QUERY_BASE', '&fq_school_nm=school_nm:"');
 
 function compare_courseNumber($a, $b)

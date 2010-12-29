@@ -128,7 +128,7 @@ function getMinifyGroupsConfig() {
     //error_log(print_r($checkFiles, true));
     
     $minifyConfig[$key] = buildFileList($checkFiles[$ext]);
-    error_log(__FUNCTION__."($pagetype-$platform) scanned filesystem for $key");
+    //error_log(__FUNCTION__."($pagetype-$platform) scanned filesystem for $key");
 
     $cache->write($minifyConfig, $cacheName);
   }

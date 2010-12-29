@@ -1,0 +1,2 @@
+array project_from_latlon(string projspec, double lon, double lat) Convert geographic coordinates to point in specified projection
+array project_to_latlon(string projspec, double x, double y) Convert point in specified projection to geographic coordinates

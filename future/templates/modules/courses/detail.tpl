@@ -1,5 +1,6 @@
-{include file="findInclude:common/header.tpl"}
-{strip}
+{block name="header"}
+    {include file="findInclude:common/header.tpl"}
+{/block}
 
 {$tabBodies = array()}
 {capture name="infoPane" assign="infoPane"}
@@ -52,7 +53,6 @@
 {/capture}
 {$tabBodies['staff'] = $staffPane}
 
-{/strip}
 {block name="tabView"}
 	<a name="scrolldown"></a>		
 	<div class="focal shaded">

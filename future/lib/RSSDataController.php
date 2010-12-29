@@ -8,7 +8,7 @@ class RSSDataController extends DataController
 
     protected function cacheFolder()
     {
-        return CACHE_DIR . "/News";
+        return CACHE_DIR . "/RSS";
     }
     
     protected function cacheLifespan()

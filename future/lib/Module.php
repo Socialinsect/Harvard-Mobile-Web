@@ -4,19 +4,16 @@ require_once realpath(LIB_DIR.'/TemplateEngine.php');
 require_once realpath(LIB_DIR.'/HTMLPager.php');
 require_once realpath(LIB_DIR.'/User.php');
 
+define('MODULE_BREADCRUMB_PARAM', '_b');
+
 abstract class Module {
+
   protected $id = 'none';
-  protected $moduleName = '';
-  protected $hasFeeds = false;
-  protected $feedFields = array();
   
   protected $session;
   
   protected $page = 'index';
   protected $args = array();
-
-  protected $templateModule = 'none'; 
-  protected $templatePage = 'index';
   
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
@@ -28,8 +25,9 @@ abstract class Module {
   private $breadcrumbTitle     = 'No Title';
   private $breadcrumbLongTitle = 'No Title';
   
+  private $moduleName = 'No Title';
+  
   private $inlineCSSBlocks = array();
-  private $externalCSSURLs = array();
   private $inlineJavascriptBlocks = array();
   private $inlineJavascriptFooterBlocks = array();
   private $onOrientationChangeBlocks = array();
@@ -168,7 +166,7 @@ abstract class Module {
   //
   private function getMinifyUrls() {
     $minKey = "{$this->id}-{$this->page}-{$this->pagetype}-{$this->platform}-".md5(ROOT_DIR);
-    $minDebug = $this->getSiteVar('MINIFY_DEBUG') ? '&debug=1' : '';
+    $minDebug = $GLOBALS['siteConfig']->getVar('MINIFY_DEBUG') ? '&debug=1' : '';
     
     return array(
       'css' => "/min/g=css-$minKey$minDebug",
@@ -262,264 +260,111 @@ abstract class Module {
     header("Location: $url");
     exit;
   }
-
-  //
-  // Configuration
-  //
-  protected function getSiteVar($var, $log_error=true)
-  {
-      return $GLOBALS['siteConfig']->getVar($var, true, $log_error);
-  }
-
-  protected function getSiteSection($var, $log_error=true)
-  {
-      return $GLOBALS['siteConfig']->getSection($var, $log_error);
-  }
-
-  protected function getModuleVar($var)
-  {
-     $config = $this->getModuleConfig();
-     return $config->getVar($var);
-  }
   
-  public function hasFeeds()
-  {
-     return $this->hasFeeds;
-  }
-  
-  public function getFeedFields()
-  {
-     return $this->feedFields;
-  }
-  
-  public function removeFeed($index)
-  {
-       $feedData = $this->loadFeedData();
-       if (isset($feedData[$index])) {
-           unset($feedData[$index]);
-           if (is_numeric($index)) {
-              $feedData = array_values($feedData);
-           }
-           
-           $this->saveConfig(array('feeds'=>$feedData), 'feeds');
-           
-       }
-  }
-  
-  public function addFeed($newFeedData, &$error=null)
-  {
-       $feedData = $this->loadFeedData();
-       if (!isset($newFeedData['TITLE']) || empty($newFeedData['TITLE'])) {
-         $error = "Feed Title cannot be blank";
-         return false;
-       }
-
-       if (!isset($newFeedData['BASE_URL']) || empty($newFeedData['BASE_URL'])) {
-         $error = "Feed URL cannot be blank";
-         return false;
-       }
-       
-       if (isset($newFeedData['LABEL'])) {
-          $label = $newFeedData['LABEL'];
-          unset($newFeedData['LABEL']);
-          $feedData[$label] = $newFeedData;
-       } else {
-          $feedData[] = $newFeedData;
-       }
-       
-       return $this->saveConfig(array('feeds'=>$feedData), 'feeds');
-       
-  }
-  
-  protected function loadFeedData()
-  {
+  protected function loadFeedData() {
     $data = null;
-    $feedConfigFile = realpath_exists(sprintf("%s/feeds/%s.ini", SITE_CONFIG_DIR, $this->id));
+    $feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/{$this->id}.ini");
     if ($feedConfigFile) {
-        $data = parse_ini_file($feedConfigFile, true);
+      $data = parse_ini_file($feedConfigFile, true);
     } 
     
     return $data;
   }
   
   //
-  // Admin Methods
-  //
-  //
-  
-  protected function prepareAdminForSection($section, $adminModule) {
-  }
-  
-  protected function saveConfig($moduleData, $section=null)
-  {
-        $type = $section == 'feeds' ? 'feeds' : 'module';
-        $moduleConfigFile = ConfigFile::factory($this->id, $type, true);
-        
-        if ($section=='feeds') {
-            $moduleData = $moduleData[$section];
-            // clear out empty values
-            foreach ($moduleData as $feed=>$feedData) {
-                foreach ($feedData as $var=>$value) {
-                    if (strlen($value)==0) {
-                        unset($moduleData[$feed][$var]);
-                    }
-                }
-            }
-            $moduleConfigFile->setSectionVars($moduleData);
-        } else {
-            $moduleConfigFile->addSectionVars($moduleData, !$section);
-        }
-        
-        $moduleConfigFile->saveFile();
-  }
-  
-  //
   // Factory function
   // instantiates objects for the different modules
   //
-  public static function factory($id, $page='', $args=array()) {
+  public static function factory($id, $page='index', $args=array()) {
     $className = ucfirst($id).'Module';
-
+    
     $modulePaths = array(
       THEME_DIR."/modules/$id/Theme{$className}.php"=>"Theme" .$className,
+      SITE_DIR."/modules/$id/Site{$className}.php"=>"Site" .$className,
       MODULES_DIR."/$id/$className.php"=>$className
     );
     
     foreach($modulePaths as $path=>$className){ 
       $moduleFile = realpath_exists($path);
       if ($moduleFile && include_once($moduleFile)) {
-        $module = new $className();
-        if ($page || $args['_path'] == '/api/') { // TODO separate init function for API calls
-            $module->factoryInit($page, $args);
-        }
-        return $module;
+        return new $className($page, $args);
       }
     }
     throw new PageNotFound("Module '$id' not found while handling '{$_SERVER['REQUEST_URI']}'");
-   }
-   
-   public function factoryInit($page, $args)
-   {
-        $moduleData = $this->getModuleData();
-        $this->moduleName = $moduleData['title'];
-        
-        $disabled = self::argVal($moduleData, 'disabled', false);
-        if ($disabled) {
-            $this->redirectToModule('error', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
-        }
-        
-        $secure = self::argVal($moduleData, 'secure', false);
-        if ($secure && (!isset($_SERVER['HTTPS']) || ($_SERVER['HTTPS'] !='on'))) { 
-            // redirect to https (at this time, we are assuming it's on the same host)
-             $redirect= "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-             header("Location:$redirect");    
-             exit();
-        }
-        
-        if ($this->getSiteVar('AUTHENTICATION_ENABLED')) {
-            $this->initSession();
-            $user = $this->getUser();
-            $this->assign('session_userID', $user->getUserID());
-            $protected = self::argVal($moduleData, 'protected', false);
-            if ($protected) {
-                if (!$this->session->isLoggedIn()) {
-                    $this->redirectToModule('error', array('code'=>'protected', 'url'=>URL_BASE . 'login/?' .
-                        http_build_query(array('url'=>$_SERVER['REQUEST_URI']))));
-                }
-            }
-        }
-        
-        $this->page = $page;
-        $this->setTemplatePage($this->page, $this->id);
-        $this->args = $args;
-        
-        $this->pagetype      = $GLOBALS['deviceClassifier']->getPagetype();
-        $this->platform      = $GLOBALS['deviceClassifier']->getPlatform();
-        $this->supportsCerts = $GLOBALS['deviceClassifier']->getSupportsCerts();
-        
-        // Pull in fontsize
-        if (isset($args['font'])) {
-          $this->fontsize = $args['font'];
-          setcookie('fontsize', $this->fontsize, time() + $this->getSiteVar('LAYOUT_COOKIE_LIFESPAN'), COOKIE_PATH);      
-        
-        } else if (isset($_COOKIE['fontsize'])) { 
-          $this->fontsize = $_COOKIE['fontsize'];
-        }
-        
-        $this->initialize();
-  
   }
   
   protected function initSession()
   {
     if (!$this->session) {
-        $authorityClass = $this->getSiteVar('AUTHENTICATION_AUTHORITY');
-        $authorityArgs = $this->getSiteSection('authentication');
+        $authorityClass = $GLOBALS['siteConfig']->getVar('AUTHENTICATION_AUTHORITY');
+        $authorityArgs = $GLOBALS['siteConfig']->getSection('authentication');
         $AuthenticationAuthority = AuthenticationAuthority::factory($authorityClass, $authorityArgs);
         
         $this->session = new Session($AuthenticationAuthority);
     }
   }
   
-  public function getModuleName()
-  {
-    return $this->moduleName;
-  }
-  
-  protected function getModuleDefaultData()
-  {
-    return array(
-        'title'=>$this->moduleName,
-        'disabled'=>0,
-        'disableable'=>0,
-        'movable'=>0,
-        'protected'=>0,
-        'search'=>0,
-        'secure'=>0
-    );
-  }
-  
-  protected function getSectionTitleForKey($key)
-  {
-    return $key; //should be overridden by subclasses
-  }
-
-  protected function getModuleItemForKey($key, $value)
-  {
-    $item = array(
-        'label'=>ucfirst($key),
-        'name'=>"moduleData[$key]",
-        'typename'=>"moduleData][$key",
-        'value'=>$value,
-        'type'=>'text'
-    );
-
-    switch ($key)
-    {
-        case 'title':
-            $item['type'] = 'text';
-            break;
-        case 'disabled':
-        case 'disableable':
-        case 'movable':
-        case 'search':
-        case 'protected':
-        case 'secure':
-            $item['type'] = 'boolean';
-            break;
-        case 'id':
-            $item['type'] = 'label';
-            break;
-        default:
-            break;
+  function __construct($page='index', $args=array()) {
+    $GLOBALS['siteConfig']->loadWebAppFile('modules');
+    
+    $modules = $GLOBALS['siteConfig']->getWebAppVar('modules');
+    
+    if($this->id == 'error'){
+      // prevents infinite redirects and misconfiguration
+      $this->moduleName = (isset($modules[$this->id])) ? $modules[$this->id]['title'] : 'Error';
+      $this->pagetype      = $GLOBALS['deviceClassifier']->getPagetype();
+      $this->args = $args;
+      return;
+    } else if (isset($modules[$this->id])) {
+      $this->moduleName = $modules[$this->id]['title'];
+      $moduleData = $modules[$this->id];
+    } else {
+      throw new Exception("Module data for $this->id not found");
     }
     
-    return $item;
-  }
-
-                    
-  function __construct() {
-     $this->moduleName = ucfirst($this->id);
+    $disabled = self::argVal($moduleData, 'disabled', false);
+    if ($disabled) {
+        $this->redirectToModule('error', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
+    }
+    
+    $secure = self::argVal($moduleData, 'secure', false);
+    if ($secure && (!isset($_SERVER['HTTPS']) || ($_SERVER['HTTPS'] !='on'))) { 
+        // redirect to https (at this time, we are assuming it's on the same host)
+         $redirect= "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+         header("Location:$redirect");    
+         exit();
+    }
+    
+    if ($GLOBALS['siteConfig']->getVar('AUTHENTICATION_ENABLED')) {
+        $this->initSession();
+        $user = $this->getUser();
+        $this->assign('session_userID', $user->getUserID());
+        $protected = self::argVal($moduleData, 'protected', false);
+        if ($protected) {
+            if (!$this->session->isLoggedIn()) {
+                $this->redirectToModule('error', array('code'=>'protected', 'url'=>URL_BASE . 'login/?' .
+                    http_build_query(array('url'=>$_SERVER['REQUEST_URI']))));
+            }
+        }
+    }
+    
+    $this->page = $page;
+    $this->args = $args;
+    
+    $this->pagetype      = $GLOBALS['deviceClassifier']->getPagetype();
+    $this->platform      = $GLOBALS['deviceClassifier']->getPlatform();
+    $this->supportsCerts = $GLOBALS['deviceClassifier']->getSupportsCerts();
+    
+    // Pull in fontsize
+    if (isset($args['font'])) {
+      $this->fontsize = $args['font'];
+      setcookie('fontsize', $this->fontsize, time() + $GLOBALS['siteConfig']->getVar('LAYOUT_COOKIE_LIFESPAN'), COOKIE_PATH);      
+    
+    } else if (isset($_COOKIE['fontsize'])) { 
+      $this->fontsize = $_COOKIE['fontsize'];
+    }
+    
+    $this->initialize();
   }
   
   //
@@ -535,36 +380,62 @@ abstract class Module {
   // Module control functions
   //
   protected function getAllModules() {
-    $d = dir(MODULES_DIR);
-    $modules = array();
-    while (false !== ($entry = $d->read())) {
-        if ($entry[0]!='.' && is_dir(sprintf("%s/%s", MODULES_DIR, $entry))) {
-            $module = Module::factory($entry);
-            $modules[$entry] = $module;
-        }
-    }
-    ksort($modules);    
-    return $modules;        
+    $modules = $GLOBALS['siteConfig']->getWebAppVar('modules');
+    return $modules;
   }
 
-  public function getModuleConfig() {
-    static $moduleConfig;
-    if (!$moduleConfig) {
-        $moduleConfig = $this->getConfig($this->id, 'module');
-    }
-
-    return $moduleConfig;
-  }
-
-  public function getModuleData() {
-    static $moduleData;
-    if (!$moduleData) {
-        $moduleData = $this->getModuleDefaultData();
-        $config = $this->getModuleConfig();
-        $moduleData = array_merge($moduleData, $config->getSectionVars(true));
+  protected function getHomeScreenModules() {
+    $modules = $this->getAllModules();
+    
+    foreach ($modules as $id => $info) {
+      if (!$info['homescreen'] || $info['disabled']) {
+        unset($modules[$id]);
+      }
     }
     
-    return $moduleData;
+    if (isset($_COOKIE["visiblemodules"])) {
+      if ($_COOKIE["visiblemodules"] == "NONE") {
+        $visibleModuleIDs = array();
+      } else {
+        $visibleModuleIDs = array_flip(explode(",", $_COOKIE["visiblemodules"]));
+      }
+      foreach ($modules as $moduleID => &$info) {
+         $info['disabled'] = !isset($visibleModuleIDs[$moduleID]) && $info['disableable'];
+      }
+    }
+
+    if (isset($_COOKIE["moduleorder"])) {
+      $sortedModuleIDs = explode(",", $_COOKIE["moduleorder"]);
+      $unsortedModuleIDs = array_diff(array_keys($modules), $sortedModuleIDs);
+            
+      $sortedModules = array();
+      foreach (array_merge($sortedModuleIDs, $unsortedModuleIDs) as $moduleID) {
+        if (isset($modules[$moduleID])) {
+          $sortedModules[$moduleID] = $modules[$moduleID];
+        }
+      }
+      $modules = $sortedModules;
+    }    
+    //error_log('$modules(): '.print_r(array_keys($modules), true));
+    return $modules;
+  }
+  
+  protected function setHomeScreenModuleOrder($moduleIDs) {
+    $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
+    $value = implode(",", $moduleIDs);
+    
+    setcookie("moduleorder", $value, time() + $lifespan, COOKIE_PATH);
+    $_COOKIE["moduleorder"] = $value;
+    error_log(__FUNCTION__.'(): '.print_r($value, true));
+  }
+  
+  protected function setHomeScreenVisibleModules($moduleIDs) {
+    $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
+    $value = count($moduleIDs) ? implode(",", $moduleIDs) : 'NONE';
+    
+    setcookie("visiblemodules", $value, time() + $lifespan, COOKIE_PATH);
+    $_COOKIE["visiblemodules"] = $value;
+    error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
 
   //
@@ -573,9 +444,6 @@ abstract class Module {
   //
   protected function addInlineCSS($inlineCSS) {
     $this->inlineCSSBlocks[] = $inlineCSS;
-  }
-  protected function addExternalCSS($url) {
-    $this->externalCSSURLs[] = $url;
   }
   protected function addInlineJavascript($inlineJavascript) {
     $this->inlineJavascriptBlocks[] = $inlineJavascript;
@@ -597,32 +465,71 @@ abstract class Module {
   // Breadcrumbs
   //
   private function loadBreadcrumbs() {
-    if (isset($this->args['breadcrumbs'])) {
-      $breadcrumbs = unserialize(rawurldecode($this->args['breadcrumbs']));
+    if (isset($this->args[MODULE_BREADCRUMB_PARAM])) {
+      $breadcrumbs = unserialize(urldecode($this->args[MODULE_BREADCRUMB_PARAM]));
       if (is_array($breadcrumbs)) {
+        for ($i = 0; $i < count($breadcrumbs); $i++) {
+          $b = $breadcrumbs[$i];
+          
+          $breadcrumbs[$i]['title'] = $b['t'];
+          $breadcrumbs[$i]['longTitle'] = $b['lt'];
+          
+          $breadcrumbs[$i]['url'] = "{$b['p']}.php";
+          if (strlen($b['a'])) {
+            $breadcrumbs[$i]['url'] .= "?{$b['a']}";
+          }
+          
+          $linkCrumbs = array_slice($breadcrumbs, 0, $i);
+          if (count($linkCrumbs)) { 
+            $this->cleanBreadcrumbs(&$linkCrumbs);
+            
+            $crumbParam = http_build_query(array(
+              MODULE_BREADCRUMB_PARAM => urlencode(serialize($linkCrumbs))
+            ));
+            if (strlen($crumbParam)) {
+              $breadcrumbs[$i]['url'] .= (strlen($b['a']) ? '&' : '?').$crumbParam;
+            }
+          }
+        }
+
         $this->breadcrumbs = $breadcrumbs;
+        
       }
     }
     //error_log(__FUNCTION__."(): loaded breadcrumbs ".print_r($this->breadcrumbs, true));
   }
   
+  private function cleanBreadcrumbs(&$breadcrumbs) {
+    foreach ($breadcrumbs as $index => $breadcrumb) {
+      unset($breadcrumbs[$index]['url']);
+      unset($breadcrumbs[$index]['title']);
+      unset($breadcrumbs[$index]['longTitle']);
+    }
+  }
+  
   private function getBreadcrumbString($addBreadcrumb=true) {
     $breadcrumbs = $this->breadcrumbs;
     
+    $this->cleanBreadcrumbs(&$breadcrumbs);
+    
     if ($addBreadcrumb && $this->page != 'index') {
+      $args = $this->args;
+      unset($args[MODULE_BREADCRUMB_PARAM]);
+      
       $breadcrumbs[] = array(
-        'title'     => $this->breadcrumbTitle,
-        'longTitle' => $this->breadcrumbLongTitle,
-        'url'       => self::buildURL($this->page, $this->args),
+        't'  => $this->breadcrumbTitle,
+        'lt' => $this->breadcrumbLongTitle,
+        'p'  => $this->page,
+        'a'  => http_build_query($args),
       );
     }
     //error_log(__FUNCTION__."(): saving breadcrumbs ".print_r($breadcrumbs, true));
-    return rawurlencode(serialize($breadcrumbs));
+    return urlencode(serialize($breadcrumbs));
   }
   
   private function getBreadcrumbArgs($addBreadcrumb=true) {
     return array(
-      'breadcrumbs' => $this->getBreadcrumbString($addBreadcrumb),
+      MODULE_BREADCRUMB_PARAM => $this->getBreadcrumbString($addBreadcrumb),
     );
   }
 
@@ -639,16 +546,15 @@ abstract class Module {
   //
   private function loadPageConfig() {
     if (!isset($this->pageConfig)) {
-      $this->setPageTitle($this->moduleName);
-
       // Load site configuration and help text
-
-      $this->loadSiteConfigFile('strings', false);
+      $this->loadWebAppConfigFile('site', false);
       $this->loadWebAppConfigFile('help');
   
       // load module config file
-      $modulePageConfig = $this->loadWebAppConfigFile($this->id, "{$this->id}PageConfig");
+      $modulePageConfig = $this->loadWebAppConfigFile($this->id, "{$this->id}PageConfig", true);
     
+      $this->pageTitle = $this->moduleName;
+  
       if (isset($modulePageConfig[$this->page])) {
         $pageConfig = $modulePageConfig[$this->page];
         
@@ -674,14 +580,6 @@ abstract class Module {
     }
   }
   
-  protected function setTemplatePage($page, $moduleID=null)
-  {
-    $moduleID = is_null($moduleID) ? $this->id : $moduleID;
-    $this->templatePage = $page;
-    $this->templateModule = $moduleID;
-  }
-  
-  
   // Programmatic overrides for titles generated from backend data
   protected function setPageTitle($title) {
     $this->pageTitle = $title;
@@ -701,35 +599,21 @@ abstract class Module {
   }
 
   //
-  // Config files
+  // Theme config files
   //
   
-  protected function getConfig($name, $type) {
-    $config = ConfigFile::factory($name, $type);
-    $GLOBALS['siteConfig']->addConfig($config);
-    return $config;
-  }
-
-  protected function loadSiteConfigFile($name, $keyName=null) {
-    $config = $this->getConfig($name, 'site');
-    if ($keyName === null) { $keyName = $name; }
-
-    return $this->loadConfigFile($config, $keyName);
-  }
-
-  protected function loadWebAppConfigFile($name, $keyName=null) {
-    $config = $this->getConfig($name, 'web');
-    if ($keyName === null) { $keyName = $name; }
-    return $this->loadConfigFile($config, $keyName);
-  }
-  
-  protected function loadConfigFile(Config $config, $keyName=null) {
+  protected function loadWebAppConfigFile($name, $keyName=null, $ignoreError=false) {
     $this->loadTemplateEngineIfNeeded();
 
-    $themeVars = $config->getSectionVars(true);
+    if ($keyName === null) { $keyName = $name; }
+    
+    if (!$GLOBALS['siteConfig']->loadWebAppFile($name, true, $ignoreError)) {
+      return array();
+    }
+        
+    $themeVars = $GLOBALS['siteConfig']->getWebAppVar($name);
     
     if ($keyName === false) {
-    
       foreach($themeVars as $key => $value) {
         $this->templateEngine->assign($key, $value);
       }
@@ -784,11 +668,10 @@ abstract class Module {
     // Minify URLs
     $this->assign('minify', $this->getMinifyUrls());
     
-    // Google Analytics. This probably needs to be moved
-    if ($gaID = $this->getSiteVar('GOOGLE_ANALYTICS_ID', false)) {
-        $this->assign('GOOGLE_ANALYTICS_ID', $gaID);
-        $this->assign('gaImageURL', $this->googleAnalyticsGetImageUrl($gaID));
-    }
+    // Google Analytics
+    $gaID = $GLOBALS['siteConfig']->getVar('GOOGLE_ANALYTICS_ID');
+    $this->assign('GOOGLE_ANALYTICS_ID', $gaID);
+    $this->assign('gaImageURL', $this->googleAnalyticsGetImageUrl($gaID));
     
     // Breadcrumbs
     $this->loadBreadcrumbs();
@@ -800,7 +683,6 @@ abstract class Module {
 
     // Variables which may have been modified by the module subclass
     $this->assign('inlineCSSBlocks', $this->inlineCSSBlocks);
-    $this->assign('externalCSSURLs', $this->externalCSSURLs);
     $this->assign('inlineJavascriptBlocks', $this->inlineJavascriptBlocks);
     $this->assign('onOrientationChangeBlocks', $this->onOrientationChangeBlocks);
     $this->assign('onLoadBlocks', $this->onLoadBlocks);
@@ -822,7 +704,7 @@ abstract class Module {
       $helpConfig = $this->getTemplateVars('help');
       $this->assign('hasHelp', isset($helpConfig[$this->id]));
       
-      $template = 'modules/'.$this->templateModule.'/'.$this->templatePage;
+      $template = 'modules/'.$this->id.'/'.$this->page;
     }
     
     // Pager support

@@ -131,6 +131,16 @@ class DiskCache {
 
     return FALSE;
   }
+  
+  public function delete($filename=NULL) {
+    $path = $this->getFullPath($filename);
+    $success = unlink($path);
+    if ($success) {
+       $this->error = "could not delete $path";
+       error_log($this->error);
+    }
+    return $success;
+  }
 
   public function getImageSize($filename=NULL) {
     $path = $this->getFullPath($filename);
@@ -178,6 +188,7 @@ class DiskCache {
   public function getAge($filename=NULL) {
     if ($this->exists($filename)) {
       $path = $this->getFullPath($filename);
+      clearstatcache();
       return time() - filemtime($path);
     }
     return PHP_INT_MAX;

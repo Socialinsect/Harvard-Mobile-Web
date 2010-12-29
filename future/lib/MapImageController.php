@@ -30,8 +30,12 @@ abstract class MapImageController
     // capabilities
     protected $canAddAnnotations = false;
     protected $canAddPaths = false;
+    protected $canAddPolygons = false;
     protected $canAddLayers = false;
     protected $supportsProjections = false;
+    
+    protected $dataProjection; // projection that source data is provided in
+    protected $mapProjection;  // projection to pass to map image generator
 
     public static function factory($imageClass, $baseURL)
     {
@@ -85,6 +89,11 @@ abstract class MapImageController
     {
         return $this->canAddPaths;
     }
+    
+    public function canAddPolygons()
+    {
+        return $this->canAddPolygons;
+    }
 
     public function canAddLayers()
     {
@@ -96,8 +105,9 @@ abstract class MapImageController
         return $this->supportsProjections;
     }
     
-    public function setProjection($proj)
+    public function setDataProjection($proj)
     {
+        $this->dataProjection = $proj;
     }
 
     // overlays

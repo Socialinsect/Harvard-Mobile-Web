@@ -1,0 +1,8 @@
+#mapscrollers {
+    position: hidden;
+}
+
+.tabbody #mapscrollers {
+	top: 0;	
+	margin-left: -152px;
+}

@@ -174,8 +174,16 @@ class TrumbaCache {
      else if (($searchField == NULL) && ($category == 'academic'))
          $filename = $dateString . 'ACADEMIC.ics';
 
-     else if (($searchField == NULL) && ($category != NULL))
-         $filename = $yr . $mth .'category=' .$category .'.ics';
+     else if (($searchField == NULL) && ($category != NULL)) {
+         $day = "";
+         if (strpos($urlLink, "&days=1") !== FALSE) {
+             // If this is a one-day spanning search, the cache file should 
+             // reflect that so that different one-day searches do not try 
+             // to use the same cache file.
+             $day = substr($dateString, 6, 2);
+         }
+         $filename = $yr . $mth . $day .'category=' .$category .'.ics';
+     }
 
      if (!self::$diskCache->isFresh($filename)) {
 

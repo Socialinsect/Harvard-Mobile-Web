@@ -1,5 +1,3 @@
-  {strip}
-  
   {if $moduleDebug && count($moduleDebugStrings)}
     <p class="legend nonfocal">
       {foreach $moduleDebugStrings as $string}
@@ -45,8 +43,6 @@
     {/foreach}
 
   {/block}
-
-  {/strip}
 </div>
 </body>
 </html>

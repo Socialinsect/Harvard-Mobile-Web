@@ -120,3 +120,6 @@ form {
 .search-field, select {
 }
 
+#search-form {
+    display: none;
+}

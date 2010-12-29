@@ -188,6 +188,10 @@ class KMLPlacemark extends XMLElement implements MapFeature
     public function getTitle() {
         return $this->title;
     }
+    
+    public function getSubtitle() {
+        return null;
+    }
 
     public function getGeometry() {
         return $this->geometry;

@@ -11,11 +11,11 @@ class LinksModule extends Module {
     $springboard = isset($links['springboard']) && $links['springboard'];
     $description = self::argVal($links, 'description', null);    
     
-    foreach ($links as &$link) {
+    foreach ($links as $index => $link) {
       if (!is_array($link)) {
-        unset($link);
+        unset($links[$index]);
       } else if (isset($link['icon'])) {
-        $link['img'] = "/modules/{$this->id}/images/{$link['icon']}";
+        $links[$index]['img'] = "/modules/{$this->id}/images/{$link['icon']}";
       }
     }
     

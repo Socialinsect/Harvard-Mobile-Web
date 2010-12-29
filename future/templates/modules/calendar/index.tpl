@@ -1,26 +1,13 @@
-{include file="findInclude:common/header.tpl"}
+{block name="header"}
+    {include file="findInclude:common/header.tpl"}
+{/block}
+
 
 <div class="nonfocal">
   <h2>{$today|date_format:"%A %b %e, %Y"}</h2>
 </div>
 
-{strip}
-  {$navlistItems = array()}
-  
-  {$navlistItems[0] = array()}
-  {$navlistItems[0]['title'] = "Today's events"}
-  {$navlistItems[0]['url']   = $todaysEventsUrl}
-  
-  {$navlistItems[1] = array()}
-  {$navlistItems[1]['title'] = "Browse events by category"}
-  {$navlistItems[1]['url']   = $categoriesUrl}
-  
-  {$navlistItems[2] = array()}
-  {$navlistItems[2]['title'] = "Academic calendar"}
-  {$navlistItems[2]['url']   = $academicUrl}
-{/strip}
-
-{include file="findInclude:common/navlist.tpl" navlistItems=$navlistItems}
+{include file="findInclude:common/navlist.tpl" navlistItems=$calendarPages}
 
 {capture name="selectSection" assign="selectSection"}
   <select id="timeframe" name="timeframe">
@@ -32,6 +19,8 @@
   </select>
 {/capture}
 
-{include file="findInclude:common/search.tpl" additionalInputs=$selectSection placeholder="Search for events"}
+{block name="searchsection"}
+    {include file="findInclude:common/search.tpl" additionalInputs=$selectSection placeholder="Search for events"}
+{/block}
 
 {include file="findInclude:common/footer.tpl"}

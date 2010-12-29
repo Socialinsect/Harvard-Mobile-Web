@@ -26,7 +26,9 @@
           </tr>
         </table>
       </form>
-      <form action="search.php" id="search-form" style="display:none;">
+      
+      {block name="webkitSearchForm"}
+      <form action="search.php" id="search-form">
         <table border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td class="formlabel">Search:</td>
@@ -42,11 +44,15 @@
           <input type="hidden" name="{$arg}" value="{$value}" />
         {/foreach}
       </form>
+      {/block}
     </div>
   </div>
 {/block}
 
 {include file="findInclude:modules/{$moduleID}/common/stories.tpl"}
+
+{block name="blackberrySearchForm"}
+{/block}
 
 {block name="newsFooter"}
   {include file="findInclude:common/footer.tpl"}

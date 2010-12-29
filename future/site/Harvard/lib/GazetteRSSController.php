@@ -82,7 +82,7 @@ class GazetteRSScontroller extends RSSDataController
 
 class GazetteRSSItem extends RSSItem
 {
-    public function addElement(RSSElement $element)
+    public function addElement(XMLElement $element)
     {
         $name = $element->name();
         $value = $element->value();
