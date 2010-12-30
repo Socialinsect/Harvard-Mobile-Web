@@ -357,8 +357,6 @@ class KMLLineString extends XMLElement implements MapGeometry
 
 class KMLDataParser extends XMLDataParser
 {
-    // TODO this doesn't belong here
-
     protected $root;
     protected $elementStack = array();
     protected $data='';

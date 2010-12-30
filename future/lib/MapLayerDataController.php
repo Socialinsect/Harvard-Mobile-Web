@@ -26,7 +26,6 @@ define('GEOGRAPHIC_PROJECTION', 4326);
 class MapLayerDataController extends DataController
 {
     protected $parser = null;
-    protected $parserClass = null;
     protected $DEFAULT_PARSER_CLASS = 'KMLDataParser';
     protected $DEFAULT_MAP_CLASS = 'GoogleStaticMap';
     protected $items = null;
@@ -34,7 +33,6 @@ class MapLayerDataController extends DataController
     protected $dynamicMapBaseURL = null;
     protected $searchable = false;
     protected $defaultZoomLevel = 16;
-    protected $returnsGeometry = true;
     
     // in theory all map images controllers should use the same
     // zoom level, but if certain image servers (e.g. Harvard ArcGIS)
@@ -185,38 +183,15 @@ class MapLayerDataController extends DataController
 
         if (isset($args['DEFAULT_ZOOM_LEVEL']))
             $this->defaultZoomLevel = $args['DEFAULT_ZOOM_LEVEL'];
-
-        if (isset($args['DYNAMIC_ZOOM_LEVEL']))
-            $this->dynamicZoomLevel = $args['DYNAMIC_ZOOM_LEVEL'];
-        
-        if ($this->parserClass == 'ArcGISParser' && isset($args['ARCGIS_LAYER_ID']))
-            $this->parser->setDefaultLayer($args['ARCGIS_LAYER_ID']);
-
-        if (isset($args['RETURNS_GEOMETRY']))
-            $this->returnsGeometry = $args['RETURNS_GEOMETRY'];
     }
 
 
     public static function factory($args)
     {
-        $parserClass = isset($args['PARSER_CLASS']) ? $args['PARSER_CLASS'] : $this->DEFAULT_PARSER_CLASS;
-        switch ($parserClass) {
-            case 'ArcGISParser':
-                require_once realpath(LIB_DIR.'/ArcGISParser.php');
-                $controller = new ArcGISDataController();
-                break;
-            case 'KMLDataParser':
-                require_once realpath(LIB_DIR.'/KMLDataParser.php');
-                $controller = new KMLDataController();
-                break;
-            default:
-                require_once realpath(LIB_DIR.'/'.$parserClass.'.php');
-                $controller = new MapLayerDataController();
-                break;
-        }
-        $controller->parserClass = $parserClass;
-        $controller->setParser(new $parserClass());
-        $controller->init($args);
+        // init using CONTROLLER_CLASS not PARSER_CLASS
+        $args['CONTROLLER_CLASS'] = isset($args['CONTROLLER_CLASS']) ? $args['CONTROLLER_CLASS'] : __CLASS__;
+        $controller = parent::factory($args);
+        
         return $controller;
     }
 

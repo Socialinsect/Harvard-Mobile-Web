@@ -3,9 +3,6 @@
 // TODO reduce duplication between this class and WMSStaticMap/ArcGISJSMap
 // by moving some methods to config, utility, or superclass
 
-// TODO move this to config
-define("ESRI_PROJECTION_SERVER", 'http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer/project');
-
 // http://resources.esri.com/help/9.3/arcgisserver/apis/rest/index.html
 class ArcGISStaticMap extends StaticMapImageController {
 

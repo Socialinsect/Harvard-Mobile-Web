@@ -254,7 +254,7 @@ class MapModule extends Module {
             $searchTerms = $this->args['filter'];
 
             // need more standardized var name for this config
-            $federatedSearch = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_ENABLED');
+            $federatedSearch = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_URL');
             if ($federatedSearch) {
                 $searchResults = searchCampusMap($searchTerms); // defined in lib/MapSearch.php
 
