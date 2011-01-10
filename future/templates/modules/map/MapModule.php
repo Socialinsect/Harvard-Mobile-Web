@@ -57,11 +57,11 @@ class MapModule extends Module {
   // specified attribute value. Returns FALSE if it's not found.
   public static function findObjectWithMatchingValueInArray($array, $matchValue) {
     foreach ($array as $object) {
-        if (0 === strcasecmp($object->value, $matchValue)) {
+        if (isset($object->value) && (0 === strcasecmp($object->value, $matchValue))) {
             return $object;
         }
     }
-    return new FALSE;
+    return FALSE;
   }
 
   private function initializeMap($name, $details) {
