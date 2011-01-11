@@ -78,6 +78,24 @@ class GazetteRSScontroller extends RSSDataController
         $items = $this->items();
         return $items;   
     }
+
+    public function getIndexForItem($id)
+    {
+        if (!$id) {
+            return null;
+        }
+        
+        $items = $this->items();
+        
+        for ($i=0; $i < count($items); $i++) {
+            $item = $items[$i];
+            if ($item->getGUID()==$id || $item->getProperty('HARVARD:WPID')==$id) {
+                return $i;
+            }
+        }
+                
+        return null;
+    }
 }
 
 class GazetteRSSItem extends RSSItem

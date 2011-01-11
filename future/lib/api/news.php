@@ -55,12 +55,18 @@ if (isset($_REQUEST['command'])) {
       
        $lastStoryId = isset($_REQUEST['storyId']) ? $_REQUEST['storyId'] : NULL;
        if ($lastStoryId) {
-           // TODO: this has not been handled yet. I need more info on when this is used
-           break;
-      }
-  
-      $content = $feed->getData();
-    
+          $index = $feed->getIndexForItem($lastStoryId);
+          if (is_null($index)) {
+            $index = 0;
+          } else {
+            $index++;
+          }
+       } else {
+          $index = 0;
+       }
+       
+      $limit = 10;
+      $content = $feed->getRSSItems($index, $limit);
 }
 
 header('Content-Length: ' . strlen($content));
