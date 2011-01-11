@@ -79,6 +79,72 @@ class GazetteRSScontroller extends RSSDataController
         return $items;   
     }
 
+    public function getRSSItems($startIndex=0, $limit=null)
+    {
+        $data = $this->getData();
+        if ($startIndex === 0 && is_null($limit)) {
+            return $data;
+        }
+
+        if ($limit>0) {
+            $endIndex = $startIndex + $limit;
+        } else {
+            $endIndex = PHP_INT_MAX;
+        }
+        
+        $dom = new DomDocument();
+        $dom->loadXML($this->getData());
+        $items = $dom->getElementsByTagName('item');
+        $nodesToRemove = array();
+
+        for ($i=0; $i<$items->length; $i++) {
+            $item = $items->item($i);
+            if ( ($i < $startIndex) || ($i >= $endIndex)) {
+                $nodesToRemove[] = $item;
+            } else {
+                // translate enclosures to image tags for API compatibility
+                $enclosures = $item->getElementsByTagName('enclosure');
+                foreach ($enclosures as $enclosure) {
+                
+                    /* lets see what the dimensions of the image are. */
+                    $url = $enclosure->getAttributeNode('url')->value;         
+                    $extension = pathinfo($url, PATHINFO_EXTENSION);
+                    $extension = $extension ? '.' . $extension : '';
+                    $image_file = CACHE_DIR . "/GazetteImages/" . md5($url) .  $extension;
+ 
+                    /* the image has not been downloaded */
+                    if (!file_exists($image_file)) {
+                        $data = file_get_contents($url);
+                        file_get_contents($image_file,  file_get_contents($url));                       
+                    }
+                    
+                    /* get the image size */
+                    if ($image_size = getimagesize($image_file)) {
+                        $width = intval($image_size[0]);
+                        $height = intval($image_size[1]);
+                    } else {
+                        $width = 0;
+                        $height = 0;
+                    }
+
+                    /* only send real images */
+                    if ($width > 1 && $height > 1) {
+                        $image = $dom->createElement('image');
+                        $image_url = $dom->createElement('url', $url);
+                        $image->appendChild($image_url);
+                        $item->appendChild($image);
+                    }
+                }
+            }
+        }
+        
+        foreach ($nodesToRemove as $item) {
+            $item->parentNode->removeChild($item);
+        }
+        
+        return $dom->saveXML();
+    }
+
     public function getIndexForItem($id)
     {
         if (!$id) {
