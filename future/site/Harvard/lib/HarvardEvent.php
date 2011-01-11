@@ -53,9 +53,11 @@ class HarvardEvent extends TrumbaEvent {
     }
     
     if ($custom = $this->TrumbaCustomFields) {
- 		$custom['Contact Info'] = $this->getContactInfoArray();
+        // Intentionally adding quotes to the key in order to maintain
+        // backwards compatibility with previous API.        
+ 		$custom['"Contact Info"'] = $this->getContactInfoArray();
  		$arr['custom'] = $custom;
-	}
+	}    
 	 return $arr;
     
 	}
