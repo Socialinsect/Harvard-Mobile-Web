@@ -606,11 +606,20 @@ abstract class Module {
   }
   
   // Programmatic overrides for titles generated from backend data
+  protected function getPageTitle() {
+    return $this->pageTitle;
+  }
   protected function setPageTitle($title) {
     $this->pageTitle = $title;
   }
+  protected function getBreadcrumbTitle() {
+    return $this->breadcrumbTitle;
+  }
   protected function setBreadcrumbTitle($title) {
     $this->breadcrumbTitle = $title;
+  }
+  protected function getBreadcrumbLongTitle() {
+    return $this->breadcrumbLongTitle;
   }
   protected function setBreadcrumbLongTitle($title) {
     $this->breadcrumbLongTitle = $title;

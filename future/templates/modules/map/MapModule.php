@@ -52,6 +52,17 @@ class MapModule extends Module {
   
     return $bbox;
   }
+  
+  // Given an array of objects, it returns the object that has the 
+  // specified attribute value. Returns FALSE if it's not found.
+  public static function findObjectWithMatchingValueInArray($array, $matchValue) {
+    foreach ($array as $object) {
+        if (isset($object->value) && (0 === strcasecmp($object->value, $matchValue))) {
+            return $object;
+        }
+    }
+    return FALSE;
+  }
 
   private function initializeMap($name, $details) {
     $wms = new WMSServer();
@@ -79,7 +90,6 @@ class MapModule extends Module {
         $name = $nameparts[0];
       }
       $name = str_replace('.', '', $name);
-  
       // merge search results with category info if they came from a category
       $searchResults = ArcGISServer::search($name);
       if (isset($this->args['category'])) {
@@ -91,7 +101,15 @@ class MapModule extends Module {
         }
       }
       if ($searchResults && $searchResults->results) {
-        $result = $searchResults->results[0];
+          
+        // Try to pick the search result that matches our search exactly.
+        $result = MapModule::findObjectWithMatchingValueInArray(
+            $searchResults->results, $name);
+        // If nothing matches exactly, take the first result in the array.
+        if ($result === FALSE) {
+            $result = $searchResults->results[0];            
+        }
+        
         foreach ($result->attributes as $field => $value) {
           $details[$field] = $value;
         }

@@ -197,17 +197,17 @@ class NewsModule extends Module {
               $previousUrl = $this->buildBreadcrumbURL($this->page, $args, false);
             }
             
-            if ($totalItems - $start <= $this->maxPerPage) {
+            if (($totalItems - $start) > $this->maxPerPage) {
               $args['start'] = $start + $this->maxPerPage;
               $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
             }
           }
 
           $extraArgs = array(
-            'section'=>$this->feedIndex
+            'section' => $this->feedIndex
           );
 
-          $this->assign('extraArgs',     $extraArgs);
+          $this->assign('extraArgs',   $extraArgs);
           $this->assign('searchTerms', $searchTerms);
           $this->assign('stories',     $stories);
           $this->assign('previousUrl', $previousUrl);
@@ -233,8 +233,10 @@ class NewsModule extends Module {
             $previousUrl = $this->buildBreadcrumbURL($this->page, $args, false);
           }
           
-          $args['start'] = $start + $this->maxPerPage;
-          $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
+          if (($totalItems - $start) > $this->maxPerPage) {
+            $args['start'] = $start + $this->maxPerPage;
+            $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
+          }
         }
         
         $stories = array();

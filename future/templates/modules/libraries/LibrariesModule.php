@@ -26,7 +26,74 @@ class LibrariesModule extends Module {
     'unavailable' => 'unavailableItems',
     'collection'  => 'collectionOnlyItems',
   );
+  
+  private function groupByFirstLetterRange($entries, $maxGroupSize) {
+    $letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     
+    $firstLetterGroups = array();
+    for ($i = 0; $i < strlen($letters); $i++) {
+      $firstLetterGroups[substr($letters, $i, 1)] = array();
+    }
+    
+    foreach ($entries as $i => $entry) {
+      $firstLetter = strtoupper(substr($entry['title'], 0, 1));
+      if (!isset($firstLetterGroups[$firstLetter])) {
+        $firstLetterGroups[$firstLetter] = array();
+      }
+      $firstLetterGroups[$firstLetter][] = $entry;
+    }
+    
+    $letterGroups = array();
+    foreach ($firstLetterGroups as $letter => $e) {
+      $i = count($letterGroups)-1;
+      if ($i < 0 || (count($letterGroups[$i]['entries']) + count($e)) > $maxGroupSize) {
+        $letterGroups[] = array(
+          'letters' => array(),
+          'entries' => array(),
+        );
+        $i++;
+      }
+      $letterGroups[$i]['letters'][] = $letter;
+      $letterGroups[$i]['entries'] = array_merge($letterGroups[$i]['entries'], $e);
+      
+    }
+    
+    $groups = array();
+    foreach ($letterGroups as $i => $group) {
+      $first = reset($group['letters']);
+      $last = end($group['letters']);
+      
+      if ($first == $last) {
+        $groups[$first] = $group['entries'];
+      } else {
+        $groups["$first-$last"] = $group['entries'];
+      }    
+    }
+    unset($letterGroups);
+    
+    return $groups;
+  }
+  
+  private function filterByLetterRange($entries, $range) {
+    $parts = explode('-', $range);
+    if (count($parts) && strlen(trim($parts[0]))) {
+      $first = trim($parts[0]);
+      $last = count($parts) == 1 ? $first : trim($parts[1]);
+      
+      $results = array();
+      foreach ($entries as $entry) {
+        $title = strtoupper(substr($entry['title'], 0, 1));
+        if (strcmp($first, $title) <= 0 && strcmp($title, $last) <= 0) {
+          $results[] = $entry;
+        }
+      }
+      
+      return $results;
+    }
+    
+    return false;
+  }
+
   private function getBookmarks($type) {
     if (isset(self::$typeToCookie[$type])) {
       if (!isset($this->bookmarks[$type])) {
@@ -657,9 +724,16 @@ class LibrariesModule extends Module {
         break;
         
       case 'libraries':
-        $openOnly = $this->getArg('openOnly', false) ? true : false;
-        $openNowToggleURL = $this->buildBreadcrumbURL($this->page, 
-          $openOnly ? array() : array('openOnly' => 'true'), false);// toggle
+        $range = $this->getArg('range');
+        $printableRange = implode(' - ', explode('-', $range));
+        
+        if ($range && $this->pagetype == 'basic') {
+          $this->setPageTitle($this->getPageTitle()." ($printableRange)");
+          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($printableRange)");
+          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($printableRange)");
+        }
+        
+        $openOnly = $this->getArg('openOnly', 0) ? true : false;
         
         $data = Libraries::getOpenNow();
         //error_log(print_r($data, true));
@@ -675,12 +749,52 @@ class LibrariesModule extends Module {
         }
         ksort($libraries);
         
+        $entries = array();
+
+        if ($this->pagetype == 'basic' && count($libraries) > 20) {
+          $entries = $this->filterByLetterRange($libraries, $range);
+          
+          if ($entries === false) {
+            $groups = $this->groupByFirstLetterRange($libraries, 20);
+            
+            $entries = array();
+            foreach ($groups as $groupRange => $group) {
+              $args = $this->args;
+              $args['range'] = $groupRange;
+              $printableRange = implode(' - ', explode('-', $groupRange));
+              
+              $entries[] = array(
+                'title' => $printableRange,
+                'url' => $this->buildBreadcrumbURL($this->page, $args),
+              );
+            }
+          }
+        } else {
+          $entries = $libraries;
+        }
+        
+        $toggleOpenArgs = $this->args;
+        if ($openOnly) {
+          unset($toggleOpenArgs['openOnly']);
+        } else {
+          $toggleOpenArgs['openOnly'] = 1;
+        }
+        
         $this->assign('openOnly',         $openOnly);
-        $this->assign('openNowToggleURL', $openNowToggleURL);
-        $this->assign('libraries',        $libraries);
+        $this->assign('openNowToggleURL', $this->buildURL($this->page, $toggleOpenArgs, false));
+        $this->assign('entries',          $entries);
         break;
         
       case 'archives':
+        $range = $this->getArg('range');
+        $printableRange = implode(' - ', explode('-', $range));
+
+        if ($range && $this->pagetype == 'basic') {
+          $this->setPageTitle($this->getPageTitle()." ($printableRange)");
+          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($printableRange)");
+          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($printableRange)");
+        }
+
         $data = Libraries::getArchives();
         //error_log(print_r($data, true));
         
@@ -695,7 +809,31 @@ class LibrariesModule extends Module {
         }
         ksort($archives);
 
-        $this->assign('archives', $archives);
+        $entries = array();
+        
+        if ($this->pagetype == 'basic' && count($archives) > 20) {
+          $entries = $this->filterByLetterRange($archives, $range);
+        
+          if ($entries === false) {
+            $groups = $this->groupByFirstLetterRange($archives, 20);
+            
+            $entries = array();
+            foreach ($groups as $range => $group) {
+              $printableRange = implode(' - ', explode('-', $range));
+              
+              $entries[] = array(
+                'title' => $printableRange,
+                'url' => $this->buildBreadcrumbURL($this->page, array(
+                  'range' => $range
+                )),
+              );
+            }
+          }
+        } else {
+          $entries = $archives;
+        }
+
+        $this->assign('entries', $entries);
         break;
         
       case 'locationAndHours':        
