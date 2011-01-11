@@ -11,6 +11,7 @@ require_once realpath(LIB_DIR.'/api.php');
 
 $feeds      = $GLOBALS['siteConfig']->loadFeedData('news');
 $maxPerPage = $GLOBALS['siteConfig']->getVar('NEWS_MAX_RESULTS');
+$limit = 10;
 
 function getFeed($feeds, $index) {
   if (isset($feeds[$index])) {
@@ -41,14 +42,18 @@ switch(apiGetArg('command')) {
     $feed = getFeed($feeds, apiGetArg('channel', 0));
     
     if ($searchTerms && $feed) {
+      $feed->addFilter('search', $searchTerms);
+
+      $index = 0;
       $lastStoryId = apiGetArg('storyId', null);
       if ($lastStoryId) {
-        // TODO: this has not been handled yet. I need more info on when this is used
-        break;
+        $feedIndex = $feed->getIndexForItem($lastStoryId);
+        if (!is_null($feedIndex)) {
+          $index = $feedIndex + 1;
+        }
       }
       
-      $feed->addFilter('search', $searchTerms);
-      $content = $feed->getData(); // this returns everything.......
+      $content = $feed->getRSSItems($index, $limit);
     }       
     break;
     
@@ -65,7 +70,6 @@ switch(apiGetArg('command')) {
         }
       }
       
-      $limit = 10;
       $content = $feed->getRSSItems($index, $limit);
     }
     break;
