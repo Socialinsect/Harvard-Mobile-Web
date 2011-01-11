@@ -233,8 +233,10 @@ class NewsModule extends Module {
             $previousUrl = $this->buildBreadcrumbURL($this->page, $args, false);
           }
           
-          $args['start'] = $start + $this->maxPerPage;
-          $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
+          if (($totalItems - $start) > $this->maxPerPage) {
+            $args['start'] = $start + $this->maxPerPage;
+            $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
+          }
         }
         
         $stories = array();
