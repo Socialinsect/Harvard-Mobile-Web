@@ -61,6 +61,9 @@
     {/if}
   {/block}
   
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="viewport" id="viewport" 
+    content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no, initial-scale=1.0, maximum-scale=1.0{/if}" />
   {block name="additionalHeadTags"}{/block}
 </head>
 
@@ -69,7 +72,7 @@
     {if !$isModuleHome}
       {if $moduleID != 'home'}
         <a href="./" class="module">
-          <img src="/common/images/title-{$navImageID|default:$moduleID}.png"   width="28" height="28" alt="" />
+          <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" />
         </a>
       {/if}
       {foreach $breadcrumbs as $breadcrumb}

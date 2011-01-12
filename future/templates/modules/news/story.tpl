@@ -1,6 +1,4 @@
-{block name="header"}
-    {include file="findInclude:common/header.tpl"}
-{/block}
+{include file="findInclude:common/header.tpl"}
 
 <div class="news">
   <h1 class="slugline">{$title}</h1>

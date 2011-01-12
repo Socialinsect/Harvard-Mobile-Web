@@ -5,6 +5,8 @@ require_once realpath(LIB_DIR.'/HTMLPager.php');
 require_once realpath(LIB_DIR.'/User.php');
 
 define('MODULE_BREADCRUMB_PARAM', '_b');
+define('DISABLED_MODULES_COOKIE', 'disabledmodules');
+define('MODULE_ORDER_COOKIE', 'moduleorder');
 
 abstract class Module {
 
@@ -18,6 +20,8 @@ abstract class Module {
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
   protected $supportsCerts = false;
+  
+  protected $imageExt = '.png';
   
   private $pageConfig = null;
   
@@ -379,6 +383,17 @@ abstract class Module {
       $this->fontsize = $_COOKIE['fontsize'];
     }
     
+    switch ($this->pagetype) {
+      case 'compliant':
+        $this->imageExt = '.png';
+        break;
+        
+      case 'touch':
+      case 'basic':
+        $this->imageExt = '.gif';
+        break;
+    }
+    
     $this->initialize();
   }
   
@@ -403,24 +418,23 @@ abstract class Module {
     $modules = $this->getAllModules();
     
     foreach ($modules as $id => $info) {
-      if (!$info['homescreen'] || $info['disabled']) {
+      if (!$info['homescreen']) {
         unset($modules[$id]);
       }
     }
     
-    if (isset($_COOKIE["visiblemodules"])) {
-      if ($_COOKIE["visiblemodules"] == "NONE") {
-        $visibleModuleIDs = array();
-      } else {
-        $visibleModuleIDs = array_flip(explode(",", $_COOKIE["visiblemodules"]));
-      }
-      foreach ($modules as $moduleID => &$info) {
-         $info['disabled'] = !isset($visibleModuleIDs[$moduleID]) && $info['disableable'];
+    if (isset($_COOKIE[DISABLED_MODULES_COOKIE]) && $_COOKIE[DISABLED_MODULES_COOKIE] != "NONE") {
+      $hiddenModuleIDs = explode(",", $_COOKIE[DISABLED_MODULES_COOKIE]);
+
+      foreach ($hiddenModuleIDs as $moduleID) {
+        if (isset($modules[$moduleID]) && $modules[$moduleID]['disableable']) {
+          $modules[$moduleID]['disabled'] = true;
+        }
       }
     }
 
-    if (isset($_COOKIE["moduleorder"])) {
-      $sortedModuleIDs = explode(",", $_COOKIE["moduleorder"]);
+    if (isset($_COOKIE[MODULE_ORDER_COOKIE])) {
+      $sortedModuleIDs = explode(",", $_COOKIE[MODULE_ORDER_COOKIE]);
       $unsortedModuleIDs = array_diff(array_keys($modules), $sortedModuleIDs);
             
       $sortedModules = array();
@@ -439,18 +453,18 @@ abstract class Module {
     $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
     $value = implode(",", $moduleIDs);
     
-    setcookie("moduleorder", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["moduleorder"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
+    setcookie(MODULE_ORDER_COOKIE, $value, time() + $lifespan, COOKIE_PATH);
+    $_COOKIE[MODULE_ORDER_COOKIE] = $value;
+    //error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
   
-  protected function setHomeScreenVisibleModules($moduleIDs) {
+  protected function setHomeScreenHiddenModules($moduleIDs) {
     $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
     $value = count($moduleIDs) ? implode(",", $moduleIDs) : 'NONE';
     
-    setcookie("visiblemodules", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["visiblemodules"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
+    setcookie(DISABLED_MODULES_COOKIE, $value, time() + $lifespan, COOKIE_PATH);
+    $_COOKIE[DISABLED_MODULES_COOKIE] = $value;
+    //error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
 
   //

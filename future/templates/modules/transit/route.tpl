@@ -52,7 +52,7 @@
       {if $routeConfig['serviceLogo']}
         <span id="servicelogo">
           {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}" />
+            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
           {if $routeConfig['serviceLink']}</a>{/if}
         </span>
       {/if}

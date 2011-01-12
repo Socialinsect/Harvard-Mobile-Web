@@ -1,0 +1,184 @@
+.ellipsis_wrapper {
+  position: relative;
+  overflow: hidden;
+}
+.ellipsis {
+  font-size: 17px;
+  line-height: 20px;
+  overflow: hidden;
+  max-height: 41px;
+}
+#bookmark {
+	display: block;
+	width: 38px;
+	height: 33px;
+	overflow: hidden;
+	background-image: url(/common/images/bookmark.png);
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	float: right;
+	margin: -3px -8px 0 0;
+	padding: 0 0 5px 5px;
+}
+
+#bookmark.bookmarked {
+	background-position: 0 -38px;
+}
+
+.itemType {
+  display: block;
+  padding-left: 24px;
+  background-position: left top;
+  background-repeat: no-repeat;
+  background-size: 20px;
+  -o-background-size: 20px;
+  -moz-background-size: 20px;
+  -khtml-background-size: 20px;
+  -webkit-background-size: 20px;
+/* Need IE/WP7 CSS hack here to get high-res background images */
+  font-size: 15px;
+  font-weight: normal;
+  line-height: 18px;
+}
+
+.distance {
+  font-size: 15px;
+  font-weight: normal;
+  line-height: 18px;
+}
+
+.items ul.nav {
+	margin: -8px 10px 15px 10px;
+}
+
+.available, .requestable, .unavailable {
+  margin-top: 1px;
+  margin-left: -1px;
+  line-height: 20px;
+}
+.available {
+  background-image: url(/modules/libraries/images/available.png);
+}
+.requestable {
+  background-image: url(/modules/libraries/images/requestable.png);
+}
+.unavailable {
+  background-image: url(/modules/libraries/images/unavailable.png);
+}
+
+.nav .wrapper {
+  display: inline-block;
+}
+
+.infoLink {
+  float: right;
+  margin: -5px -5px;
+}
+
+.listItems .smallprint > div {
+  padding-left: 20px;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  -webkit-background-size: 16px;
+  line-height: 17px;
+}
+.listItems .book {
+  background-image: url(/modules/libraries/images/book.png);
+  min-height: 16px;
+}
+.listItems .image {
+  background-image: url(/modules/libraries/images/image.png);
+  min-height: 16px;
+}
+.listItems .journal {
+  background-image: url(/modules/libraries/images/journal.png);
+  min-height: 16px;
+}
+.listItems .map {
+  background-image: url(/modules/libraries/images/map.png);
+  min-height: 16px;
+}
+.listItems .musicscore {
+  background-image: url(/modules/libraries/images/musicscore.png);
+  min-height: 16px;
+}
+.listItems .soundrecording {
+  background-image: url(/modules/libraries/images/soundrecording.png);
+  min-height: 16px;
+}
+.listItems .computerfile {
+  background-image: url(/modules/libraries/images/computerfile.png);
+  min-height: 16px;
+}
+.listItems .video {
+  background-image: url(/modules/libraries/images/video.png);
+  min-height: 16px;
+}
+
+table.search {
+  border: none;
+}
+table.search th, table.search td {
+  vertical-align: middle;
+  padding: 0px 0px 9px 0px;
+  font-size: 16px;
+}
+table.search th {
+  text-align: right;
+  font-weight: bold;
+  width: 5em;
+  padding-right: 2px;
+}
+table.search td.wrap div {
+  margin-right: 5px;  /* handle input padding */
+}
+
+table.search input[type=text], table.search select {
+  margin: 0;
+  width: 99.9%;
+  line-height: 22px;
+  font-size: 16px;
+}
+
+.label {
+  width: 88px;
+}
+.value {
+  margin-left: 86px;
+}
+
+.thumbnail {
+  text-align: center;
+  padding-top: 10px;
+}
+.thumbnail a {
+  display: inline-block;
+  position: relative;
+  background-image: none;
+  padding: 0;
+  margin: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  line-height: normal;
+}
+.thumbnail a .smallprint,
+.thumbnail a:visited .smallprint {
+  text-decoration: underline;
+  color: #933;
+}
+
+.nav a.authorLink, .nav a.authorLink:visited {
+  display: inline;
+  color: #933;
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+  text-decoration: underline;
+  background: none;
+  border: none;
+}
+
+.itemInfo, .itemInfo .smallprint {
+  line-height: normal;
+}

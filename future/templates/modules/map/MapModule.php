@@ -73,6 +73,7 @@ class MapModule extends Module {
        $imageWidth = 290; $imageHeight = 190;
        break;
        
+     case 'touch':
      case 'basic':
        if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
          $imageWidth = 410; $imageHeight = 260;
@@ -175,12 +176,12 @@ class MapModule extends Module {
       // build urls for panning/zooming
       $params = $this->args;
       
-      $scrollNorth = $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0, -1,  0)));
-      $scrollSouth = $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0,  1,  0)));
-      $scrollEast  = $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  1,  0,  0)));
-      $scrollWest  = $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox, -1,  0,  0)));
-      $zoomInUrl   = $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0,  0,  1)));
-      $zoomOutUrl  = $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0,  0, -1)));
+      $this->assign('scrollNorth', $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0,  1,  0))));
+      $this->assign('scrollSouth', $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0, -1,  0))));
+      $this->assign('scrollEast',  $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  1,  0,  0))));
+      $this->assign('scrollWest',  $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox, -1,  0,  0))));
+      $this->assign('zoomInUrl',   $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0,  0,  1))));
+      $this->assign('zoomOutUrl',  $this->detailUrlForBBox($this->bboxArr2Str($this->shiftBBox($bbox,  0,  0, -1))));
     }
   
     $this->assign('imageUrl', $imageUrl);
