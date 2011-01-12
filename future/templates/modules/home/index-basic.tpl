@@ -5,3 +5,7 @@
   {$bannerImg['width'] = 208}
   {$bannerImg['height'] = 35}
 {/block}
+
+{block name="topItem"}
+  <p class="bb"> </p>  
+{/block}
