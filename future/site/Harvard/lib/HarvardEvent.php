@@ -30,9 +30,13 @@ class HarvardEvent extends TrumbaEvent {
 		return $info;
     }
 
-    public function apiArray()
+	private function removeSuppressedCustomFields($customFields, $suppressedCustomFields)
+	{		
+		return array_diff_key($customFields, array_flip($suppressedCustomFields));
+	}
+
+    public function apiArray($suppressedCustomFields)
     {
-    
 	 $arr= array (
 	 	'id'=>crc32($this->get_uid()) >>1,
 	 	'title'=>$this->get_summary(),
@@ -51,6 +55,10 @@ class HarvardEvent extends TrumbaEvent {
     }
     
     if ($custom = $this->TrumbaCustomFields) {
+		$custom =
+		$this->removeSuppressedCustomFields($this->TrumbaCustomFields, 
+			$suppressedCustomFields);
+			
         // Intentionally adding quotes to the key in order to maintain
         // backwards compatibility with previous API.        
  		$custom['"Contact Info"'] = $this->getContactInfoArray();
@@ -59,7 +67,6 @@ class HarvardEvent extends TrumbaEvent {
 	 return $arr;
     
 	}
-
 
     public function get_category_from_name($name) {
     	$categories = HarvardEvent::getEventCategories();
