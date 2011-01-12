@@ -15,11 +15,9 @@
           {$info['title']}
           <span class="nolinkbuttons"> 
             <a href="#" onclick="moveUp(this); return false;">
-              <!--<img src="/modules/{$moduleID}/images/button-up.png" width="26" height="26" class="moveup" alt="Move up"/>-->
               <div class="moveup">&nbsp;</div>
             </a> 
             <a href="#" onclick="moveDown(this); return false;">
-              <!--<img src="/modules/{$moduleID}/images/button-down.png" width="26" height="26" class="movedown" alt="Move down"/>-->
               <div class="movedown">&nbsp;</div>
             </a> 
           </span> 

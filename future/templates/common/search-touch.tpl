@@ -12,10 +12,10 @@
       {/if}
       <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
         <tr>
-          <td width="70%">
-            <input class="forminput" type="text" id="{$inputName|default:'filter'}" name="{$inputName|default:'filter'}" value="{$searchTerms|escape}" />
+          <td width="{block name='inputWidth'}70%{/block}">
+            <input class="forminput" type="text" id="{$inputName|default:'filter'}" name="{$inputName|default:'filter'}" value="{$searchTerms|escape}" style="width:98%" />
           </td>
-          <td width="30%">
+          <td width="{block name='submitWidth'}30%{/block}">
             {block name="formSubmit"}
               <input type="submit" value="Search" class="submitbutton" />
             {/block}

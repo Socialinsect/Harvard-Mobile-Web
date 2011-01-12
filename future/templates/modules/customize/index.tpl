@@ -1,5 +1,9 @@
 {include file="findInclude:common/header.tpl"}
 
+{block name="imageDetails"}
+  {$imageExt = '.jpg'}
+{/block}
+
 {block name="customize"}
   <div class="focal"> 
     <p>Use the up and down links to customize the order of icons on your homepage. Use the checkboxes to toggle visibility. Changes are automatically saved, but <strong>you may need to manually refresh your homepage</strong> after you're finished here.</p>
@@ -12,9 +16,9 @@
             {if $info['disableable']}
               <a href="{$info['toggleDisabledURL']}">
                 {if $info['disabled']}
-                  <img src="/modules/{$moduleID}/images/check-off.gif" border="0" alt="On">
+                  <img src="/common/images/check-off{$imageExt}" border="0" alt="On">
                 {else}
-                  <img src="/modules/{$moduleID}/images/check-on.gif" border="0" alt="Off">
+                  <img src="/common/images/check-on{$imageExt}" border="0" alt="Off">
                 {/if}              
               </a>
             {/if}
@@ -23,14 +27,14 @@
           <td>
             {if isset($info['swapUpURL'])}
               <a href="{$info['swapUpURL']}">
-                <img src="/modules/{$moduleID}/images/up.gif" border="0" alt="Up">
+                <img src="/common/images/up{$imageExt}" border="0" alt="Up">
               </a>
             {/if}
           </td>
           <td>
             {if isset($info['swapDownURL'])}
               <a href="{$info['swapDownURL']}">
-                <img src="/modules/{$moduleID}/images/down.gif" border="0" alt="Down">
+                <img src="/common/images/down{$imageExt}" border="0" alt="Down">
               </a>
             {/if}
           </td>
