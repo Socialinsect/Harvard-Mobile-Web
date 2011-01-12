@@ -82,9 +82,6 @@ class GazetteRSScontroller extends RSSDataController
     public function getRSSItems($startIndex=0, $limit=null)
     {
         $data = $this->getData();
-        //if ($startIndex === 0 && is_null($limit)) {
-        //    return $data;
-        //}
 
         if ($limit>0) {
             $endIndex = $startIndex + $limit;
@@ -103,6 +100,31 @@ class GazetteRSScontroller extends RSSDataController
             if ( ($i < $startIndex) || ($i >= $endIndex)) {
                 $nodesToRemove[] = $item;
             } else {
+                // translate enclosures to image tags for API compatibility
+                $content = $item->getElementsByTagName('encoded')->item(0);
+                $contentValue = $content->nodeValue;
+                $contentHTML = new DOMDocument();
+                $contentHTML->loadHTML('<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head>'.$contentValue);
+                
+                foreach ($contentHTML->getElementsByTagName('img') as $img) {
+                  if ($img->getAttribute('width') == '1') {
+                    $img->parentNode->removeChild($img);
+                    continue;
+                  }
+                  
+                  $newSrc = GazetteRSSEnclosure::getImageLoaderURL($img->getAttribute('src'), $w, $h);
+                  if ($newSrc) {
+                    $img->setAttribute('src', $newSrc);
+                    $img->setAttribute('width', 300);
+                    $img->setAttribute('height', 'auto');
+        
+                  } else {
+                    $img->parentNode->removeChild($img);
+                  }
+                }
+                $newContent = $dom->createCDATASection($contentHTML->saveHTML());
+                $content->replaceChild($newContent, $content->firstChild);
+                
                 // translate enclosures to image tags for API compatibility
                 $enclosures = $item->getElementsByTagName('enclosure');
                 foreach ($enclosures as $enclosure) {
@@ -124,6 +146,7 @@ class GazetteRSScontroller extends RSSDataController
                         $item->appendChild($image);
                     }
                 }
+                
             }
         }
         
