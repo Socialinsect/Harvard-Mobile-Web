@@ -66,12 +66,32 @@ class LibrariesModule extends Module {
       if ($first == $last) {
         $groups[$first] = $group['entries'];
       } else {
-        $groups["$first - $last"] = $group['entries'];
+        $groups["$first-$last"] = $group['entries'];
       }    
     }
     unset($letterGroups);
     
     return $groups;
+  }
+  
+  private function filterByLetterRange($entries, $range) {
+    $parts = explode('-', $range);
+    if (count($parts) && strlen(trim($parts[0]))) {
+      $first = trim($parts[0]);
+      $last = count($parts) == 1 ? $first : trim($parts[1]);
+      
+      $results = array();
+      foreach ($entries as $entry) {
+        $title = strtoupper(substr($entry['title'], 0, 1));
+        if (strcmp($first, $title) <= 0 && strcmp($title, $last) <= 0) {
+          $results[] = $entry;
+        }
+      }
+      
+      return $results;
+    }
+    
+    return false;
   }
 
   private function getBookmarks($type) {
@@ -705,16 +725,15 @@ class LibrariesModule extends Module {
         
       case 'libraries':
         $range = $this->getArg('range');
-
+        $printableRange = implode(' - ', explode('-', $range));
+        
         if ($range && $this->pagetype == 'basic') {
-          $this->setPageTitle($this->getPageTitle()." ($range)");
-          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($range)");
-          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($range)");
+          $this->setPageTitle($this->getPageTitle()." ($printableRange)");
+          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($printableRange)");
+          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($printableRange)");
         }
         
-        $openOnly = $this->getArg('openOnly', false) ? true : false;
-        $openNowToggleURL = $this->buildBreadcrumbURL($this->page, 
-          $openOnly ? array() : array('openOnly' => 'true'), false);// toggle
+        $openOnly = $this->getArg('openOnly', 0) ? true : false;
         
         $data = Libraries::getOpenNow();
         //error_log(print_r($data, true));
@@ -731,25 +750,22 @@ class LibrariesModule extends Module {
         ksort($libraries);
         
         $entries = array();
-        
+
         if ($this->pagetype == 'basic' && count($libraries) > 20) {
-          $groups = $this->groupByFirstLetterRange($libraries, 20);
-        
-          if ($range) {
-            if (isset($groups[$range])) {
-              $entries = $groups[$range];
-            } else {
-              $this->redirectTo($this->page);
-            }
-          } else {
-            $entries = array();
-            foreach ($groups as $range => $group) {
-              $args = array('range' => $range);
-              if ($openOnly) { $args['openOnly'] = 'true'; }
+          $entries = $this->filterByLetterRange($libraries, $range);
+          
+          if ($entries === false) {
+            $groups = $this->groupByFirstLetterRange($libraries, 20);
             
+            $entries = array();
+            foreach ($groups as $groupRange => $group) {
+              $args = $this->args;
+              $args['range'] = $groupRange;
+              $printableRange = implode(' - ', explode('-', $groupRange));
+              
               $entries[] = array(
-                'title' => $range,
-                'url' => $this->buildBreadcrumbURL($this->page, $args, true),
+                'title' => $printableRange,
+                'url' => $this->buildBreadcrumbURL($this->page, $args),
               );
             }
           }
@@ -757,18 +773,26 @@ class LibrariesModule extends Module {
           $entries = $libraries;
         }
         
+        $toggleOpenArgs = $this->args;
+        if ($openOnly) {
+          unset($toggleOpenArgs['openOnly']);
+        } else {
+          $toggleOpenArgs['openOnly'] = 1;
+        }
+        
         $this->assign('openOnly',         $openOnly);
-        $this->assign('openNowToggleURL', $openNowToggleURL);
+        $this->assign('openNowToggleURL', $this->buildURL($this->page, $toggleOpenArgs, false));
         $this->assign('entries',          $entries);
         break;
         
       case 'archives':
         $range = $this->getArg('range');
+        $printableRange = implode(' - ', explode('-', $range));
 
         if ($range && $this->pagetype == 'basic') {
-          $this->setPageTitle($this->getPageTitle()." ($range)");
-          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($range)");
-          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($range)");
+          $this->setPageTitle($this->getPageTitle()." ($printableRange)");
+          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($printableRange)");
+          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($printableRange)");
         }
 
         $data = Libraries::getArchives();
@@ -788,22 +812,20 @@ class LibrariesModule extends Module {
         $entries = array();
         
         if ($this->pagetype == 'basic' && count($archives) > 20) {
-          $groups = $this->groupByFirstLetterRange($archives, 20);
+          $entries = $this->filterByLetterRange($archives, $range);
         
-          if ($range) {
-            if (isset($groups[$range])) {
-              $entries = $groups[$range];
-            } else {
-              $this->redirectTo($this->page);
-            }
-          } else {
+          if ($entries === false) {
+            $groups = $this->groupByFirstLetterRange($archives, 20);
+            
             $entries = array();
             foreach ($groups as $range => $group) {
+              $printableRange = implode(' - ', explode('-', $range));
+              
               $entries[] = array(
-                'title' => $range,
+                'title' => $printableRange,
                 'url' => $this->buildBreadcrumbURL($this->page, array(
                   'range' => $range
-                ), true),
+                )),
               );
             }
           }

@@ -7,13 +7,11 @@
  *
  *****************************************************************/
 
-function getArg($key, $default='') {
-  return isset($_REQUEST[$key]) ? stripslashes(trim($_REQUEST[$key])) : $default;
-}
 
+require_once realpath(LIB_DIR.'/api.php');
 require_once realpath(LIB_DIR.'/feeds/Libraries.php');
-error_log("COMMAND {$_REQUEST['command']}");
-switch ($_REQUEST['command']) {
+
+switch (apiGetArg('command')) {
   case 'libraries':
     $data = Libraries::getLibraries();
     break;
@@ -27,51 +25,51 @@ switch ($_REQUEST['command']) {
     break;
 
   case 'libdetail':
-    $libId = getArg('id');
-    $libName = getArg('name');
+    $libId = apiGetArg('id');
+    $libName = apiGetArg('name');
     $data = Libraries::getLibraryDetails($libId, $libName);
     break;
 
   case 'archivedetail':
-    $archiveId = getArg('id');
-    $archiveName = getArg('name');
+    $archiveId = apiGetArg('id');
+    $archiveName = apiGetArg('name');
     $data = Libraries::getArchiveDetails($archiveId, $archiveName);
     break;
 
   case 'search':
     // empty strings are ignored by searchItems() when building queries
     $data = Libraries::searchItems(array(
-      'q'        => getArg('q'),         // the full query
-      'keywords' => getArg('keywords'),  // space-separated list of keywords
-      'title'    => getArg('title'),
-      'author'   => getArg('author'),
-      'location' => getArg('location'),  // library/archive location code
-      'format'   => getArg('format'),    // format code
-      'pubDate'  => getArg('pubDate'),   // YYYY-YYYY (4 digit year range)
-      'language' => getArg('language'),  // language code
-    ), getArg('page', '1'));
+      'q'        => apiGetArg('q'),         // the full query
+      'keywords' => apiGetArg('keywords'),  // space-separated list of keywords
+      'title'    => apiGetArg('title'),
+      'author'   => apiGetArg('author'),
+      'location' => apiGetArg('location'),  // library/archive location code
+      'format'   => apiGetArg('format'),    // format code
+      'pubDate'  => apiGetArg('pubDate'),   // YYYY-YYYY (4 digit year range)
+      'language' => apiGetArg('language'),  // language code
+    ), apiGetArg('page', '1'));
     break;
 
   case 'fullavailability':
-    $itemid = getArg('itemId');
+    $itemid = apiGetArg('itemId');
     $data = Libraries::getFullAvailability($itemid);
     break;
   
   case 'itemavailability':
-    $data = Libraries::getItemAvailability(getArg('itemId'));
+    $data = Libraries::getItemAvailability(apiGetArg('itemId'));
     break;
 
   case 'itemavailabilitysummary':
-    $data = Libraries::getItemAvailabilitySummary(getArg('itemId'));
+    $data = Libraries::getItemAvailabilitySummary(apiGetArg('itemId'));
     break;
 
   case 'itemdetail':
-    $itemid = getArg('itemId');
+    $itemid = apiGetArg('itemId');
     $data = Libraries::getItemRecord($itemid);
     break;
 
   case 'imagethumbnail':
-    $imageId = getArg('itemId');
+    $imageId = apiGetArg('itemId');
     $data = Libraries::getImageThumbnail($imageId);
     break;
   

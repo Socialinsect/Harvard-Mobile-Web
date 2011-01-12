@@ -64,6 +64,56 @@ class RSSDataController extends DataController
         $this->items = null;
         parent::clearInternalCache();
     }
+    
+    public function getIndexForItem($id)
+    {
+        if (!$id) {
+            return null;
+        }
+        
+        $items = $this->items();
+        
+        for ($i=0; $i < count($items); $i++) {
+            $item = $items[$i];
+            if ($item->getGUID()==$id) {
+                return $i;
+            }
+        }
+        
+        return null;
+    }
+    
+    public function getRSSItems($startIndex=0, $limit=null)
+    {
+        $data = $this->getData();
+        if ($startIndex === 0 && is_null($limit)) {
+            return $data;
+        }
+
+        if ($limit>0) {
+            $endIndex = $startIndex + $limit;
+        } else {
+            $endIndex = PHP_INT_MAX;
+        }
+        
+        $dom = new DomDocument();
+        $dom->loadXML($this->getData());
+        $items = $dom->getElementsByTagName('item');
+        $nodesToRemove = array();
+
+        for ($i=0; $i<$items->length; $i++) {
+            $item = $items->item($i);
+            if ( ($i < $startIndex) || ($i >= $endIndex)) {
+                $nodesToRemove[] = $item;
+            }
+        }
+        
+        foreach ($nodesToRemove as $item) {
+            $item->parentNode->removeChild($item);
+        }
+        
+        return $dom->saveXML();
+    }
 
     public function items($start=0,$limit=null, &$totalItems=0) 
     {

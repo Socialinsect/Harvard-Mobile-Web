@@ -8,6 +8,19 @@ class SiteConfig {
   
   static private $testVars = null;
 
+  public function loadFeedData($name) {
+    $data = array();
+    
+    $feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/$name.ini");
+    if ($feedConfigFile) {
+      $data = parse_ini_file($feedConfigFile, true);
+    } 
+    
+    return $data;
+  }
+
+  // -------------------------------------------------------------------------
+
   public function loadWebAppFile($name, $section = true, $ignoreError = false) {
     if (!in_array($name, array_keys($this->webAppVars))) {
       $file = realpath_exists(SITE_CONFIG_DIR."/web/$name.ini");

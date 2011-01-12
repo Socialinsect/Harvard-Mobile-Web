@@ -286,8 +286,8 @@ class CalendarModule extends Module {
   }
  
   protected function initialize() {
-    $this->feeds      = $this->loadFeedData();
-    $this->timezone   = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
+    $this->feeds    = $this->loadFeedData();
+    $this->timezone = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
   }
 
   protected function initializeForPage() {

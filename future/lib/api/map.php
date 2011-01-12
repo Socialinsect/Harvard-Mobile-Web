@@ -7,11 +7,12 @@
 *
 *****************************************************************/
 
-require_once realpath(LIB_DIR . '/feeds/ArcGISServer.php');
+require_once realpath(LIB_DIR.'/api.php');
+require_once realpath(LIB_DIR .'/feeds/ArcGISServer.php');
 
 $content = "";
 
-switch ($_REQUEST['command']) {
+switch (apiGetArg('command')) {
 
   case 'capabilities':
     $results = ArcGISServer::getCapabilities();
@@ -19,7 +20,7 @@ switch ($_REQUEST['command']) {
     break;
   
   case 'proj4specs':
-    $wkid = $_REQUEST['wkid'];
+    $wkid = apiGetArg('wkid');
     $results = ArcGISServer::getWkidProperties($wkid);
     $content = json_encode($results);
     break;
@@ -43,26 +44,28 @@ switch ($_REQUEST['command']) {
     break;
   
   case 'search':
-    if (isset($_REQUEST['q'])) {
-      $searchTerms = $_REQUEST['q'];
+    $searchTerms = apiGetArg('q');
+    $category = apiGetArg('category');
+    $loc = apiGetArg('loc');
     
-      if (isset($_REQUEST['loc'])) {
+    if ($searchTerms) {
+      if ($loc) {
         $url = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_URL').'?'.http_build_query(array(
-          'loc' => $_REQUEST['loc'],
+          'loc' => $loc,
           'str' => $searchTerms,
         ));
         $content = file_get_contents($url);
     
       } else {
-        if (isset($_REQUEST['category'])) {
-          $category = $_REQUEST['category'];
-          $results = ArcGISServer::search($_REQUEST['q'], $category);
+        if ($category) {
+          $results = ArcGISServer::search($searchTerms, $category);
           if ($results === FALSE) {
             $results = array();
+            
           } else if (count($results) <= 1) {
             // if we're looking at a single result,
             // see if we can get more comprehensive info from the main search
-            $moreResults = ArcGISServer::search($_REQUEST['q']);
+            $moreResults = ArcGISServer::search($searchTerms);
             if (count($moreResults->results) == 1) {
               $result = $moreResults->results[0];
               if (count($results)) {
@@ -74,15 +77,14 @@ switch ($_REQUEST['command']) {
               $results = $moreResults;
             }
           }
-    
         } else {
           require_once realpath(LIB_DIR.'/feeds/MapSearch.php');
-          $results = searchCampusMap($_REQUEST['q']);
+          $results = searchCampusMap($searchTerms);
         }
         $content = json_encode($results);
       }
-    } elseif (isset($_REQUEST['category'])) {
-      $category = $_REQUEST['category'];
+      
+    } elseif ($category) {
       $results = array();
       $layer = ArcGISServer::getLayer($category);
       if ($layer) {

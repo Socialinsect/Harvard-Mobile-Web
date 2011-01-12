@@ -286,16 +286,6 @@ abstract class Module {
     exit;
   }
   
-  protected function loadFeedData() {
-    $data = null;
-    $feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/{$this->id}.ini");
-    if ($feedConfigFile) {
-      $data = parse_ini_file($feedConfigFile, true);
-    } 
-    
-    return $data;
-  }
-  
   //
   // Factory function
   // instantiates objects for the different modules
@@ -656,6 +646,14 @@ abstract class Module {
     }
     
     return $themeVars;
+  }
+  
+  //
+  // Feed config files
+  //
+  
+  protected function loadFeedData() {
+    return $GLOBALS['siteConfig']->loadFeedData($this->id);
   }
   
   //
