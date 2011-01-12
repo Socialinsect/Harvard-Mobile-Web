@@ -14,7 +14,6 @@ class HarvardEvent extends TrumbaEvent {
     	$ContactInfo = isset($this->TrumbaCustomFields['Contact Info']) ? $this->TrumbaCustomFields['Contact Info'] : '';
     	$info = array('email'=>array(), 'phone'=>array(), 'url'=>array(), 'text'=>array(), 'full'=>$ContactInfo);
 		$data = preg_split("/(\\\)?,/", $ContactInfo);
-		
 		// For each value, check to see what it's most likely to be
 		foreach ($data as $datum) {
 		  $datum = trim($datum);
@@ -24,11 +23,10 @@ class HarvardEvent extends TrumbaEvent {
 			$info['phone'][] = preg_replace("/[ \(]/", "", preg_replace("/[\-\)]/", ".", $datum)); // Normalize things into "."s while we're in here
 		  } elseif (preg_match(self::urlPattern, $datum) > 0) {
 			$info['url'][] = $datum;
-		  } else {
+		  } elseif (strlen($datum) > 0) {
 			$info['text'][] = $datum;
 		  }
 		}
-
 		return $info;
     }
 
