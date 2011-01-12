@@ -14,6 +14,7 @@ $data = array();
 
 $feeds = $GLOBALS['siteConfig']->loadFeedData('calendar');
 $timezone = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
+$suppressedCustomFields = $GLOBALS['siteConfig']->getAPIVar(apiGetArg('module'), 'suppressedCustomFields');
 
 function getFeed($feeds, $index) {
   if (isset($feeds[$index])) {
@@ -45,7 +46,7 @@ switch (apiGetArg('command')) {
       $iCalEvents = $feed->items();
               
       foreach($iCalEvents as $iCalEvent) {
-        $data[] = $iCalEvent->apiArray();
+        $data[] = $iCalEvent->apiArray($suppressedCustomFields);
       }
     }
     break;
@@ -65,7 +66,7 @@ switch (apiGetArg('command')) {
       $iCalEvents = $feed->items();
       
       foreach($iCalEvents as $iCalEvent) {
-        $data[] = $iCalEvent->apiArray();
+        $data[] = $iCalEvent->apiArray($suppressedCustomFields);
       }
       
       $data = array('events'=>$data);
@@ -96,7 +97,7 @@ switch (apiGetArg('command')) {
           $feed->addFilter('category', $id);
           $events = $feed->items();
           foreach ($events as $event) {
-            $data[] = $event->apiArray();
+            $data[] = $event->apiArray($suppressedCustomFields);
           }
         }
       }
@@ -140,7 +141,7 @@ switch (apiGetArg('command')) {
       $iCalEvents = $feed->items();
   
       foreach($iCalEvents as $event) {
-        $data[] = $event->apiArray();
+        $data[] = $event->apiArray($suppressedCustomFields);
       }
     }
     break;
