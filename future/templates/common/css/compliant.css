@@ -186,7 +186,7 @@ select {
 }
 
 .emphasized {
-	margin: 16px 0;
+	margin: 14px 0;
 }
 
 
@@ -468,7 +468,7 @@ a.module img {
 .nav li {	
 	list-style-type: none;	
 	border-top: 1px solid #ccc;
-	padding: 12px;
+	padding: 11px;
 	position: relative;
 }
 
@@ -493,7 +493,7 @@ a.module img {
 
 .nav a  {
 	display: block;
-	padding: 8px 25px 8px 8px;
+	padding: 8px 24px 10px 8px;
 	margin: -8px;	 
 	background-image: url(/common/images/action-arrow.png); 
 	background-repeat: no-repeat;
@@ -504,7 +504,7 @@ a.module img {
 }
 
 .nav li.icon {
-  padding: 0 12px;
+  padding: 0 11px;
   min-height: 54px;
 }
 .nav li.icon img {
@@ -517,7 +517,7 @@ a.module img {
 .nav li.icon a {
   position: relative;
   margin: 0 -7px 0 0;
-  padding: 12px 5px 12px 58px;
+  padding: 11px 4px 11px 57px;
   line-height: 30px;
 }
 
@@ -537,7 +537,7 @@ ul.focal {
 
 ul.focal li {
 	list-style-type: none;
-	padding: 12px;
+	padding: 11px;
 	position: relative;
 	border-top: 1px solid #ccc; 
 }
@@ -572,7 +572,8 @@ ul.focal li:first-child {
 .results {	   
 	padding: 0;	   
 	margin: 10px 0; 
-	border: 1px solid #ccc;
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
 }
 
 .results li {	
@@ -587,7 +588,7 @@ ul.focal li:first-child {
 
 .results a  {
 	display: block;
-	padding: 10px 25px 10px 7px;
+	padding: 9px 25px 9px 7px;
 	margin: -7px;	 
 	background-image: url(/common/images/action-arrow.png); 
 	background-repeat: no-repeat;
@@ -642,15 +643,15 @@ ul.focal li:first-child {
 	margin: 10px; 
 	padding: 0;	   
 	border: 1px solid #ccc;
-	-webkit-border-radius: 9px;	
-	border-radius: 9px;	
+	-webkit-border-radius: 8px;	
+	border-radius: 8px;	
 }
 
 .secondary li {
 	list-style-type: none;		
 	border-top: 1px solid #ccc;
 	position: relative;
-	padding: 9px 10px;
+	padding: 9px;
 }
 
 .secondary li:first-child {
@@ -659,8 +660,8 @@ ul.focal li:first-child {
 
 .secondary a {
 	display: block;
-	padding: 9px 25px 9px 8px;
-	margin: -7px;	 
+	padding: 8px 25px 8px 7px;
+	margin: -6px;	 
 	background-image: url(/common/images/action-arrow.png); 
 	background-repeat: no-repeat;
 	background-position: right; 
@@ -786,7 +787,7 @@ ul.focal li:first-child {
 	display: block;
 	width: 78px;
 	position: absolute;
-	top: 17px;
+	top: 15px;
 	left: 0px;
 	font-size: 13px;
 	line-height: 15px;
@@ -797,11 +798,11 @@ ul.focal li:first-child {
 
 .value {
 	display: block;
-	margin-left: 76px;
+	margin-left: 74px;
 	font-size: 17px;
-	min-height: 20px;
-	line-height: 24px;
-	padding-right: 22px;
+	min-height: 21px;
+	line-height: 20px;
+	padding-right: 20px;
 	word-wrap: break-word;
 }
 

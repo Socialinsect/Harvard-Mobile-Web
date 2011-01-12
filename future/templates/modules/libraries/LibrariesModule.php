@@ -859,7 +859,7 @@ class LibrariesModule extends Module {
           }
           $info['hours'][] = array(
             'label' => null,
-            'title' => "Full week's schedule",
+            'title' => "7-day schedule",
             'url'   => $this->fullHoursURL($type, $id, $name),            
           );
           $info['hours'] = array_values($info['hours']);
