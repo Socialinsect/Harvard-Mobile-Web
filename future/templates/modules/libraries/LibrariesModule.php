@@ -717,6 +717,12 @@ class LibrariesModule extends Module {
             }
           }
         }
+        
+        // Index the items for bookmark display (currently used by items only)
+        foreach ($results as $i => $result) {
+          $results[$i]['index'] = $i+1;
+        }
+        
         //error_log(print_r($results, true));
         
         $this->assign('bookmarkType', $type);
