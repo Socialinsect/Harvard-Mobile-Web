@@ -29,6 +29,8 @@
 	height: 10px;
 }
 .forminput {
+	width: 90%;
+	height: 1.2em;
 	border-width: 2px;
 }
 .imagebutton {
