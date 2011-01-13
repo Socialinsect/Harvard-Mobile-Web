@@ -142,10 +142,10 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 	color: #3a342e;
 }
 
-.springboard a img {
+.springboard a img { 
 	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
-	width: 60px;
-	height: 60px;
+	width: 44px;
+	height: 44px;
 }
 
 .springboard div.utility {
@@ -158,8 +158,8 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 
 .springboard div.utility a img {
 	/* Size of actual item icon in the springboard's fixed utility-type items - for best results make actual PNGs match this size */
-	width: 34px;
-	height: 34px;
+	width: 32px;
+	height: 32px;
 }
 
 .springboard .separator {
