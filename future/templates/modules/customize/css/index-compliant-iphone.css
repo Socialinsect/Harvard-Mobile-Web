@@ -23,7 +23,7 @@ ul {
     padding: 0;
 }
 #dragReorderList li input[type=checkbox] {
-    font-size: 11px;
+    font-size: 64.12%;
     width: 1.8em;
     height: 1.8em;
     line-height: 30px;
@@ -37,8 +37,8 @@ ul {
     width: 9.1em;
     margin: 0.35em 0;
     padding-left: 40px;
-    font-size: 15pt;
-    line-height: 30px;
+    font-size: 88.24%;
+    line-height: 2em;
     /* display, width, overflow, text-overflow, and white-space combine to enable ellipsis truncation */
     overflow: hidden;
     text-overflow: ellipsis;

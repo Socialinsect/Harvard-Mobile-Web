@@ -483,16 +483,16 @@ body.landscape #mapform {
 }
 
 body.landscape #options {
-	font-size: 15px;
+	font-size: 88.24%;
 }
 
 body.landscape #options th {
-	font-size: 15px;
+	font-size: 88.24%;
 	padding: 0 7px 4px 0;
 }
 
 body.landscape #options td {
-	font-size: 15px;
+	font-size: 88.24%;
 	padding: 1px 0 0 0;
 }
 

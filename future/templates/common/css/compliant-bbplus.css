@@ -1,16 +1,19 @@
 .springboard {
 	padding: 0;
 }
+
 .springboard div {
 	margin: 1px 4px;
 	line-height: 1.1em;
   	height: 100px;
 	width: 100px;
-	font-size: 94.11%;
 }
-.springboard a {	
+.springboard div a {	
 	padding: 4px 6px;
 	color: #333;
+}
+.springboard div.utility a {
+	font-size: 90%;
 }
 .springboard a:hover {
 	border: 2px solid #c00;
@@ -187,3 +190,11 @@
 .fontxlarge {
 	font-size: 14pt;
 }
+
+.homepage .moduleicon {
+	padding-left: 0;
+	margin-right: 8px;
+	margin-left: -2px;
+	float: left;
+}
+

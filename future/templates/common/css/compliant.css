@@ -340,7 +340,7 @@ a.module img {
 }
 
 .homepage .moduleicon {
-    padding: 8px 5px;
+    padding: 8px 5px 8px 6px;
 }
 
 *:first-child+html .homepage .moduleicon {
