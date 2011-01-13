@@ -4,8 +4,7 @@
   <h1 class="slugline">{$title}</h1>
 
   <div id="storysubhead">
-    {include file="findInclude:common/share.tpl" urlToBeShared={$storyURL}
-    shareRemark={$shareRemark} shareEmailUrl={$shareEmailURL}}
+    {include file="findInclude:common/share.tpl" shareURL={$storyURL} shareRemark={$shareRemark} shareEmailURL={$shareEmailURL}}
             
     {if $pager['pageNumber'] == 0}
         <p class="byline">

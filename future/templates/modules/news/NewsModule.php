@@ -151,20 +151,20 @@ class NewsModule extends Module {
         }
 
         $body = $story->getDescription()."\n\n".$story->getLink();
-        $shareEmailURL = $this->buildMailtoLink("", $story->getTitle(), $body);
+        $shareEmailURL = $this->buildMailToLink("", $story->getTitle(), $body);
 
         $pubDate = strtotime($story->getProperty("pubDate"));
         $date = date("M d, Y", $pubDate);
         
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
-        $this->assign('date',     $date);
-        $this->assign('storyURL', urlencode($story->getLink()));
+        $this->assign('date',          $date);
+        $this->assign('storyURL',      urlencode($story->getLink()));
         $this->assign('shareEmailURL', $shareEmailURL);
-        $this->assign('title',    $story->getTitle());
-        $this->assign('shareRemark', urlencode($story->getTitle()));
-        $this->assign('author',   $story->getProperty('harvard:author'));
-        $this->assign('image',    $this->getImageForStory($story));
+        $this->assign('title',         $story->getTitle());
+        $this->assign('shareRemark',   urlencode($story->getTitle()));
+        $this->assign('author',        $story->getProperty('harvard:author'));
+        $this->assign('image',         $this->getImageForStory($story));
         break;
         
       case 'search':
