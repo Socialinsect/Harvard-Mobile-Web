@@ -1,6 +1,5 @@
 {extends file="findExtends:common/search-touch.tpl"}
-
-{extends file="findExtends:common/search-touch.tpl"}
+{* this one place the touch version is better for bbplus *}
 
 {block name='inputWidth'}90%{/block}
 {block name='submitWidth'}10%{/block}

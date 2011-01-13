@@ -1,4 +1,4 @@
-{extends file="findExtends:common/header-touch.tpl"}
+{extends file="findExtends:common/header.tpl"}
 
 {block name="additionalHeadTags"}
   {$smarty.block.parent}
