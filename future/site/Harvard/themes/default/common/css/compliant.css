@@ -52,7 +52,8 @@ h4 {
 	color: #554c41;
 }
 
-dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
+dt, 	background-position: 6px 11px;
+, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
 	/* Accent text color for several types of secondary text that appears on white backgrounds, e.g., label in label/value pairs, e.g., People Directory detail screen and for labels in certain calendar listing screens */
 	/* Often the same as the secondary text color defined in the next rule */
 	color: #554c41;
@@ -143,12 +144,13 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 	/* Overall size of one cell in the springboard */
 	width: 76px;
 	height: 94px;
-	font-size: 13px;
-	line-height: 14px;
 }
 
 .springboard a {	
+	/* Color and size of text label below each springboard icon */
 	color: #3a342e;
+	font-size: 13px;
+	line-height: 14px;
 }
 
 .springboard a img {

@@ -10,10 +10,10 @@
       {/if}
       <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
         <tr>
-          <td width="{block name='inputWidth'}75%{/block}">
-            <input class="forminput" type="text" id="{$inputName|default:'filter'}" name="{$inputName|default:'filter'}" value="{$searchTerms|escape}" style="width:98%" />
+          <td width="{block name='inputWidth'}99%{/block}">
+            <input class="forminput" type="text" id="{$inputName|default:'filter'}" name="{$inputName|default:'filter'}" value="{$searchTerms|escape}" />
           </td>
-          <td width="{block name='submitWidth'}25%{/block}" align="right">
+          <td width="{block name='submitWidth'}1%{/block}" align="right">
             {block name="formSubmit"}
               <input type="submit" value="Search" class="submitbutton" />
             {/block}

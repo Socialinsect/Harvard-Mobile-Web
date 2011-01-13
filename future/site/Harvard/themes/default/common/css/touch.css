@@ -126,12 +126,12 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 	/* Overall size of one cell in the springboard */
 	width: 57px;
 	height: 82px;
-	font-size: 75%;
-	line-height: 1.1em;
 }
 
 .springboard a {	
-	color: #3a342e;
+	/* Color and size of text label below each springboard icon */
+	color: #3a342e;	
+	font-size: 75%;
 }
 
 .springboard a img { 
