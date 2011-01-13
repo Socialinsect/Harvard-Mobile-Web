@@ -18,7 +18,7 @@
     <div id="navbar"{if $hasHelp} class="helpon"{/if}>
       <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
         <a name="top" href="/home/" class="homelink">
-          <img src="/common/images/homelink.gif" width="57" height="45" alt="Home" />
+          <img src="/common/images/harvard-logo2.gif" width="40" height="30" alt="Home" />
         </a>
         {$breadcrumbHTML}
         <span class="pagetitle">
