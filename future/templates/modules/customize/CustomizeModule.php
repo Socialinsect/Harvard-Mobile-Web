@@ -79,18 +79,12 @@ class CustomizeModule extends Module {
       case 'compliant':
         $this->addInlineJavascript('var httpRoot = "'.COOKIE_PATH.'"');
         $this->addInlineJavascriptFooter('init();');
-        
-        switch ($GLOBALS['deviceClassifier']->getPlatform()) {
-          case 'iphone':
-            break;
-          
-          default:
-            $this->addInlineJavascript(
-              'var modules = '.json_encode($moduleIDs).';'.
-              'var disabledModules = '.json_encode($disabledModuleIDs).';'
-            );
-            break;
-        }
+        $this->addInlineJavascript(
+          'var modules = '.json_encode($moduleIDs).';'.
+          'var disabledModules = '.json_encode($disabledModuleIDs).';'.
+          'var moduleOrderCookie = "'.MODULE_ORDER_COOKIE.'";'.
+          'var disabledModulesCookie = "'.DISABLED_MODULES_COOKIE.'";'
+        );
         break;
       
       case 'touch':
