@@ -91,15 +91,18 @@ h1 {
 }
 
 .forminput {
+	position: relative;
 	font-size: 100%;
 	width: 100%;
-	padding: 4px;
+	height: 1.4em;
+	padding: 2px;
 	border: 2px solid #554c41;
 }
 #download {
 	text-align: left;
 	clear: both;
 	padding: 40px 10px 20px 10px;
+	font-size: 76.47%;
 }
 #download a {
 	color: #333;

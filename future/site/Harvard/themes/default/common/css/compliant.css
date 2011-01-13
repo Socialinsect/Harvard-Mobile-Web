@@ -28,32 +28,31 @@ a, a:visited {
 
 h1 {
 	font-family: Georgia, serif;
-	font-size: 29px;
+	font-size: 170.6%;
 	font-weight: normal;
 	color: #fff;
 }
 
 h2 {
 	font-family: Georgia, serif;
-	font-size: 21px;
+	font-size: 123.5%;
 	font-weight: normal;
 	color: #000;
 }
 
 h3 {
-	font-size: 1em;
+	font-size: 100%;
 	font-weight: bold;
 	color: #554c41;
 }
 
 h4 {
-	font-size: 1em;
+	font-size: 100%;
 	font-weight: normal;
 	color: #554c41;
 }
 
-dt, 	background-position: 6px 11px;
-, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
+dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek, .fontsize {
 	/* Accent text color for several types of secondary text that appears on white backgrounds, e.g., label in label/value pairs, e.g., People Directory detail screen and for labels in certain calendar listing screens */
 	/* Often the same as the secondary text color defined in the next rule */
 	color: #554c41;
@@ -86,7 +85,7 @@ dt, 	background-position: 6px 11px;
 #navbar {
 	height: 48px; 
 	background: url(/common/images/navback.png) repeat-x;
-	font-size: 16px;
+	font-size: 94.118%;
 }
 
 /* Uncomment this rule and comment out the previous one to use a background gradient rather than image
@@ -94,7 +93,7 @@ dt, 	background-position: 6px 11px;
 	height: 45px;
 	background: #800;	
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#d02023), to(#400006));
-	font-size: 16px;
+	font-size: 94.118%;
 }
 */
 
@@ -107,7 +106,8 @@ dt, 	background-position: 6px 11px;
 /* Footer */
 
 #footer {
-	font-size: 12px;
+	font-size: 70.589%;
+	line-height: 1.2em;
 }
 
 #footer .copyright {
@@ -146,11 +146,11 @@ dt, 	background-position: 6px 11px;
 	height: 94px;
 }
 
-.springboard a {	
+.springboard div a {	
 	/* Color and size of text label below each springboard icon */
 	color: #3a342e;
-	font-size: 13px;
-	line-height: 14px;
+	font-size: 76.47%;
+	line-height: 1.1em;
 }
 
 .springboard a img {
@@ -163,8 +163,10 @@ dt, 	background-position: 6px 11px;
 	/* Overall size of one cell in the springboard's fixed utility-type items */
 	width: 76px;
 	height: 86px;
-	font-size: 12px;
-	line-height: 13px;
+}
+
+.springboard div.utility a {
+	font-size: 70.589%;
 }
 
 .springboard div.utility a img {
@@ -205,8 +207,8 @@ dt, 	background-position: 6px 11px;
 }
 
 .announcements li {	
-	font-size: 14px;
-	line-height: 19px;
+	font-size: 83.353%;
+	line-height: 1.46em;
 	color: #202020;
 }
 

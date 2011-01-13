@@ -32,7 +32,7 @@ p {
 
 table {
 	width: 100%;
-	margin: 0 0 0.75em 0;
+	margin: 0 0 0.5em 0;
 }
 
 th, td {
@@ -87,23 +87,22 @@ strong {
 
 #footer {
 	clear: both;
-	min-height: 22px;
-	padding-top: 20px;
-	margin: 1.5em 0.8em 1em 0.8em;
+	margin: 2em 0.5em;
 	font-weight: normal;
 	line-height: 1.2em;
 }
 
 #footerlinks {
 	clear: both;
-	margin: 3em 6px 2em 6px; 
+	margin: 2em 0.25em; 
+	padding: 0;
 	font-size: 75%;
 	line-height: 1.2em;
 }
 
 #footerlinks a {
 	text-decoration: none;
-	padding: 4px;
+	padding: 0 0.25em;
 }
 
 .leftfoot {
@@ -117,9 +116,13 @@ strong {
 /* Forms */
 
 #searchformcontainer h3 {
-	padding-left: 0.2em;
 	margin: 0 0 0.2em 0;
 }
+
+#searchformcontainer td {
+	padding: 0;
+}
+
 
 form {	
 	margin: 1em 0;
@@ -154,7 +157,7 @@ select {
 	border: 2px solid #666;
 	height: 1.2em;
 	padding: 0.2em;
-	width: 99%;
+	width: 96%;
 	margin: 0 0.2em 0 0;
 }
 
@@ -580,11 +583,6 @@ ul.focal li:first-child {
 	margin: 0.5em;
 }
 
-.nonfocal form {
-	margin-left: -4px;
-	margin-right: -4px;
-}
-
 .shaded {
 	border: 1px solid #e0e0e0;
 	padding-bottom: 0;
@@ -597,8 +595,7 @@ ul.focal li:first-child {
 }
 
 .legend.nonfocal {
-	margin: 0 0 2em 0;
-	padding: 0 0.5em;
+	margin: 0 0.5em 2em 0.5em;
 }
 
 .legend div {

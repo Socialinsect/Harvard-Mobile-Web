@@ -3,8 +3,8 @@
   overflow: hidden;
 }
 .ellipsis {
-  font-size: 17px;
-  line-height: 20px;
+  font-size: 100%;
+  line-height: 1.176%;
   overflow: hidden;
   max-height: 41px;
 }
@@ -36,9 +36,9 @@
   -khtml-background-size: 20px;
   -webkit-background-size: 20px;
 /* Need IE/WP7 CSS hack here to get high-res background images */
-  font-size: 15px;
+  font-size: 83.333%;
   font-weight: normal;
-  line-height: 18px;
+  line-height: 1.38em;
 }
 
 .distance {
@@ -141,7 +141,8 @@ table.search input[type=text], table.search select {
   font-size: 16px;
 }
 
-.label {
+	background-position: 6px 11px;
+ {
   width: 88px;
 }
 
