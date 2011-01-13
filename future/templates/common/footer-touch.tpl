@@ -1,6 +1,6 @@
 {extends file="findExtends:common/footer.tpl"}
 
-{block name="footer"}
+{block name="footerNavLinks"}
   {if $moduleID != 'home'}
     <div id="footerlinks">
       <a href="#top">Back to top</a> 
@@ -9,10 +9,10 @@
       {if $session_userID} | <a href="../login">{$session_userID} logged in</a>{/if}
     </div>
   {/if}
+{/block}
 
-  <div id="footer">
-    {$footerHTML}
-  </div>
+{block name="footer"}
+  {$smarty.block.parent}
   
   {if strlen($gaImageURL)}
     <img src="{$gaImageURL}" />

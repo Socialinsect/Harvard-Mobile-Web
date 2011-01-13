@@ -1,4 +1,4 @@
-{extends file="findExtends:modules/{$moduleID}/index-touch-blackberry.tpl"}
+{extends file="findExtends:modules/{$moduleID}/index-compliant-blackberry.tpl"}
 
 {block name="bannerImageDetails"}
   {$bannerImg['src'] = $bannerImg['src']|cat:".png"}

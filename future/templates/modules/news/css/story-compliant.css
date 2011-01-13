@@ -3,8 +3,9 @@
     padding: 10px;
 }
 .news div img {
-  width: 100% !important;
+  width: auto !important;
   height: auto !important;
+  max-width: 100% !important;
 }
 
 .slugline {

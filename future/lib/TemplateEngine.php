@@ -153,9 +153,12 @@ class TemplateEngine extends Smarty {
     // preceeded by a php close tag.
     $source = trim(preg_replace('/((?<!\?>)\n)[\s]+/m', '\1', $source));
     
-    // remove all spaces and newlines before and after tags.
-    $source = preg_replace('/\s*\n*(<[^>]+>)\s*\n*/m', '\1', $source);
+    // remove all newlines before and after tags.
+    $source = preg_replace('/\n*(<[^>]+>)\n*/m', '\1', $source);
     
+    // replace runs of spaces with a single space.
+    $source = preg_replace('/\s+/m', ' ', $source);
+
     // restore textarea, pre and script blocks
     self::trimwhitespaceReplace("@@@SMARTY:TRIM:TEXTAREA@@@", $textareaBlocks, $source);
     self::trimwhitespaceReplace("@@@SMARTY:TRIM:PRE@@@", $preBlocks, $source);

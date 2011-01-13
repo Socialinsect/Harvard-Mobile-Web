@@ -24,18 +24,18 @@
     {/if}
   {/capture}
   
-  {block name="footer"}
-
+  {block name="footerNavLinks"}
     {if $moduleID != 'home'}
       <div id="footerlinks">
         <a href="#top">Back to top</a> | <a href="../home/">{$SITE_NAME} home</a>{if $session_userID} | <a href="../login">{$session_userID} logged in</a>{/if}
       </div>
     {/if}
+  {/block}
 
+  {block name="footer"}
     <div id="footer">
       {$footerHTML}
     </div>
-
   {/block}
 
   {block name="footerJavascript"}
