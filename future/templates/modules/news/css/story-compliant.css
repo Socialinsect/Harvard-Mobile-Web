@@ -2,7 +2,7 @@
     margin-top: -12px;
     padding: 10px;
 }
-.news div img {
+#storybody div img {
   width: auto !important;
   height: auto !important;
   max-width: 100% !important;
