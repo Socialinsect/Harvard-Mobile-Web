@@ -299,9 +299,9 @@ input.formbutton {
 	height: 100%;
 	line-height: 44px;
 	vertical-align: top;
-    margin-left: -8px; /* overlap by the width of the drillup art */
-    padding: 0 18px 0 2px; 
-    background-image: url(/common/images/drillup-r.png);
+  margin-left: -4px; /* overlap by the width of the drillup art */
+  padding: 0 18px 0 2px; 
+  background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
 	background-position: top right;
 	text-decoration: none;
@@ -328,7 +328,7 @@ a.homelink {
 }
 
 a.module img {
-	padding: 8px 2px 8px 4px;
+	padding: 8px 2px 8px 0px;
 }
 
 .homepage .moduleicon {
@@ -369,7 +369,7 @@ a.module img {
 .pagetitle {
 	display: inline-block;
 	font-weight: bold;
-	margin-left: -6px;	
+	margin-left: -4px;	
 	vertical-align: top;
 	line-height: 44px;
 	height: 44px;
@@ -383,6 +383,7 @@ a.module img {
 .homepage .pagetitle {
 	display: inline;
 	max-width: 210px;
+	margin-left: -8px;	
 }
 
 .homepage .pagetitle {

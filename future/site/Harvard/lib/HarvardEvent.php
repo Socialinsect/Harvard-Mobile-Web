@@ -14,7 +14,6 @@ class HarvardEvent extends TrumbaEvent {
     	$ContactInfo = isset($this->TrumbaCustomFields['Contact Info']) ? $this->TrumbaCustomFields['Contact Info'] : '';
     	$info = array('email'=>array(), 'phone'=>array(), 'url'=>array(), 'text'=>array(), 'full'=>$ContactInfo);
 		$data = preg_split("/(\\\)?,/", $ContactInfo);
-		
 		// For each value, check to see what it's most likely to be
 		foreach ($data as $datum) {
 		  $datum = trim($datum);
@@ -24,17 +23,20 @@ class HarvardEvent extends TrumbaEvent {
 			$info['phone'][] = preg_replace("/[ \(]/", "", preg_replace("/[\-\)]/", ".", $datum)); // Normalize things into "."s while we're in here
 		  } elseif (preg_match(self::urlPattern, $datum) > 0) {
 			$info['url'][] = $datum;
-		  } else {
+		  } elseif (strlen($datum) > 0) {
 			$info['text'][] = $datum;
 		  }
 		}
-
 		return $info;
     }
 
-    public function apiArray()
+	private function removeSuppressedCustomFields($customFields, $suppressedCustomFields)
+	{		
+		return array_diff_key($customFields, array_flip($suppressedCustomFields));
+	}
+
+    public function apiArray($suppressedCustomFields)
     {
-    
 	 $arr= array (
 	 	'id'=>crc32($this->get_uid()) >>1,
 	 	'title'=>$this->get_summary(),
@@ -53,6 +55,10 @@ class HarvardEvent extends TrumbaEvent {
     }
     
     if ($custom = $this->TrumbaCustomFields) {
+		$custom =
+		$this->removeSuppressedCustomFields($this->TrumbaCustomFields, 
+			$suppressedCustomFields);
+			
         // Intentionally adding quotes to the key in order to maintain
         // backwards compatibility with previous API.        
  		$custom['"Contact Info"'] = $this->getContactInfoArray();
@@ -61,7 +67,6 @@ class HarvardEvent extends TrumbaEvent {
 	 return $arr;
     
 	}
-
 
     public function get_category_from_name($name) {
     	$categories = HarvardEvent::getEventCategories();

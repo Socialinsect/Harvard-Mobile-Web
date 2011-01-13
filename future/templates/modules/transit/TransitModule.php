@@ -166,7 +166,7 @@ class TransitModule extends Module {
          }
           
           $routeInfo['stops'][$stopID]['img'] = '/common/images/';
-          if ($this->pagetype == 'basic') {
+          if ($this->pagetype == 'basic' || $this->pagetype == 'touch') {
             $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'bus.gif' : 'bus-spacer.gif';
           } else {
             $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';

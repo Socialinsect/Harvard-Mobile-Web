@@ -1,12 +1,7 @@
-{block name="header"}
-    {include file="findInclude:common/header.tpl"}
-{/block}
-
+{include file="findInclude:common/header.tpl"}
 
 {capture name="searchBar" assign="searchBar"}
-    {block name="searchsection"}
-        {include file="findInclude:common/search.tpl" placeholder="Search Courses" searchPage='searchCourses' tip="You can search for courses by keyword, course #, or instructor name."}
-    {/block}
+  {include file="findInclude:common/search.tpl" placeholder="Search Courses" searchPage='searchCourses' tip="You can search for courses by keyword, course #, or instructor name."}
 {/capture}
 
 {block name="topSearch"}{$searchBar}{/block}

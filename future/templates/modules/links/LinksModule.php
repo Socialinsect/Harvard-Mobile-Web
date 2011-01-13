@@ -15,7 +15,7 @@ class LinksModule extends Module {
       if (!is_array($link)) {
         unset($links[$index]);
       } else if (isset($link['icon'])) {
-        $links[$index]['img'] = "/modules/{$this->id}/images/{$link['icon']}";
+        $links[$index]['img'] = "/modules/{$this->id}/images/{$link['icon']}{$this->imageExt}";
       }
     }
     

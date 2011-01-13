@@ -146,7 +146,6 @@ class GazetteRSScontroller extends RSSDataController
                         $item->appendChild($image);
                     }
                 }
-                
             }
         }
         

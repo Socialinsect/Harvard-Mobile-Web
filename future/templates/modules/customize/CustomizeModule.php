@@ -32,16 +32,16 @@ class CustomizeModule extends Module {
         case 'on':
         case 'off':
           if (isset($args['module'])) {
-            $visibleModuleIDs = array();
+            $hiddenModuleIDs = array();
             
             foreach ($currentModules as $id => &$info) {
               if ($id == $args['module']) {
                 $info['disabled'] = $args['action'] != 'on';
               }
-              if (!$info['disabled']) { $visibleModuleIDs[] = $id; }
+              if ($info['disabled']) { $hiddenModuleIDs[] = $id; }
             }
             
-            $this->setHomeScreenVisibleModules($visibleModuleIDs);
+            $this->setHomeScreenHiddenModules($hiddenModuleIDs);
           }
           break;
         
@@ -57,7 +57,7 @@ class CustomizeModule extends Module {
 
     $modules = array();
     $moduleIDs = array();
-    $activeModuleIDs = array();
+    $disabledModuleIDs = array();
     $newCount = 0;
 
     foreach ($this->getHomeScreenModules() as $moduleID => $info) {
@@ -65,8 +65,8 @@ class CustomizeModule extends Module {
         $modules[$moduleID] = $info;
         
         $moduleIDs[] = $moduleID;
-        if (!$info['disabled']) { 
-          $activeModuleIDs[] = $moduleID; 
+        if ($info['disabled']) { 
+          $disabledModuleIDs[] = $moduleID; 
         }
         
         if ($info['new']) { 
@@ -79,20 +79,15 @@ class CustomizeModule extends Module {
       case 'compliant':
         $this->addInlineJavascript('var httpRoot = "'.COOKIE_PATH.'"');
         $this->addInlineJavascriptFooter('init();');
-        
-        switch ($GLOBALS['deviceClassifier']->getPlatform()) {
-          case 'iphone':
-            break;
-          
-          default:
-            $this->addInlineJavascript(
-              'var modules = '.json_encode($moduleIDs).';'.
-              'var activeModules = '.json_encode($activeModuleIDs).';'
-            );
-            break;
-        }
+        $this->addInlineJavascript(
+          'var modules = '.json_encode($moduleIDs).';'.
+          'var disabledModules = '.json_encode($disabledModuleIDs).';'.
+          'var moduleOrderCookie = "'.MODULE_ORDER_COOKIE.'";'.
+          'var disabledModulesCookie = "'.DISABLED_MODULES_COOKIE.'";'
+        );
         break;
-        
+      
+      case 'touch':
       case 'basic':
         foreach ($moduleIDs as $index => $id) {
           $modules[$id]['toggleDisabledURL'] = 'index.php?'.http_build_query(array(

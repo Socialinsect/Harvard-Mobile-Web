@@ -13,19 +13,19 @@ function init() {
 function toggle(objClick) {
   var module = getParentLI(objClick).id;
   if(objClick.checked) {
-    // add to active module list
-    activeModules.push(module);
-  } else {
     // remove from active module list
-    var newActiveModules = [];
-    for(var cnt=0; cnt < activeModules.length; cnt++) {
-      if(activeModules[cnt] != module) {
-        newActiveModules.push(activeModules[cnt]);
+    var newDisabledModules = [];
+    for(var cnt=0; cnt < disabledModules.length; cnt++) {
+      if(disabledModules[cnt] != module) {
+        newDisabledModules.push(disabledModules[cnt]);
       }
     }
-    activeModules = newActiveModules;
+    disabledModules = newDisabledModules;
+  } else {
+    // add to disabled module list
+    disabledModules.push(module);
   }
-  sortActiveModules();
+  sortDisabledModules();
   writeCookies();
 }
 
@@ -93,12 +93,12 @@ function moveDown(objClick) {
 
 function moveModuleUp(index) {
   swap(index, index-1);
-  sortActiveModules();
+  sortDisabledModules();
 }
 
 function moveModuleDown(index) {
   swap(index, index+1);
-  sortActiveModules();
+  sortDisabledModules();
 }
 
 function swap(index1, index2) {
@@ -108,19 +108,19 @@ function swap(index1, index2) {
   modules[index2] = module1;
 }
 
-function sortActiveModules() {
-  var newActiveModules = [];
+function sortDisabledModules() {
+  var newDisabledModules = [];
   for(var cnt=0; cnt < modules.length; cnt++) {
-    if(isActiveModule(modules[cnt])) {
-      newActiveModules.push(modules[cnt]);
+    if(isDisabledModule(modules[cnt])) {
+      newDisabledModules.push(modules[cnt]);
     }
   }
-  activeModules = newActiveModules;
+  disabledModules = newDisabledModules;
 }
 
-function isActiveModule(module) {
-  for(var cnt=0; cnt < activeModules.length; cnt++) {
-    if(activeModules[cnt] == module) {
+function isDisabledModule(module) {
+  for(var cnt=0; cnt < disabledModules.length; cnt++) {
+    if(disabledModules[cnt] == module) {
       return true;
     }
   }
@@ -129,8 +129,8 @@ function isActiveModule(module) {
 
 function writeCookies() {
   // null means never expire
-  writeCookie("moduleorder", modules.join(), null, httpRoot);
-  writeCookie("visiblemodules", activeModules.join(), null, httpRoot);
+  writeCookie(moduleOrderCookie, modules.join(), null, httpRoot);
+  writeCookie(disabledModulesCookie, disabledModules.join(), null, httpRoot);
 }
 
 function writeCookie(name, value, expiredays, path) {
