@@ -45,7 +45,7 @@ class DeviceClassifier {
             $this->pagetype = 'compliant';
             
           } else if ($data['platform'] == 'bbplus') {
-            $this->pagetype = 'touch';
+            $this->pagetype = 'compliant';
             
           } else {
             $this->pagetype = 'basic';
@@ -53,6 +53,9 @@ class DeviceClassifier {
           break;
         
         case 'Touch':
+          if ($data['platform'] == 'blackberry') {
+            $this->pagetype = 'compliant'; // Storm and Storm 2
+          }
           $this->pagetype = 'touch';
           break;
           

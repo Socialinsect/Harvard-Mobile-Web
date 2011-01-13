@@ -41,7 +41,7 @@ class TemplateEngine extends Smarty {
     return false;
   }
   
-  static function smartyResourceIncludeGetSource($name, &$source, $smarty) {
+  public static function smartyResourceIncludeGetSource($name, &$source, $smarty) {
     $file = self::getIncludeFile($name);
     if ($file !== false) {
       $source = file_get_contents($file);
@@ -50,7 +50,7 @@ class TemplateEngine extends Smarty {
     return false;
   }
 
-  static function smartyResourceIncludeGetTimestamp($name, &$timestamp, $smarty) {
+  public static function smartyResourceIncludeGetTimestamp($name, &$timestamp, $smarty) {
     $file = self::getIncludeFile($name);
     if ($file !== false) {
       $timestamp = filemtime($file);
@@ -59,11 +59,11 @@ class TemplateEngine extends Smarty {
     return false;
   }
 
-  static function smartyResourceIncludeGetSecure($name, $smarty) {
+  public static function smartyResourceIncludeGetSecure($name, $smarty) {
     return true;
   }
 
-  static function smartyResourceIncludeGetTrusted($name, $smarty) {
+  public static function smartyResourceIncludeGetTrusted($name, $smarty) {
     return true;
   }
   
@@ -90,7 +90,7 @@ class TemplateEngine extends Smarty {
     return false;
   }
   
-  static function smartyResourceExtendsGetSource($name, &$source, $smarty) {
+  public static function smartyResourceExtendsGetSource($name, &$source, $smarty) {
     $file = self::getExtendsFile($name);
     if ($file !== false) {
       $source = file_get_contents($file);
@@ -99,7 +99,7 @@ class TemplateEngine extends Smarty {
     return false;
   }
 
-  static function smartyResourceExtendsGetTimestamp($name, &$timestamp, $smarty) {
+  public static function smartyResourceExtendsGetTimestamp($name, &$timestamp, $smarty) {
     $file = self::getExtendsFile($name);
     if ($file !== false) {
       $timestamp = filemtime($file);
@@ -108,26 +108,67 @@ class TemplateEngine extends Smarty {
     return false;
   }
 
-  static function smartyResourceExtendsGetSecure($name, $smarty) {
+  public static function smartyResourceExtendsGetSecure($name, $smarty) {
     return true;
   }
 
-  static function smartyResourceExtendsGetTrusted($name, $smarty) {
+  public static function smartyResourceExtendsGetTrusted($name, $smarty) {
     return true;
   }
   
-  static function smartyOutputfilterAddURLPrefix($output, $smarty) {
-    $output = preg_replace(
-      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.URL_PREFIX.'|/);', 
-      '\1'.URL_PREFIX, $output);  
-    return $output;
+  private static function trimwhitespaceReplace($search, $replace, &$subject) {
+    $len = strlen($search);
+    $pos = 0;
+    for ($i = 0, $count = count($replace); $i < $count; $i++) {
+      if (($pos = strpos($subject, $search, $pos)) !== false) {
+        $subject = substr_replace($subject, $replace[$i], $pos, $len);
+      } else {
+        break;
+      }
+    }
+  }
+  
+  public static function smartyOutputfilterAddURLPrefixAndStripWhitespace($source, $smarty) {
+    $source = preg_replace(
+      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.URL_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
+    
+    // Most of the following code comes from the stripwhitespace filter:
+    
+    // Pull out the script blocks
+    preg_match_all("!<script[^>]*?>.*?</script>!is", $source, $match);
+    $scriptBlocks = $match[0];
+    $source = preg_replace("!<script[^>]*?>.*?</script>!is", '@@@SMARTY:TRIM:SCRIPT@@@', $source);
+    
+    // Pull out the pre blocks
+    preg_match_all("!<pre[^>]*?>.*?</pre>!is", $source, $match);
+    $preBlocks = $match[0];
+    $source = preg_replace("!<pre[^>]*?>.*?</pre>!is", '@@@SMARTY:TRIM:PRE@@@', $source);
+    
+    // Pull out the textarea blocks
+    preg_match_all("!<textarea[^>]*?>.*?</textarea>!is", $source, $match);
+    $textareaBlocks = $match[0];
+    $source = preg_replace("!<textarea[^>]*?>.*?</textarea>!is", '@@@SMARTY:TRIM:TEXTAREA@@@', $source);
+    
+    // remove all leading spaces, tabs and carriage returns NOT
+    // preceeded by a php close tag.
+    $source = trim(preg_replace('/((?<!\?>)\n)[\s]+/m', '\1', $source));
+    
+    // remove all spaces and newlines before and after tags.
+    $source = preg_replace('/\s*\n*(<[^>]+>)\s*\n*/m', '\1', $source);
+    
+    // restore textarea, pre and script blocks
+    self::trimwhitespaceReplace("@@@SMARTY:TRIM:TEXTAREA@@@", $textareaBlocks, $source);
+    self::trimwhitespaceReplace("@@@SMARTY:TRIM:PRE@@@", $preBlocks, $source);
+    self::trimwhitespaceReplace("@@@SMARTY:TRIM:SCRIPT@@@", $scriptBlocks, $source);
+    
+    return $source;
   }
   
   //
   // Access key block and template plugins
   //
   
-  static function smartyBlockAccessKeyLink($params, $content, &$smarty, &$repeat) {
+  public static function smartyBlockAccessKeyLink($params, $content, &$smarty, &$repeat) {
     if (empty($params['href'])) {
       $smarty->trigger_error("assign: missing 'href' parameter");
     }
@@ -143,7 +184,7 @@ class TemplateEngine extends Smarty {
       if (isset($params['id'])) {
         $html .= " id=\"{$params['id']}\"";
       }
-      if ($GLOBALS['deviceClassifier']->getPlatform() != 'bbplus' && self::$accessKey < 10) {
+      if (self::$accessKey < 10) {
         $html .= ' accesskey="'.self::$accessKey.'">'.self::$accessKey.': ';
         self::$accessKey++;
       } else {
@@ -154,7 +195,7 @@ class TemplateEngine extends Smarty {
     return $html;
   }
   
-  static function smartyTemplateAccessKeyReset($params, &$smarty) {
+  public static function smartyTemplateAccessKeyReset($params, &$smarty) {
     if (!isset($params['index'])) {
         $smarty->trigger_error("assign: missing 'index' parameter");
         return;
@@ -194,12 +235,9 @@ class TemplateEngine extends Smarty {
       array('TemplateEngine','smartyResourceIncludeGetTrusted')
     ));
     
-    // Postfilter to strip unnecessary whitespace (ignores <pre> and <script>)
-    $this->loadFilter('output','trimwhitespace');
-    
     // Postfilter to add url prefix to absolute urls
     $this->registerFilter('output', array('TemplateEngine', 
-      'smartyOutputfilterAddURLPrefix'));
+      'smartyOutputfilterAddURLPrefixAndStripWhitespace'));
     
     $this->registerPlugin('block', 'html_access_key_link',  
       'TemplateEngine::smartyBlockAccessKeyLink');
