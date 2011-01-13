@@ -147,6 +147,14 @@ select {
 	padding: 4px 2px;
 }
 
+#searchformcontainer h3 {
+	margin: 0 0 0.2em 0;
+}
+
+#searchformcontainer td {
+	padding: 0;
+}
+
 .forminput {
 	border: 1px solid #666;
 	position: absolute;
@@ -800,7 +808,7 @@ ul.focal li:first-child {
 
 .value {
 	display: block;
-	margin-left: 5.1em;
+	margin-left: 5.2em;
 	font-size: 100%;
 	min-height: 21px;
 	line-height: 1.177em;

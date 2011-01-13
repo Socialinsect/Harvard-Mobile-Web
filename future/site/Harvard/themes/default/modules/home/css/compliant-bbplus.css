@@ -1,31 +1,28 @@
-body {
-	background-color: #ebe7dd; 
-	background-image: url('/common/images/background-tile.png');
-	font-family: Helvetica, Arial, sans-serif;
-	line-height: 1.33em;
-	color: #333;
-	width: 479px;
-}
-
 h1 {
-	padding: 17px 0 0px 0;
+	padding: 24px 0;
 	text-align: center;
 	color: #000;
 	font-size: 171%;
 }
 
+#homegrid {
+	margin-top: 24px;
+}
+
 #homegrid div {
-	width: 76px;
-	height: 114px;
+	width: 74px;
+	height: 110px;
 }
+
 #homegrid a {	
-	width: 76px;
-	height: 106px;
-	color: #333;
+	width: 74px;
+	height: 100px;
 }
+
 #homegrid a:hover {
 	border-color: #c00;
 }
+
 #homegrid a:active {
 	border-color: #900;
 }
