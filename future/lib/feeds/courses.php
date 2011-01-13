@@ -505,14 +505,20 @@ class CourseData {
   public static function get_subjectsForCourse($course, $school) {
     $args = array();
     self::addTermQueryToArgs($args);
-    self::addSchoolQueryToArgs($args, $school);
-
-    if ($course == $school) {
-      self::addCategoryQueryToArgs($args);
-    } else {
-      self::addCategoryQueryToArgs($args, $course);
+    
+    if (strlen($school)) {
+      self::addSchoolQueryToArgs($args, $school);
     }
-    $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
+    
+    if (strlen($course)) {
+      if ($course == $school) {
+        self::addCategoryQueryToArgs($args);
+      } else {
+        self::addCategoryQueryToArgs($args, $course);
+      }
+    }
+
+    $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
 
     $filenm = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR') ."/$course-$school.xml";
     if (!file_exists($filenm) || ((time() - filemtime($filenm)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT'))) {
@@ -537,8 +543,8 @@ class CourseData {
     $subject_array = array();
     for ($index=0; $index < $iterations; $index=$index+1) {
       //printf(" Current = %d\n",$index*25);
-      $args['start'] = $index * 25;
-      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
+      $pageArgs = array_merge(array('start' => $index * 25), $args); // start must be first
+      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($pageArgs);
 
       $filenm1 = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR') ."/$course-$school-$index.xml";
       if (!file_exists($filenm1) || ((time() - filemtime($filenm1)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT'))) {
@@ -611,7 +617,7 @@ class CourseData {
     if (!file_exists($filenm) || (time() - filemtime($filenm)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT')) {
       $args = array();
       self::addTermQueryToArgs($args);
-      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
+      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
       self::condenseXMLFileForCoursesAndWrite($urlString, $filenm);
     }
     $schoolsAndCourses = json_decode(file_get_contents($filenm));
@@ -652,7 +658,7 @@ class CourseData {
           self::addTermQueryToArgs($args);
           self::addSchoolQueryToArgs($args, $field['name']);
       
-          $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
+          $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
           $courses_map_xml = file_get_contents($urlString);
       
           if($courses_map_xml == "") {
@@ -766,10 +772,10 @@ class CourseData {
     
     $subject_array = array();
     for ($index=0; $index < $iterations; $index=$index+1) {
-      $args['start'] = $index * 25;
+      $pageArgs = array_merge(array('start' => $index * 25), $args); // start must be first
       //error_log(" Current = ".$index*25);
       
-      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
+      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($pageArgs);
       $xml = file_get_contents($urlString);
       
       //error_log($urlString);
