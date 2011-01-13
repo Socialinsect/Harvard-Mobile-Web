@@ -1,6 +1,6 @@
 {extends file="findExtends:common/listItem.tpl"}
 
-{block name="itemLink"}{strip}
+{block name="itemLink"}
   {if $item['url'] && $accessKey|default: true}
     {html_access_key_link href=$item['url'] class=$item['class']|default:null accessKey=false}
       {$item['title']}
@@ -22,4 +22,4 @@
       </span>
     {/if}
   {/if}
-{/strip}{/block}
+{/block}
