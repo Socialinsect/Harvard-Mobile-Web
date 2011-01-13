@@ -63,7 +63,7 @@
   float: right;
 	margin-top: -4px;
 	margin-right: -4px;
-	font-size: 14px;
+	font-size: 82.35%;
 }
 
 .timestamp {
@@ -71,7 +71,7 @@
 	right: 10px;
 	top: 14px;
 	float: right;
-	font-size: 14px;
+	font-size: 82.35%;
 	font-weight: normal;
 	color: #506d8e;
 }

@@ -9,8 +9,6 @@
 	/* Overall size of one cell in the springboard's fixed utility-type items */
 	width: 64px;
 	height: 64px;
-	font-size: 12px;
-	line-height: 13px;
 }
 
 .springboard div.utility a img {
