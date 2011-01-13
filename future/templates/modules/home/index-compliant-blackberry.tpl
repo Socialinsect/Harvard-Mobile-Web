@@ -1,4 +1,4 @@
-{extends file="findExtends:modules/home/index-compliant-bbplus.tpl"}
+{extends file="findExtends:modules/home/index.tpl"}
 
 {block name="banner"}
     <h1><img id="logo" src="/modules/home/images/logo-home.png" 
@@ -6,10 +6,10 @@
 {/block}
 
 {block name="homeFooter"}
-<br clear="both"/>
-<table border="0"><tr>
+  <br clear="both"/>
+  <table border="0"><tr>
     <td>&nbsp;<!--The BlackBerry will ignore the <br> without this--></td>
-</tr></table>
+  </tr></table>
 
   <div id="download">
     <a href="../download/">

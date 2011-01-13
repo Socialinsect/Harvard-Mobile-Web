@@ -1,9 +1,4 @@
-<div 
-    {block name="springboardAttributes"}
-    class="springboard"
-    {if $springboardID} id="{$springboardID}"{/if}
-    {/block}
-    >
+<div class="springboard"{if $springboardID} id="{$springboardID}"{/if}>
   {foreach $springboardItems as $item}
     {if $item['separator']}
       {block name="separator"}

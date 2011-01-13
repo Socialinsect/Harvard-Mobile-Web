@@ -4,5 +4,5 @@
 
 {block name="byline"}
   {$smarty.block.parent}
-  <a href="{$shareUrl}">Email this article</a>
+  <a href="{$shareEmailURL}">Email this article</a>
 {/block}

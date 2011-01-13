@@ -60,43 +60,6 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
       }        
     }
   }
-  
-    // image not found
-  header("HTTP/1.0 404 Not Found");
-  exit;
-
-} else if (preg_match(';^.*(modules|common)(/.*(javascript|css))/(.*)$;', $path, $matches)) {
-  $file = $matches[4];
-
-  $platform = $GLOBALS['deviceClassifier']->getPlatform();
-  $pagetype = $GLOBALS['deviceClassifier']->getPagetype();
-  
-  $testDirs = array(
-    SITE_DIR.'/'.$matches[1].$matches[2],
-    TEMPLATES_DIR.'/'.$matches[1].$matches[2]
-  );
-
-  $testFiles = array(
-    "$pagetype-$platform/$file",
-    "$pagetype/$file",
-    "$file",
-  );
-  
-  foreach ($testDirs as $dir) {
-    foreach ($testFiles as $file) {
-      $file = realpath_exists("$dir/$file");
-      if ($file) {
-      
-        header("Content-type: text/" . $matches[3]);
-        readfile($file);
-        exit;
-      }        
-    }
-  }
-  
-  // image not found
-  header("HTTP/1.0 404 Not Found");
-  exit;
 
 } else if (preg_match(';^.*media/(.*)$;', $path, $matches)) {
   //
@@ -195,8 +158,8 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
 }
 
 //
-// Unsupported Request
+// Unsupported Request or File Not Found
 //
 
-header('Status: 404 Not Found');
-die;
+header("{$_SERVER['SERVER_PROTOCOL']} 404 Not Found");
+exit;

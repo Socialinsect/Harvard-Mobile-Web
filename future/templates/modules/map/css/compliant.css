@@ -13,37 +13,37 @@ h2 {
 	margin-bottom: 8px
 }
 
-#mapimage {
+#mapTab {
+  text-align: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#mapwrapper {
+  display: inline-block;
+	width: 294px;
+	height: 245px;
 	position: relative;
-	left: 50%;
-	top: 0;
-	margin-left: -147px;
+	overflow: hidden;
+}
+
+#mapimage {
 	width: 292px;
-	height: 190px
-	margin-bottom: 5px;
+	height: 190px;
 	border: 1px solid #999;
 	background-color: #fff;
 }
 
-*:first-child+html #mapimage {
-/* IE hack grr */
-	margin-left: -155px; /*8px more than standard, to accommodate for internal padding of tabbody */
-}
-
 #mapscrollers {
 	position: absolute;
-	top: 8px;
-	right: 0;
-	left: 0;
+	top: 0px;
+	left: 0px;
+	width: 100%;
 	z-index: 10;
 }
 
 .tabbody #mapscrollers {
-	left: 50%;
-	margin-left: -147px;
-	width: 294px;
 	height: 192px;
-	bottom: 44px;
 }
 
 #mapscrollers div {

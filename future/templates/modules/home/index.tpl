@@ -15,7 +15,7 @@
 {/block}
 
 {block name="searchsection"}
-  {include file="findInclude:common/search.tpl" placeholder="Search "|cat:$SITE_NAME}  
+  {include file="findInclude:common/search.tpl" placeholder="Search "|cat:$SITE_NAME}
 {/block}
 
 {block name="moduleItems"}

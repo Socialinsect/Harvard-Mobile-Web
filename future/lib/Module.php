@@ -236,6 +236,31 @@ abstract class Module {
     
     return "$page.php".(strlen($argString) ? "?$argString" : "");
   }
+  
+  protected function buildMailtoLink($to, $subject, $body) {
+    $to = trim($to);
+    
+    // Some old BlackBerries will give you an error about unsupported protocol
+    // if you have a mailto: link that doesn't have a "@" in the recipient 
+    // field. So we can't leave this field blank for these models. It's not
+    // a matter of being <= 9000 either, since there are Curves that are fine.
+    $modelsNeedingToField = array("8100", "8220", "8230", "9000");
+    if ($to == '') {
+      foreach ($modelsNeedingToField as $model) {
+        if (strpos($_SERVER['HTTP_USER_AGENT'], "BlackBerry".$model) !== FALSE) {
+          $to = '@';
+          break;
+        }
+      }
+    }
+
+    $url = "mailto:{$to}?".http_build_query(array("subject" => $subject, 
+                                                  "body" => $body));
+    // mailto url's do not respect '+' (as space) so we convert to %20
+    $url = str_replace('+', '%20', $url); 
+    
+    return $url;
+  }
 
   protected function redirectToModule($id, $args=array()) {
     $url = URL_BASE."{$id}/?". http_build_query($args);

@@ -216,6 +216,7 @@ a.formbutton {
 	margin: 0 5px;
 	height: 36px;
 	overflow: hidden;
+	text-decoration: none;
 }
 
 a.formbutton div {
@@ -229,6 +230,7 @@ a.formbutton div {
 	background-image: url(/common/images/button-sd-l.png);
 	background-repeat: no-repeat;
 	background-position: left;
+	text-decoration: none;
 }
 
 input.formbutton {
@@ -297,9 +299,9 @@ input.formbutton {
 	height: 100%;
 	line-height: 44px;
 	vertical-align: top;
-    margin-left: -8px; /* overlap by the width of the drillup art */
-    padding: 0 18px 0 2px; 
-    background-image: url(/common/images/drillup-r.png);
+  margin-left: -8px; /* overlap by the width of the drillup art */
+  padding: 0 18px 0 2px; 
+  background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
 	background-position: top right;
 	text-decoration: none;
@@ -323,12 +325,10 @@ a.module img {
 	padding: 8px 3px;
 }
 
-.homepage .moduleicon {
-    padding: 8px 6px 8px 4px;
-}
-
-*:first-child+html .homepage .moduleicon {
-	/* The return of IE CSS hacks makes me mad */
+.breadcrumbs .moduleicon {
+  background-image: none;
+  padding: 8px 6px 8px 4px;
+  margin-left: -4px;
 	float: left;
 }
 
@@ -346,7 +346,7 @@ a.module img {
 
 .crumb3a {
 	max-width: 40px;
-  	display: none !important; /* hidden for now because it doesn't fit */
+  display: none !important; /* hidden for now because it doesn't fit */
 }
 
 .crumb3b {
@@ -360,14 +360,13 @@ a.module img {
 .pagetitle {
 	display: inline-block;
 	font-weight: bold;
-	margin-left: -7px;	
+	margin-left: -5px;	
 	vertical-align: top;
 	line-height: 44px;
 	height: 44px;
 }
 
 .homepage .pagetitle {
-	display: inline;
 	max-width: 210px;
 }
 
@@ -379,7 +378,7 @@ a.module img {
 }
 
 #navbar.helpon {
-    padding-right: 46px;
+  padding-right: 46px;
 }
 
 /* Springboards */

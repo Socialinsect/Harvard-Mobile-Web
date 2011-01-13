@@ -528,7 +528,7 @@ class LibrariesModule extends Module {
         $searchConfig = $this->loadWebAppConfigFile('libraries-search', 'searchConfig');
         
         $locations = $searchConfig['locations'] + Libraries::getLibrarySearchCodes();
-        $formats   = $searchConfig['formats']   + Libraries::getLibraryFormatCodes();
+        $formats   = $searchConfig['formats']   + Libraries::getFormatSearchCodes();
 
         $this->assign('locations', $locations);
         $this->assign('formats',   $formats);
@@ -538,7 +538,7 @@ class LibrariesModule extends Module {
         $searchConfig = $this->loadWebAppConfigFile('libraries-search', 'searchConfig');
 
         $locations = $searchConfig['locations'] + Libraries::getLibrarySearchCodes();
-        $formats   = $searchConfig['formats']   + Libraries::getLibraryFormatCodes();
+        $formats   = $searchConfig['formats']   + Libraries::getFormatSearchCodes();
         
         $keywords     = trim($this->getArg('keywords'));
         $title        = trim($this->getArg('title'));

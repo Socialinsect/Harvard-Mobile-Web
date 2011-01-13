@@ -1,22 +1,3 @@
-function loadSection(select) {
-    window.location = "./?section=" + select.value;
-}
-
-function toggleSearch() {
-    var searchForm = document.getElementById("search-form");
-    var categoryForm = document.getElementById("category-form");
-    
-    if(searchForm.style.display == "none") {
-        searchForm.style.display = null;
-        categoryForm.style.display = "none";
-        document.getElementById("search_terms").focus();
-    } else {
-        searchForm.style.display = "none";
-        categoryForm.style.display = null;
-    }
-    return false;
-}
-
 // Initalize the ellipsis event handlers
 clipWithEllipsis(function () {
     var elems = [];

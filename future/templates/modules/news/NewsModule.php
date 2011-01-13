@@ -142,24 +142,16 @@ class NewsModule extends Module {
         }
         
         if (!$content = $story->getProperty('content')) {
-            if ($url = $story->getProperty('link')) {
-                header("Location: $url");
-                exit();
-            } else {
-                throw new Exception("No content or link found for story $storyID");
-            }
+          if ($url = $story->getProperty('link')) {
+              header("Location: $url");
+              exit();
+          } else {
+              throw new Exception("No content or link found for story $storyID");
+          }
         }
-        
-        $placeholder = ''; 
-        if ($this->pagetype == 'basic' && $this->platform == 'blackberry') {
-          $placeholder = '@'; // Some old blackberries don't like empty email links
-        }
-        $shareUrl = "mailto:{$placeholder}?".http_build_query(array(
-          "subject" => $story->getTitle(),
-          "body"    => $story->getDescription()."\n\n".$story->getLink()
-        ));
-        // mailto url's do not respect '+' (as space) so we convert to %20
-        $shareUrl = str_replace('+', '%20', $shareUrl);
+
+        $body = $story->getDescription()."\n\n".$story->getLink();
+        $shareEmailURL = $this->buildMailtoLink("", $story->getTitle(), $body);
 
         $pubDate = strtotime($story->getProperty("pubDate"));
         $date = date("M d, Y", $pubDate);
@@ -167,7 +159,8 @@ class NewsModule extends Module {
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
         $this->assign('date',     $date);
-        $this->assign('shareUrl', $shareUrl);
+        $this->assign('storyURL', $story->getLink());
+        $this->assign('shareEmailURL', $shareEmailURL);
         $this->assign('title',    $story->getTitle());
         $this->assign('author',   $story->getProperty('harvard:author'));
         $this->assign('image',    $this->getImageForStory($story));
@@ -209,9 +202,9 @@ class NewsModule extends Module {
             }
           }
 
-               $extraArgs = array(
-                'section'=>$this->feedIndex
-            );
+          $extraArgs = array(
+            'section'=>$this->feedIndex
+          );
 
           $this->assign('extraArgs',     $extraArgs);
           $this->assign('searchTerms', $searchTerms);
@@ -265,7 +258,7 @@ class NewsModule extends Module {
         }
         
         $hiddenArgs = array(
-            'section'=>$this->feedIndex
+          'section'=>$this->feedIndex
         );
         
         $this->assign('hiddenArgs',     $hiddenArgs);

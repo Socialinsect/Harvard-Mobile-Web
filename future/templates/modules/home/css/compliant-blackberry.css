@@ -4,6 +4,11 @@
 	height: 114px;
 	font-size: 16px;
 }
+#homegrid div.utility {
+	width: 76px;
+	height: 114px;
+	font-size: 14px;
+}
 #homegrid a {	
 	width: 76px;
 	height: 106px;

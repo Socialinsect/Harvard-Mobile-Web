@@ -56,15 +56,10 @@
 .homelink {
     float: left;
 }
-.pagetitlecontainer {
-    position: relative;
-    display: inline-block;
-}
-.pagetitle {
-    position: absolute;
+/*.pagetitle {
     margin-top:-2.7em;
     margin-left: 0.2em;
-}
+}*/
 
 
 
@@ -174,4 +169,25 @@
 
 .fivetabs li {
 	width: 20%;
+}
+
+.fontsize {
+	font-size: 93%;
+	margin: 1.5em 0;
+}
+
+.fontsmall {
+	font-size: 5pt;
+}
+
+.fontmedium {
+	font-size: 8pt;
+}
+
+.fontlarge {
+	font-size: 11pt;
+}
+
+.fontxlarge {
+	font-size: 13pt;
 }

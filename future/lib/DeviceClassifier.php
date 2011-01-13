@@ -31,7 +31,7 @@ class DeviceClassifier {
       $this->setDevice($_COOKIE[COOKIE_KEY]);
       //error_log(__FUNCTION__."(): choosing device cookie '{$_COOKIE['layout']}' <{$_SERVER['REQUEST_URI']}>");
       
-    } else {
+    } elseif (isset($_SERVER['HTTP_USER_AGENT'])) {
       $query = http_build_query(array(
         'user-agent' => $_SERVER['HTTP_USER_AGENT'],
       ));

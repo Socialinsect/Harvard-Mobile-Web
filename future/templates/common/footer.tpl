@@ -36,12 +36,14 @@
       {$footerHTML}
     </div>
 
+  {/block}
+
+  {block name="footerJavascript"}
     {foreach $inlineJavascriptFooterBlocks as $script}
       <script type="text/javascript">
         {$script} 
       </script>
     {/foreach}
-
   {/block}
 </div>
 </body>

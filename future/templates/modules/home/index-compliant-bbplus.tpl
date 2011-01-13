@@ -13,6 +13,3 @@
     <br />
   </div>
 {/block}
-
-{include file="findInclude:common/footer.tpl"}
-

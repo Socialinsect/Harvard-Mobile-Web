@@ -98,11 +98,12 @@ function clearField(objField,strDefault) {
 
 // Android doesn't respond to onfocus="clearField(...)" until the 
 // input field loses focus
-function androidPlaceholderFix() {
-	searchbox = document.getElementById("filter");
-	searchbox.onfocus = function() {
-		if (searchbox.value == "") searchbox.value = "";
-	}
+function androidPlaceholderFix(searchbox) {
+    // this forces the search box to display the empty string
+    // instead of the place holder when the search box takes focus
+    if (searchbox.value == "") {
+        searchbox.value = "";
+    }
 }
 
 function clipWithEllipsis(getElements) {

@@ -63,7 +63,7 @@ class Libraries{
       return $codes;
   }
 
-  public static function getLibraryFormatCodes() {
+  public static function getFormatSearchCodes() {
       $xmlURLPath = $GLOBALS['siteConfig']->getVar('URL_LIBRARIES_OPTS');
         
       $xml_obj = self::query('librariesOpts', $xmlURLPath);

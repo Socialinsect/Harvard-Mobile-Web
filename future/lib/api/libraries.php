@@ -57,7 +57,13 @@ switch ($_REQUEST['command']) {
         $imageId = urldecode($_REQUEST['itemid']);
         $data = Libraries::getImageThumbnail($imageId);
         break;
-
+    
+    case 'searchcodes':
+        $data = array(
+          'formats'   => Libraries::getFormatSearchCodes(),
+          'locations' => Libraries::getLibrarySearchCodes(),
+        );
+        break;
 }
 
 echo json_encode($data);

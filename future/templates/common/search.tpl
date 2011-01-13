@@ -40,8 +40,8 @@
   {/if}
   
         <fieldset class="inputcombo{if $emphasized|default:$isModuleHome} emphasized{/if}">
-          <input class="forminput" type="text" id="{$inputName|default:'filter'}" name="{$inputName|default:'filter'}" placeholder="{$placeholder|default:''}" value="{$searchTerms|escape}" />
-          
+          <input class="forminput" type="text" id="{$inputName|default:'filter'}" name="{$inputName|default:'filter'}" placeholder="{$placeholder|default:''}" value="{$searchTerms|escape}" onfocus="androidPlaceholderFix(this);" />
+
           {block name="searchbutton"}
             <input class="combobutton" id="sch_btn" src="/common/images/search-button.png" type="image" />
           {/block}
