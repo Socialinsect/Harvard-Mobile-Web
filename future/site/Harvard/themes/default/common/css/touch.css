@@ -112,15 +112,7 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 
 /* Text input fields, e.g., search fields */
 .forminput {
-	border-color: #62615e; 	/* Should match the border color of image /common/images/mobile/search_button.png */
-}
-
-.inputcombo .forminput {
-	border: 1px 0 1px 1px solid #62615e; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */
-}
-
-.emphasized  .forminput {
-	border: 3px solid #62615e; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */; border weight should be 2px greater than border weight of .inputcombo .forminput */	
+	border-color: #62615e; 
 }
 
 .submitbutton {
@@ -132,9 +124,9 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 
 .springboard div {
 	/* Overall size of one cell in the springboard */
-	width: 76px;
-	height: 94px;
-	font-size: 76.471%;
+	width: 57px;
+	height: 82px;
+	font-size: 75%;
 	line-height: 1.1em;
 }
 
@@ -150,9 +142,9 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 
 .springboard div.utility {
 	/* Overall size of one cell in the springboard's fixed utility-type items */
-	width: 76px;
-	height: 86px;
-	font-size: 70.589%;
+	width: 57px;
+	height: 72px;
+	font-size: 75%;
 	line-height: 1.1em;
 }
 
