@@ -9,7 +9,7 @@
       {else}
         <a href="{$fontSizeURL}{$size}" class="font{$size}">A</a>
       {/if}
-      {if !$size@last} | {/if}
+      {if !$size@last}&nbsp;|&nbsp;{/if}
     {/foreach}
   </p>
   
