@@ -1017,15 +1017,16 @@ class LibrariesModule extends Module {
         
         switch ($this->pagetype) {
           case 'compliant':
-            $imageWidth = 290; $imageHeight = 300;
-            break;
-          
-          case 'basic':
             if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
               $imageWidth = 410; $imageHeight = 360;
             } else {
-              $imageWidth = 200; $imageHeight = 200;
+              $imageWidth = 290; $imageHeight = 300;
             }
+            break;
+          
+          case 'touch':
+          case 'basic':
+            $imageWidth = 200; $imageHeight = 200;
             break;
         }
         

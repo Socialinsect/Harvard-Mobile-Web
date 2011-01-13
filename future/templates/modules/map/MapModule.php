@@ -70,16 +70,16 @@ class MapModule extends Module {
   
     switch ($this->pagetype) {
      case 'compliant':
-       $imageWidth = 290; $imageHeight = 190;
+       if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
+         $imageWidth = 410; $imageHeight = 260;
+       } else {
+         $imageWidth = 290; $imageHeight = 190;
+       }
        break;
        
      case 'touch':
      case 'basic':
-       if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
-         $imageWidth = 410; $imageHeight = 260;
-       } else {
-         $imageWidth = 200; $imageHeight = 200;
-       }
+       $imageWidth = 200; $imageHeight = 200;
        break;
     }
     $this->assign('imageHeight', $imageHeight);

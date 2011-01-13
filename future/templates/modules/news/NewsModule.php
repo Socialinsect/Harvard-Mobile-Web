@@ -9,22 +9,10 @@ if (!function_exists('mb_substr')) {
 class NewsModule extends Module {
   protected $id = 'news';
   protected $feeds = array();
-  private $feedIndex=0;
+  private   $feedIndex = 0;
   protected $feed;
   protected $maxPerPage;
   
-  private function basicDeck($story, $bbplus) {
-    $limit = $bbplus ? 95 : 75;
-    
-    $deck = $story["description"];
-    if(strlen($deck) > $limit) {
-      $deck = mb_substr($deck, 0, $limit, 'UTF-8');
-      return trim($deck) . "...";
-    } else {
-      return $deck;
-    }
-  }
-
   private function feedURLForFeed($feedIndex) {
     return isset($this->feeds[$feedIndex]) ? 
       $this->feeds[$feedIndex]['baseURL'] : null;
