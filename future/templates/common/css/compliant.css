@@ -100,7 +100,7 @@ strong {
 #footerlinks {
 	clear: both;
 	margin: 3em 6px 2em 6px; 
-	font-size: 12px;
+	font-size: 70.589%;
 }
 
 #footerlinks a {
@@ -134,7 +134,7 @@ fieldset {
 
 input, textarea, select {
 	color: #333;
-	font-size: 17px;
+	font-size: 100%;
 	line-height: 30px;
 }
 
@@ -223,8 +223,8 @@ a.formbutton div {
 	display: inline-block;
 	color: #fff;
 	font-weight: bold;
-	font-size: 16px;
-	line-height: 26px;
+	font-size: 94.12%;
+	line-height: 1.625em;
 	text-decoration: none;
 	padding: 5px 5px 5px 12px;
 	background-image: url(/common/images/button-sd-l.png);
@@ -238,8 +238,8 @@ input.formbutton {
   display: inline-block;
 	color: #fff;
 	font-weight: bold;
-	font-size: 16px;
-	line-height: 26px;
+	font-size: 94.12%;
+	line-height: 1.625em;
 	text-decoration: none;
 	padding: 5px 5px 5px 14px;
 	margin-right: 0;
@@ -428,8 +428,9 @@ a.module img {
 }
 
 .springboard a img {
-  height: 50px;
-  width: 50px;
+	height: 50px;
+	width: 50px;
+	margin-bottom: 1px;
 }
 
 .springboard .separator {
@@ -450,7 +451,7 @@ a.module img {
 	padding-top: 5px;
 	text-align: center;
 	color: #fff;
-	font-size:12px;
+	font-size:70.59%;
 	font-weight: bold;
 	background-image: url(/common/images/badge.png);
 	background-repeat: no-repeat;
@@ -688,8 +689,8 @@ ul.focal li:first-child {
 	top: -1px;
 	margin-left: 4px;
 	margin-bottom: -4px;
-	font-size: 14px;
-	line-height: 14px;
+	font-size: 83.353%;
+	line-height: 1em;
 	padding: 4px 9px 4px 7px;
 	-webkit-border-radius: 10px;
 }
@@ -706,8 +707,8 @@ ul.focal li:first-child {
 
 .announcements li {	
 	padding: 8px;
-	font-size: 14px;
-	line-height: 19px;
+	font-size: 83.353%;
+	line-height: 1.357em;
 	color: #202020;
 }
 
@@ -752,8 +753,8 @@ ul.focal li:first-child {
 
 .legend {
 	margin: 7px 0;
-	font-size: 14px;
-	line-height: 17px;
+	font-size: 82.353%;
+	line-height: 1.214em;
 }
 
 .legend.nonfocal {
@@ -774,24 +775,24 @@ ul.focal li:first-child {
 
 .smallprint {
 	font-weight: normal;
-	font-size: 14px;
-	line-height: 17px;
+	font-size: 82.353%;
+	line-height: 1.214em;
 }
 
 .fineprint {
 	font-weight: normal;
-	font-size: 12px;
-	line-height: 14px;
+	font-size: 70.589%;
+	line-height: 1.1167em;
 }
 
 .label {	
 	display: block;
-	width: 78px;
 	position: absolute;
+	left: 0;
 	top: 15px;
-	left: 0px;
-	font-size: 13px;
-	line-height: 15px;
+	width: 7em;
+	font-size: 76.471%;
+	line-height: 1.1em;
 	font-weight: bold;
 	text-align: right;
 	word-wrap: normal;
@@ -799,10 +800,10 @@ ul.focal li:first-child {
 
 .value {
 	display: block;
-	margin-left: 74px;
-	font-size: 17px;
+	margin-left: 5.1em;
+	font-size: 100%;
 	min-height: 21px;
-	line-height: 20px;
+	line-height: 1.177em;
 	padding-right: 20px;
 	word-wrap: break-word;
 }
@@ -814,8 +815,8 @@ ul.focal li:first-child {
 
 .longlabel {
 	display: block;
-	font-size: 13px;
-	line-height: 15px;
+	font-size: 76.47%;
+	line-height: 1.15em;
 	font-weight: bold;
   text-align: left;
   white-space: nowrap;
@@ -866,8 +867,8 @@ ul.focal li:first-child {
 }
 
 .foundat {
-	font-size: 14px;
-	line-height: 17px;
+	font-size: 83.353%;
+	line-height: 1.214em;
 	font-weight: normal;
 	color: #444;
 }
@@ -877,8 +878,8 @@ p.foundat {
 }
 
 .address {
-	font-size: 14px;
-	line-height: 17px;
+	font-size: 83.353%;
+	line-height: 1.214em;
 	font-weight: normal;
 }
 
@@ -1054,7 +1055,7 @@ h2.icon {
 }
 
 #tabs.smalltabs li {
-	font-size: 12pt;
+	font-size: 88.26%;
 	margin-right: 3px;
 	padding-right: 6px;
 	padding-left: 6px;
@@ -1187,8 +1188,8 @@ h2.icon {
 
 .loading {
 	margin: 16px 0;
-	font-size: 14px;
-	line-height: 21px;
+	font-size: 83.353%;
+	line-height: 1.5em;
 	font-weight: normal;
 	color: #888;
 	text-align: center;
@@ -1220,8 +1221,8 @@ h2.icon {
 	z-index: 100001;
 	top: 50%;
 	left: 50%;
-	font-size: 15px;
-	line-height: 18px;
+	font-size: 83.236%;
+	line-height: 1.2em;
 	padding: 20px 10px;
 	width: 230px;
 	margin-left: -125px;
@@ -1250,7 +1251,8 @@ h2.icon {
 }
 .devicedetection th,
 .devicedetection td {
-  font-size: 10px;
+  font-size: 58.8%;
+  line-height: 1.2em;
   padding: 0 .25em;
   margin: 0;
   text-align: left;

@@ -17,7 +17,6 @@ h1 {
 #homegrid div {
 	width: 76px;
 	height: 114px;
-	font-size: 16px;
 }
 #homegrid a {	
 	width: 76px;
@@ -50,8 +49,6 @@ h1 {
 	/* Overall size of one cell in the springboard's fixed utility-type items */
 	width: 64px;
 	height: 64px;
-	font-size: 12px;
-	line-height: 13px;
 }
 
 .springboard div.utility a img {
