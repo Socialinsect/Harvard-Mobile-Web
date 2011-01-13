@@ -6,9 +6,7 @@
       <form method="get" action="{$searchPage|default:'search'}.php">
   {/if}
       {if $placeholder}
-        {if $emphasized|default:$isModuleHome}<h3>{else}<strong>{/if}
-          {$placeholder}:
-        {if $emphasized|default:$isModuleHome}</h3>{else}</strong><br/>{/if}
+        <h3>{$placeholder}:</h3>
       {/if}
       <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
         <tr>
