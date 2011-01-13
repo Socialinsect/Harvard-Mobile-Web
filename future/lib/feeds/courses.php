@@ -520,6 +520,7 @@ class CourseData {
         self::addCategoryQueryToArgs($args);
       } else {
         self::addCategoryQueryToArgs($args, $course);
+        $args['ignored'] = 'butNeeded';
       }
     }
 
@@ -603,6 +604,8 @@ class CourseData {
     if (!$cache->isFresh($cacheName)) {
       $args = array();
       self::addTermQueryToArgs($args);
+      $args['ignored'] = 'butNeeded';
+      
       $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
       self::condenseXMLFileForCoursesAndWrite($urlString, $cacheName);
     }
@@ -612,7 +615,7 @@ class CourseData {
     } else {
         $schoolsAndCourses = array();
     }
-    
+
     return $schoolsAndCourses;
   }
 
@@ -625,35 +628,34 @@ class CourseData {
     }
 
     $xml_obj = simplexml_load_string($xml);
-
+    
     $schoolsToCoursesMap = array();
     
     foreach($xml_obj->facets->facet as $fc) {
       if ($fc['name'] == 'school_nm') {
         foreach($fc->field as $field) {
           $args = array();
-          self::addTermQueryToArgs($args);
           self::addSchoolQueryToArgs($args, $field['name']);
+          self::addTermQueryToArgs($args);
+          $args['ignored'] = 'butNeeded';
       
           $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
-          $courses_map_xml = file_get_contents($urlString);
-      
-          if($courses_map_xml == "") {
+          
+          $courses_map_xml = file_get_contents($urlString);      
+          if ($courses_map_xml == "") {
             // if failed to grab xml feed, then run the generic error handler
             throw new DataServerException('COULD NOT GET XML');
           }
       
           $courses_xml_obj = simplexml_load_string($courses_map_xml);
-      
+          
+          $course_array = array();
           foreach($courses_xml_obj->facets->facet as $fcm) {
             if ($fcm['name'] == 'dept_area_category') {
-              $course_array = array();
               foreach($fcm->field as $fieldMap) {
-                $crs = explode(':', $fieldMap['name']);
-        
-                if (is_array($crs) && $crs[0] != '') {
+                if (isset($fieldMap['name']) && $fieldMap['name']) {
                   $course_array[] = array(
-                    'name'  => $crs[0],
+                    'name'  => strval($fieldMap['name']),
                     'short' => '1',
                   );
                 }
@@ -661,13 +663,10 @@ class CourseData {
             }
           }
     
-          $str      = explode(':', $field['name']);
-          $strShort = explode(':', $field['short_name']);
-      
-          if ($str[0] != '' && isset($course_array)) {
+          if (strval($field['name'])) {
             $schoolsToCoursesMap[] = array(
-              'school_name'       => $str[0],
-              'school_name_short' => $strShort[0],
+              'school_name'       => strval($field['name']),
+              'school_name_short' => strval($field['short_name']),
               'courses'           => $course_array,
             );
           }
@@ -723,10 +722,11 @@ class CourseData {
     
         if ($fc['name'] == 'school_nm')
           foreach($fc->field as $field) {
-            $nm = explode(':', $field['name']);
-            $nm_count = explode(':', $field['count']);
-            $strShort = explode(':', $field['short_name']);
-            $schools[] = array('name'=> $nm[0], 'count' => $nm_count[0], 'name_short'=> $strShort[0]);
+            $schools[] = array(
+              'name'       => strval($field['name']),
+              'count'      => strval($field['count']),
+              'name_short' => strval($field['short_name']),
+            );
           }
       }
       $count_array = explode(':', $count);
@@ -765,36 +765,27 @@ class CourseData {
       }
       
       foreach($xml_obj->courses->course as $single_course) {
-        $subject_fields = array();
-        $id = explode(':',$single_course['id']);
-        $nm = explode(':', $single_course->course_number);
-        $subject_fields['name'] = $nm[0];
-        $school = explode(':', $single_course->school_name);
-        $subject_fields['school'] = $school[0];
-        $subject_fields['masterId'] = $id[0];
-        $titl = explode(':', $single_course->title);
-        $len = count($titl);
-        $subject_fields['title'] = '';
-        for ($ind = 0; $ind < $len; $ind++) {
-          if ($ind == $len-1)
-            $subject_fields['title'] = $subject_fields['title'] .$titl[$ind];
-          else
-            $subject_fields['title'] = $subject_fields['title'] .$titl[$ind] .':';
-        }
-        //$subject_fields['title'] = $titl[0];
-        $subject_fields['term'] = self::get_term();
+        $subject_fields = array(
+          'name'     => strval($single_course->course_number),
+          'school'   => strval($single_course->school_name),
+          'masterId' => strval($single_course['id']),
+          'title'    => strval($single_course->title),
+          'term'     => self::get_term(),
+        );
     
-        $ta_array =array();
         $staff['instructors'] = self::getInstructorsFromDescription($single_course->faculty_description);
-        $staff['tas'] = $ta_array;
+        $staff['tas'] = array();
         $subject_fields['staff'] = $staff;
+
         $temp = self::get_schoolsAndCourses();
         foreach($temp as $schoolsMapping) {
-          //print_r($schoolsMapping);
-    
-          if ( $schoolsMapping->school_name == $school[0]) {
+          if (!strcasecmp($schoolsMapping->school_name, $subject_fields['school'])) {
             $subject_fields['short_name'] = $schoolsMapping->school_name_short;
           }
+        }
+        if (!isset($subject_fields['short_name'])) {
+          error_log("search_subjects(): no short name for {$subject_fields['school']}");
+          $subject_fields['short_name'] = $subject_fields['school'];
         }
     
         $subject_array[] = $subject_fields;
