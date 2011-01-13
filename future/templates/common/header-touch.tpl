@@ -18,13 +18,13 @@
     <div id="navbar"{if $hasHelp} class="helpon"{/if}>
       <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
         <a name="top" href="/home/" class="homelink">
-          <img src="/common/images/harvard-logo2.gif" width="40" height="30" alt="Home" />
+          <img src="/common/images/homelink.gif" width="40" height="30" alt="Home" />
         </a>
         {$breadcrumbHTML}
-        <span class="pagetitle">
           {if $isModuleHome}
             <img src="/common/images/title-{$navImageID|default:$moduleID}.gif" width="28" height="28" alt="" class="moduleicon" />
           {/if}
+        <span class="pagetitle">
           {$pageTitle}
         </span>
       </div>

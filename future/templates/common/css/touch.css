@@ -250,7 +250,6 @@ input.formbutton {
 #navbar {
 	height: 48px;
 	margin: 0 0 9px 0;
-	line-height: 44px;
 	overflow: hidden;
 }
 
@@ -262,109 +261,30 @@ input.formbutton {
 }
 
 .breadcrumbs a {
-	display: inline-block;
-	height: 100%;
-	line-height: 44px;
-	vertical-align: top;
-    margin-left: -8px; /* overlap by the width of the drillup art */
-    padding: 0 18px 0 2px; 
-    background-image: url(/common/images/drillup-r.gif);
-	background-repeat: no-repeat;
-	background-position: top right;
-	text-decoration: none;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-*:first-child+html .breadcrumbs a {
-	/* The return of IE CSS hacks makes me mad */
-    margin-left: -5px; 	/* +3px vs normal */
-	padding-right: 16px;
-}
-
-a.homelink {
-    background-image: none;
-    margin-left: -2px;
-    margin-right: -5px;
-    padding: 0!important;	/* !important necessitated by IE for WP7 grrr */
-    width: 62px;
-}
-
-.breadcrumbs a.homelink img {
-    padding: 0;
-}
-
-a.module img {
-	padding: 8px 2px 8px 4px;
-}
-
-.homepage .moduleicon {
-    padding: 8px 5px;
-}
-
-*:first-child+html .homepage .moduleicon {
-	/* The return of IE CSS hacks makes me mad */
-	padding-left: 3px;
 	float: left;
 }
 
-.crumb1 {
-	max-width: 120px;
+.breadcrumbs a.homelink img {
+    padding: 8px 0.3em;
 }
 
-.crumb2a  {
-	max-width: 60px;
+a.module img {
+	padding: 8px 2px;
 }
 
-.crumb2b  {
-	max-width: 60px;
+.moduleicon {
+    padding: 8px 0;
 }
 
-.crumb3a {
-	max-width: 40px;
-  	display: none !important; /* hidden for now because it doesn't fit */
-}
-
-.crumb3b {
-	max-width: 50px;
-}
-
-.crumb3c {
-	max-width: 50px;
+.homepage .moduleicon {
+	float: left;
 }
 
 .pagetitle {
-	display: inline-block;
+	float: left;
 	font-weight: bold;
-	margin-left: -6px;	
-	vertical-align: top;
-	line-height: 44px;
-	height: 44px;
-}
-
-*:first-child+html .pagetitle {
-	/* The return of IE CSS hacks makes me cry */
-	margin-left: -3px;	
-}
-
-.homepage .pagetitle {
-	display: inline;
 	max-width: 210px;
-}
-
-.homepage .pagetitle {
-	max-width: 210px;
-}
-
-.help {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	width: 46px;
-}
-
-#navbar.helpon {
-    padding-right: 46px;
+	padding: 11px 0 0 8px;
 }
 
 /* Springboards */
@@ -434,7 +354,7 @@ a.module img {
 .nav li {	
 	list-style-type: none;	
 	border-top: 1px solid #ccc;
-	padding: 0.5em;
+	padding: 0.6em 0.5em;
 	position: relative;
 }
 
@@ -456,7 +376,7 @@ a.module img {
 
 .nav a  {
 	display: block;
-	padding: 0.5em 2em 0.5em 0.5em;
+	padding: 0.5em 30px 0.5em 0.5em;
 	margin: -0.5em;	 
 	background-image: url(/common/images/action-arrow.gif); 
 	background-repeat: no-repeat;
@@ -583,51 +503,20 @@ ul.focal li:first-child {
   padding: 0 10px;
   min-height: 54px;
 }
+
 .results li.icon a {
   position: relative;
   margin: 0 -7px 0 0;
   padding: 13px 18px 13px 58px;
   line-height: 30px;
 }
+
 .results li.icon img {
   position: absolute;
   top: 2px;
   left: 0;
   height: 50px;
   width: 50px;
-}
-
-.secondary {
-	margin: 0.4em; 
-	padding: 0;	   
-	border: 1px solid #ccc;
-}
-
-.secondary li {
-	list-style-type: none;		
-	border-top: 1px solid #ccc;
-	position: relative;
-	padding: 0.33em 0.5em;
-}
-
-.secondary li:first-child {
-	border-top: none;
-}
-
-.secondary a {
-	display: block;
-	padding: 8px 25px 8px 7px;
-	margin: -6px;	 
-	background-image: url(/common/images/action-arrow.gif); 
-	background-repeat: no-repeat;
-	background-position: right; 
-	line-height: 1.2em;
-	text-decoration: none;
-	color: #333;
-}
-
-.secondary a:visited {
-	color: #333;
 }
 
 .bottomnav {
@@ -703,7 +592,7 @@ ul.focal li:first-child {
 .legend {
 	margin: 0.33em 0;
 	font-size: 82.353%;
-	line-height: 1.357em;
+	line-height: 1.2em;
 }
 
 .legend.nonfocal {
@@ -847,7 +736,7 @@ a.arrow {
 
 a.phone {  
 	background-image: url(/common/images/action-phone.gif); 
-	padding-right: 36px;
+	padding-right: 35px;
 }
 
 a.email {  
