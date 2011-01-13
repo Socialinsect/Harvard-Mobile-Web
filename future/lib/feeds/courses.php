@@ -10,7 +10,7 @@ function compare_courseNumber($a, $b)
 
 function compare_schoolName($a, $b)
 {
-    return strcmp($a->school_name_short, $b->school_name_short);
+  return strcmp($a->school_name_short, $b->school_name_short);
 }
 
 class MeetingTime {
@@ -245,27 +245,7 @@ class MeetingTimes {
 
 
 class CourseData {
-
-  private static $courses = array();
-
-  private static $schools = array();
-  private static $schoolsToCoursesMap = array();
-
-  private static $indexToCoursesMap = array();
-  private static $coursesToSubjectsMap = array();
-
-  private static $not_courses = array("SP");
-
-  // general course info is cached in the $courses array (since some long living processes) use this data
-  // we need to make sure the data does not get too old
-  private static $course_last_cache_times = array();
-  private static $course_last_cache_terms = array();
-
-  //private static $subscriptions = Array();
-  public static $subscriptions = Array();
-
-  private static $courseDiskCache = NULL;
-  private static $feedDiskCache = NULL;
+  private static $cache = null;
   
   private static function addTermQueryToArgs(&$args, $term=null) {
     if (!isset($term)) {
@@ -308,6 +288,39 @@ class CourseData {
     }
   }
 
+  private static function getCoursesCache() {
+    if (!isset(self::$cache)) {
+      self::$cache = new DiskCache(
+        $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR'), 
+        $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT'), TRUE);
+      self::$cache->preserveFormat();
+    }
+    
+    return self::$cache;
+  }
+
+  private static function query($cacheName, $baseUrlKey, $args) {
+    $cache = self::getCoursesCache();
+    $results = '';
+    
+    if (!$cache->isFresh($cacheName)) {
+      $url = $GLOBALS['siteConfig']->getVar($baseUrlKey).http_build_query($args);
+    
+      $results = file_get_contents($url);
+      //error_log("COURSES DEBUG: " . $url);
+      if ($results) {
+        $cache->write($results, $cacheName);
+      } else {
+        error_log("Failed to read contents from $url, reading expired cache");
+      }
+    }
+
+    if (!$results) {
+      $results = $cache->read($cacheName);
+    }
+    
+    return $results;
+  }
 
   private static function clean_text($text) {
     $text = str_replace(chr(194), '', $text);
@@ -396,18 +409,8 @@ class CourseData {
     $args = array('q' => 'id:'.$subjectId);
     
     self::addTermQueryToArgs($args);
-    $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
-
-    error_log("COURSE DEBUG: " . $urlString);
-
-    $filenm = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR'). '/Course-' .$subjectId . '.xml';
-
-    if (!file_exists($filenm) || ((time() - filemtime($filenm)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT'))) {
-      $handle = fopen($filenm, "w");
-      fwrite($handle, file_get_contents($urlString));
-    }
-    $xml = file_get_contents($filenm);
-
+    
+    $xml = self::query("Course-{$subjectId}.xml", 'COURSES_BASE_URL', $args);
     if($xml == "") {
       // if failed to grab xml feed, then run the generic error handler
       throw new DataServerException('COULD NOT GET XML');
@@ -498,31 +501,29 @@ class CourseData {
 
     $subject_array = $subject_fields;
     $subjectDetails = $subject_array;
-    //$courseToSubject[$course] = $subject_array;// store it in a global array containing courses to subjects
+    
     return $subjectDetails;
   }
 
   public static function get_subjectsForCourse($course, $school) {
-    $args = array();
+    $args = array(
+      'start' => 0, // start must be first
+    );
     self::addTermQueryToArgs($args);
-    self::addSchoolQueryToArgs($args, $school);
-
-    if ($course == $school) {
-      self::addCategoryQueryToArgs($args);
-    } else {
-      self::addCategoryQueryToArgs($args, $course);
+    
+    if (strlen($school)) {
+      self::addSchoolQueryToArgs($args, $school);
     }
-    $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
-
-    $filenm = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR') ."/$course-$school.xml";
-    if (!file_exists($filenm) || ((time() - filemtime($filenm)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT'))) {
-        $handle = fopen($filenm, "w");
-        fwrite($handle, file_get_contents($urlString));
-        //$urlString = $filenm;
+    
+    if (strlen($course)) {
+      if ($course == $school) {
+        self::addCategoryQueryToArgs($args);
+      } else {
+        self::addCategoryQueryToArgs($args, $course);
+      }
     }
 
-    $xml = file_get_contents($filenm);
-
+    $xml = self::query("$course-$school-0.xml", 'COURSES_BASE_URL', $args);
     if($xml == "") {
       // if failed to grab xml feed, then run the generic error handler
       throw new DataServerException('COULD NOT GET XML');
@@ -533,88 +534,79 @@ class CourseData {
 
     $iterations = ($count/25);
 
-    
     $subject_array = array();
-    for ($index=0; $index < $iterations; $index=$index+1) {
-      //printf(" Current = %d\n",$index*25);
-      $args['start'] = $index * 25;
-      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
-
-      $filenm1 = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR') ."/$course-$school-$index.xml";
-      if (!file_exists($filenm1) || ((time() - filemtime($filenm1)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT'))) {
-        $handle = fopen($filenm1, "w");
-        fwrite($handle, file_get_contents($urlString));
-      }
-
-      $xml = file_get_contents($filenm1);
-
-      if($xml == "") {
-      // if failed to grab xml feed, then run the generic error handler
-      throw new DataServerException('COULD NOT GET XML');
-    }
-   
-    $xml_obj = simplexml_load_string($xml);
-    // $nbr = 1;
+    for ($index = 0; $index < $iterations; $index = $index + 1) {
+      if ($index > 0) {
+        //printf(" Current = %d\n",$index*25);
+        $args['start'] = $index * 25;
+        
+        $xml = self::query("$course-$school-$index.xml", 'COURSES_BASE_URL', $args);
+        if($xml == "") {
+          // if failed to grab xml feed, then run the generic error handler
+          throw new DataServerException('COULD NOT GET XML');
+        }
+     
+        $xml_obj = simplexml_load_string($xml);
+        // $nbr = 1;
+      }    
     
+      foreach($xml_obj->courses->course as $single_course) {
+        $subject_fields = array();
+        $id = explode(':',$single_course['id']);
+        $nm = explode(':', $single_course->course_number);
+        
+        if (ctype_alpha(str_replace(' ', '', $nm[0])) || (substr($nm[0], 0, 1) == '0')) {
+          $nm[0] = '0' .$nm[0];
+        }
+        
+        $subject_fields['name'] = $nm[0];
+        $subject_fields['masterId'] = $id[0];
+        $titl = explode(':', $single_course->title);
+        $len = count($titl);
+        $subject_fields['title'] = '';
+        for ($ind = 0; $ind < $len; $ind++) {
+          if ($ind == $len-1)
+            $subject_fields['title'] = $subject_fields['title'] .$titl[$ind];
+          else
+            $subject_fields['title'] = $subject_fields['title'] .$titl[$ind] .':';
+        }
+        //$subject_fields['title'] = $titl[0];
+        $subject_fields['term'] = self::get_term();
+        
+        $ta_array = array();
+        $staff['instructors'] = self::getInstructorsFromDescription($single_course->faculty_description);
+        $staff['tas'] = $ta_array;
+        $subject_fields['staff'] = $staff;
+        
+        $subject_array[] = $subject_fields;
+      }
+    }
+
+    usort($subject_array, 'compare_courseNumber');
     
-    foreach($xml_obj->courses->course as $single_course) {
-      $subject_fields = array();
-      $id = explode(':',$single_course['id']);
-      $nm = explode(':', $single_course->course_number);
-      
-      if (ctype_alpha(str_replace(' ', '', $nm[0])) || (substr($nm[0], 0, 1) == '0')) {
-        $nm[0] = '0' .$nm[0];
+    foreach($subject_array as $i => $subject) {
+      if (substr($subject["name"], 0, 1) == '0') {
+        $subject_array[$i]["name"] = substr($subject["name"], 1);
       }
-      
-      $subject_fields['name'] = $nm[0];
-      $subject_fields['masterId'] = $id[0];
-      $titl = explode(':', $single_course->title);
-      $len = count($titl);
-      $subject_fields['title'] = '';
-      for ($ind = 0; $ind < $len; $ind++) {
-        if ($ind == $len-1)
-          $subject_fields['title'] = $subject_fields['title'] .$titl[$ind];
-        else
-          $subject_fields['title'] = $subject_fields['title'] .$titl[$ind] .':';
-      }
-      //$subject_fields['title'] = $titl[0];
-      $subject_fields['term'] = self::get_term();
-      
-      $ta_array = array();
-      $staff['instructors'] = self::getInstructorsFromDescription($single_course->faculty_description);
-      $staff['tas'] = $ta_array;
-      $subject_fields['staff'] = $staff;
-      
-      $subject_array[] = $subject_fields;
     }
+    return $subject_array;
   }
-
-  usort($subject_array, 'compare_courseNumber');
-
-  $subjectArrayToReturn = array();
-  foreach($subject_array as $subject) {
-    if (substr($subject["name"], 0, 1) == '0') {
-      $subject["name"] = substr($subject["name"], 1);
-    }
-    $subjectArrayToReturn[] = $subject;
-  }
-  $courseToSubject = $subjectArrayToReturn;
-  return $courseToSubject;
- }
 
 
   // returns the Schools (Course-Group) to Departmetns (Courses) map
   public static function get_schoolsAndCourses() {
     // $filenm = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR'). '/SchoolsAndCourses' .'.xml';
-    $filenm = $GLOBALS['siteConfig']->getVar('COURSES_CACHE_DIR'). '/SchoolsAndCourses' .'.txt';
+    $cacheName = 'SchoolsAndCourses.txt';
+    $cache = self::getCoursesCache();
+    $results = '';
     
-    if (!file_exists($filenm) || (time() - filemtime($filenm)) > $GLOBALS['siteConfig']->getVar('COURSES_CACHE_TIMEOUT')) {
+    if (!$cache->isFresh($cacheName)) {
       $args = array();
       self::addTermQueryToArgs($args);
-      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
-      self::condenseXMLFileForCoursesAndWrite($urlString, $filenm);
+      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
+      self::condenseXMLFileForCoursesAndWrite($urlString, $cacheName);
     }
-    $schoolsAndCourses = json_decode(file_get_contents($filenm));
+    $schoolsAndCourses = json_decode($cache->read($cacheName));
     if (is_array($schoolsAndCourses)) {
         usort($schoolsAndCourses, "compare_schoolName");
     } else {
@@ -625,17 +617,8 @@ class CourseData {
   }
 
 
-  public static function condenseXMLFileForCoursesAndWrite($xmlURLPath, $fileToWrite) {
-    $path = dirname($fileToWrite);
-    if (!file_exists($path)) {
-      if (!mkdir($path, 0755, true))
-        error_log("could not create $path");
-    }
-
-    $handle = fopen($fileToWrite, "w");
-
+  public static function condenseXMLFileForCoursesAndWrite($xmlURLPath, $cacheName) {
     $xml = file_get_contents($xmlURLPath);
-
     if($xml == "") {
       // if failed to grab xml feed, then run the generic error handler
       throw new DataServerException('COULD NOT GET XML');
@@ -643,16 +626,16 @@ class CourseData {
 
     $xml_obj = simplexml_load_string($xml);
 
+    $schoolsToCoursesMap = array();
+    
     foreach($xml_obj->facets->facet as $fc) {
       if ($fc['name'] == 'school_nm') {
         foreach($fc->field as $field) {
-          self::$schools[] = $field['name'];
-
           $args = array();
           self::addTermQueryToArgs($args);
           self::addSchoolQueryToArgs($args, $field['name']);
       
-          $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args).'&';
+          $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
           $courses_map_xml = file_get_contents($urlString);
       
           if($courses_map_xml == "") {
@@ -682,7 +665,7 @@ class CourseData {
           $strShort = explode(':', $field['short_name']);
       
           if ($str[0] != '' && isset($course_array)) {
-            self::$schoolsToCoursesMap[] = array(
+            $schoolsToCoursesMap[] = array(
               'school_name'       => $str[0],
               'school_name_short' => $strShort[0],
               'courses'           => $course_array,
@@ -691,16 +674,16 @@ class CourseData {
         }
       }
     }
-    //error_log(print_r(self::$schools, true));
-
-    fwrite($handle, json_encode(self::$schoolsToCoursesMap));
-    fclose($handle);
+    $cache = self::getCoursesCache();
+    $cache->write(json_encode($schoolsToCoursesMap), $cacheName);
 
     return;
   }
 
   public static function search_subjects($terms, $school, $courseTitle) {    
-    $args = array();
+    $args = array(
+      'start' => 0,  // start must be first
+    );
     
     self::addTermQueryToArgs($args);
     
@@ -734,7 +717,7 @@ class CourseData {
     $count = $xml_obj->courses['numFound']; // Number of Courses Found
     
     /* ONLY IF search results from the MAIN courses page are greater than 100 */
-    if (($count > 100) && ($school == '')){
+    if (($count > 100) && ($school == '')) {
     
       foreach($xml_obj->facets->facet as $fc) {
     
@@ -747,7 +730,7 @@ class CourseData {
           }
       }
       $count_array = explode(':', $count);
-      $too_many_results['count'] =$count_array[0];
+      $too_many_results['count'] = $count_array[0];
       $too_many_results['schools'] = $schools;
       return $too_many_results;
     }
@@ -760,26 +743,26 @@ class CourseData {
       $count = 100;
     }
     
-    
     // printf("Total: %d\n",$count);
     // printf("Iterations: %d\n",$iterations);
-    
     $subject_array = array();
-    for ($index=0; $index < $iterations; $index=$index+1) {
-      $args['start'] = $index * 25;
-      //error_log(" Current = ".$index*25);
+    for ($index = 0; $index < $iterations; $index = $index+1) {
+      if ($index > 0) {
+        $args['start'] = $index * 25;
+        //error_log(" Current = ".$index*25);
+        
+        $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
+        $xml = file_get_contents($urlString);
+        
+        //error_log($urlString);
       
-      $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
-      $xml = file_get_contents($urlString);
+        if($xml == "") {
+          // if failed to grab xml feed, then run the generic error handler
+          throw new DataServerException('COULD NOT GET XML');
+        }
       
-      //error_log($urlString);
-    
-      if($xml == "") {
-        // if failed to grab xml feed, then run the generic error handler
-        throw new DataServerException('COULD NOT GET XML');
+        $xml_obj = simplexml_load_string($xml);
       }
-    
-      $xml_obj = simplexml_load_string($xml);
       
       foreach($xml_obj->courses->course as $single_course) {
         $subject_fields = array();
