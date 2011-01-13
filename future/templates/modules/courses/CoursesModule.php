@@ -253,14 +253,18 @@ class CoursesModule extends Module {
 
         $classes = CourseData::get_subjectsForCourse(str_replace('-other', '', $courseName), $schoolName);
 
-        $this->assign('classes',         $this->getClassListItems($classes));
-        $this->assign('courseNameShort', $courseNameShort);
-        $this->assign('extraSearchArgs', array(
+        $extraSearchArgs = array(
           'school'      => $schoolName,
           'schoolShort' => $schoolNameShort,
-          'course'      => $courseName,
-          'courseShort' => $courseNameShort,
-        ));
+        );
+        if ($courseName && $schoolName != $courseName) {
+          $extraSearchArgs['course']      = $courseName;
+          $extraSearchArgs['courseShort'] = $courseNameShort;
+        }
+
+        $this->assign('classes',         $this->getClassListItems($classes));
+        $this->assign('courseNameShort', $courseNameShort);
+        $this->assign('extraSearchArgs', $extraSearchArgs);
         break;
         
       case 'searchCourses':
@@ -321,15 +325,19 @@ class CoursesModule extends Module {
         $count = $data['count'];
         $classes = isset($data['classes']) ? $data['classes'] : array();
 
-        $this->assign('shortName',   $shortName);
-        $this->assign('classes',     $this->getClassListItems($classes));
-        $this->assign('searchTerms', $searchTerms);
-        $this->assign('extraSearchArgs', array(
+        $extraSearchArgs = array(
           'school'      => $schoolName,
           'schoolShort' => $schoolNameShort,
-          'course'      => $courseName,
-          'courseShort' => $courseNameShort,
-        ));
+        );
+        if ($courseName && $schoolName != $courseName) {
+          $extraSearchArgs['course']      = $courseName;
+          $extraSearchArgs['courseShort'] = $courseNameShort;
+        }
+
+        $this->assign('shortName',       $shortName);
+        $this->assign('classes',         $this->getClassListItems($classes));
+        $this->assign('searchTerms',     $searchTerms);
+        $this->assign('extraSearchArgs', $extraSearchArgs);
         break;
         
       case 'detail':

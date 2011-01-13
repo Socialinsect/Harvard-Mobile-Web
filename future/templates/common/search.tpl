@@ -6,7 +6,7 @@
   {/if}
   
   {if isset($extraArgs)}
-    {$hiddenArgs = array_merge($hiddenArgs, $extraArgs)}
+    {$hiddenArgs = array_merge($extraArgs, $hiddenArgs)}
   {/if}
   {foreach $hiddenArgs as $arg => $value}
     <input type="hidden" name="{$arg}" value="{$value}" />
