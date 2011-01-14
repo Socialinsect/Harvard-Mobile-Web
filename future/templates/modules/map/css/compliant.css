@@ -22,14 +22,14 @@ h2 {
 #mapwrapper {
   display: inline-block;
 	width: 294px;
-	height: 245px;
+	height: 347px;
 	position: relative;
 	overflow: hidden;
 }
 
 #mapimage {
 	width: 292px;
-	height: 190px;
+	height: 292px;
 	border: 1px solid #999;
 	background-color: #fff;
 }
@@ -43,7 +43,7 @@ h2 {
 }
 
 .tabbody #mapscrollers {
-	height: 192px;
+	height: 292px;
 }
 
 #mapscrollers div {

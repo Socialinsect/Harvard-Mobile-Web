@@ -73,7 +73,7 @@ class MapModule extends Module {
        if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
          $imageWidth = 410; $imageHeight = 260;
        } else {
-         $imageWidth = 290; $imageHeight = 190;
+         $imageWidth = 290; $imageHeight = 290;
        }
        break;
        
