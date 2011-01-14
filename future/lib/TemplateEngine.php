@@ -116,7 +116,7 @@ class TemplateEngine extends Smarty {
     return true;
   }
   
-  private static function trimwhitespaceReplace($search, $replace, &$subject) {
+  private static function stripWhitespaceReplace($search, $replace, &$subject) {
     $len = strlen($search);
     $pos = 0;
     for ($i = 0, $count = count($replace); $i < $count; $i++) {
@@ -129,9 +129,16 @@ class TemplateEngine extends Smarty {
   }
   
   public static function smartyOutputfilterAddURLPrefixAndStripWhitespace($source, $smarty) {
-    // rewrite urls for the device classifier in case we are in debugging mode or have full paths
+    // rewrite urls for the device classifier in case  our root is not / 
+    // also handles debugging mode for paths without hostnames
     $source = preg_replace(
-      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.FULL_URL_BASE.'|'.URL_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
+      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.URL_DEVICE_DEBUG_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
+    
+    if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG')) {
+      // if we are in debugging mode we need to also rewrite full paths with hostnames
+      $source = preg_replace(
+        ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.FULL_URL_PREFIX.'|'.FULL_URL_BASE.');', '\1'.FULL_URL_PREFIX, $source);
+    }
     
     // Most of the following code comes from the stripwhitespace filter:
     
@@ -161,9 +168,9 @@ class TemplateEngine extends Smarty {
     $source = preg_replace('/\s+/m', ' ', $source);
 
     // restore textarea, pre and script blocks
-    self::trimwhitespaceReplace("@@@SMARTY:TRIM:TEXTAREA@@@", $textareaBlocks, $source);
-    self::trimwhitespaceReplace("@@@SMARTY:TRIM:PRE@@@", $preBlocks, $source);
-    self::trimwhitespaceReplace("@@@SMARTY:TRIM:SCRIPT@@@", $scriptBlocks, $source);
+    self::stripWhitespaceReplace("@@@SMARTY:TRIM:TEXTAREA@@@", $textareaBlocks, $source);
+    self::stripWhitespaceReplace("@@@SMARTY:TRIM:PRE@@@", $preBlocks, $source);
+    self::stripWhitespaceReplace("@@@SMARTY:TRIM:SCRIPT@@@", $scriptBlocks, $source);
     
     return $source;
   }
