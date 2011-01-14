@@ -4,3 +4,13 @@
 .springboard div.utility a {
 	font-size: 90%;
 }
+.springboard a img {
+	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
+	width: 64px;
+	height: 64px;
+}
+.springboard div.utility a img {
+	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
+	width: 42px;
+	height: 42px;
+}
