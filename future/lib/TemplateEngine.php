@@ -129,8 +129,9 @@ class TemplateEngine extends Smarty {
   }
   
   public static function smartyOutputfilterAddURLPrefixAndStripWhitespace($source, $smarty) {
+    // rewrite urls for the device classifier in case we are in debugging mode or have full paths
     $source = preg_replace(
-      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.URL_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
+      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.FULL_URL_BASE.'|'.URL_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
     
     // Most of the following code comes from the stripwhitespace filter:
     
