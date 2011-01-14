@@ -77,14 +77,15 @@ class CustomizeModule extends Module {
     
     switch($this->pagetype) {
       case 'compliant':
-        $this->addInlineJavascript('var httpRoot = "'.COOKIE_PATH.'"');
-        $this->addInlineJavascriptFooter('init();');
-        $this->addInlineJavascript(
+         $this->addInlineJavascript(
           'var modules = '.json_encode($moduleIDs).';'.
           'var disabledModules = '.json_encode($disabledModuleIDs).';'.
-          'var moduleOrderCookie = "'.MODULE_ORDER_COOKIE.'";'.
-          'var disabledModulesCookie = "'.DISABLED_MODULES_COOKIE.'";'
+          'var MODULE_ORDER_COOKIE = "'.MODULE_ORDER_COOKIE.'";'.
+          'var DISABLED_MODULES_COOKIE = "'.DISABLED_MODULES_COOKIE.'";'.
+          'var MODULE_ORDER_COOKIE_LIFESPAN = '.$GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN').';'.
+          'var COOKIE_PATH = "'.COOKIE_PATH.'";'
         );
+        $this->addInlineJavascriptFooter('init();');
         break;
       
       case 'touch':

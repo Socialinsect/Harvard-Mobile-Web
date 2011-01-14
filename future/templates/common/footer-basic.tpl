@@ -60,11 +60,10 @@
       {$footerHTML}
     </p>
   </div>
-  
-  {if strlen($gaImageURL)}
-    <img src="{$gaImageURL}" />
-  {/if}
 {/block}
 
 {block name="footerJavascript"}
+  {if strlen($gaImageURL)}
+    <img src="{$gaImageURL}" />
+  {/if}
 {/block}

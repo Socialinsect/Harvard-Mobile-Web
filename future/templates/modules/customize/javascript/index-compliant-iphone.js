@@ -12,10 +12,12 @@ var dirtyBit = false; // needs saving
 
 function init() {
     // 1. set up reorderable list
-    var cookie = getCookie(disabledModulesCookie);
+    var cookie = getCookie(DISABLED_MODULES_COOKIE);
     var disabledModules = (cookie) ? cookie.split(",") : [];
-    cookie = getCookie(moduleOrderCookie);
+    
+    cookie = getCookie(MODULE_ORDER_COOKIE);
     var moduleOrder = (cookie) ? cookie.split(",") : [];
+    
     var container = document.getElementById("dragReorderList");
     var checkboxes = container.getElementsByTagName("input");
     // deal with sort order
@@ -243,22 +245,20 @@ function updateCookie() {
         };
     };
 
-    var expiredays = null; // never expire
-    setCookie(moduleOrderCookie, moduleNames.join(), null, httpRoot);
+    setCookie(MODULE_ORDER_COOKIE, moduleNames.join(), MODULE_ORDER_COOKIE_LIFESPAN, COOKIE_PATH);
 
     moduleNames = [];
     for (var i=0; i < rows.length; i++) {
         var checks = rows[i].getElementsByTagName("input");
         for (var j=0; j < checks.length; j++) {
-            if (checks[j].getAttribute("type") != "checkbox" || !checks[j].checked) {
+            if (checks[j].getAttribute("type") == "checkbox" && !checks[j].checked) {
                 moduleNames.push(checks[j].getAttribute("name"));
                 break;
             }
         };
     };
 
-    expiredays = null; // never expire
-    setCookie(disabledModulesCookie, moduleNames.join(), null, httpRoot);
+    setCookie(DISABLED_MODULES_COOKIE, moduleNames.join(), MODULE_ORDER_COOKIE_LIFESPAN, COOKIE_PATH);
     
     dirtyBit = false; // reset "needs saving" flag
     
@@ -274,10 +274,10 @@ function updateCookie() {
     }, 0);
 }
 
-function setCookie(name, value, expiredays, path) {
+function setCookie(name, value, expireseconds, path) {
     var exdate=new Date();
-    exdate.setDate(exdate.getDate()+expiredays);
-    var exdateclause = (expiredays == null) ? "" : "; expires="+exdate.toGMTString();
+    exdate.setTime(exdate.getTime() + (expireseconds*1000));
+    var exdateclause = (expireseconds == 0) ? "" : "; expires="+exdate.toGMTString();
     var pathclause = (path == null) ? "" : "; path="+path;
     document.cookie= name + "=" + value + exdateclause + pathclause;
 }
