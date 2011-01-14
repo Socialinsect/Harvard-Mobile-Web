@@ -44,6 +44,7 @@
           <input type="checkbox" id="language" name="language" value="eng"{if $language == 'eng'} checked="checked"{/if} />
           <label for="language">English language only</label>
         </td>
+      </tr>
     </table>
     <input type="hidden" name="advanced" value="1" />
     {if $page == 'search'}
