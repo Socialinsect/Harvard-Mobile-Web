@@ -79,6 +79,20 @@ switch (apiGetArg('command')) {
       'locations' => Libraries::getLibrarySearchCodes(),
       'pubDates'  => Libraries::getPubDateSearchCodes(),
     );
+    
+    if (apiGetArg('version', 0) > 0) {
+      // Provide in indexed array format because iOS dictionaries aren't ordered
+      foreach ($data as $type => $formatArray) {
+        $newFormatArray = array();
+        foreach ($formatArray as $code => $name) {
+          $newFormatArray[] = array(
+            'code'  => $code,
+            'name' => $name,
+          );
+        }
+        $data[$type] = $newFormatArray;
+      }
+    }
     break;
 }
 
