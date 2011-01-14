@@ -108,6 +108,13 @@ class CoursesModule extends Module {
     return $listItems;
   }
 
+  private function formatDetails($string) {
+    return str_replace(
+      array('-',      '@'),
+      array('-&shy;', '@&shy;'),
+      $string);
+  }
+
   private function courseURL($course, $courseShort, $school, $schoolShort, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('course', array(
       'course'      => $course,
@@ -389,20 +396,20 @@ class CoursesModule extends Module {
         if ($meetingTimes->parseSucceeded()) {
           foreach ($meetingTimes->all() as $meetingTime) {
             $time = array(
-              'days' => $meetingTime->daysText(),
-              'time' => $meetingTime->timeText(),
+              'days' => $this->formatDetails($meetingTime->daysText()),
+              'time' => $this->formatDetails($meetingTime->timeText()),
             );
             
             if ($meetingTime->isLocationKnown()) {
-              $time['location'] = $meetingTime->locationText();
+              $time['location'] = $this->formatDetails($meetingTime->locationText());
               $time['url'] = $this->mapURLForClassTime($meetingTime->locationText());
             }
             $times[] = $time;
           }
         } else {
           $times[] = array(
-            'days' => $meetingTimes->rawTimesText(),
-            'time' => $meetingTimes->rawLocationsText(),
+            'days' => $this->formatDetails($meetingTimes->rawTimesText()),
+            'time' => $this->formatDetails($meetingTimes->rawLocationsText()),
           );
         }
         
@@ -411,8 +418,8 @@ class CoursesModule extends Module {
         foreach ($infoFields['info'] as $field => $header) {
           if (isset($classInfo[$field]) && strlen($classInfo[$field])) {
             $infoItems[] = array(
-              'header'  => $header,
-              'content' => $classInfo[$field],
+              'header'  => $this->formatDetails($header),
+              'content' => $this->formatDetails($classInfo[$field]),
             );
           }
         }
@@ -423,7 +430,7 @@ class CoursesModule extends Module {
           $staff[$type] = array();
           foreach ($classInfo['staff'][$type] as $person) {
             $staff[$type][] = array(
-              'title' => $person,
+              'title' => $this->formatDetails($person),
               'url'   => $this->personURL($person),
             );
           }
@@ -431,8 +438,8 @@ class CoursesModule extends Module {
         
         $this->assign('term',               $termId);
         $this->assign('classId',            $classId);
-        $this->assign('className',          $classInfo['name']);
-        $this->assign('classTitle',         $classInfo['title']);
+        $this->assign('className',          $this->formatDetails($classInfo['name']));
+        $this->assign('classTitle',         $this->formatDetails($classInfo['title']));
         $this->assign('classUrl',           self::argVal($classInfo, 'url', ''));
         $this->assign('times',              $times);
         $this->assign('infoItems',          $infoItems);
