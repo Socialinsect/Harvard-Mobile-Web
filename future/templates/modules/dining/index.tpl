@@ -15,7 +15,7 @@
         &lt; {$prev['timestamp']|date_format:"%a %b %e"}
       </a>
     {/if}
-    {if isset($prev) && isset( $next)} | {/if}
+    {if isset($prev) && isset( $next)}&nbsp;|{/if}
     {if isset($next)}    
       <a href="{$next['url']}">
         {$next['timestamp']|date_format:"%a %b %e"} &gt;
