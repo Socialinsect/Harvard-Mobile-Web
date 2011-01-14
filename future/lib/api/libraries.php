@@ -80,7 +80,7 @@ switch (apiGetArg('command')) {
       'pubDates'  => Libraries::getPubDateSearchCodes(),
     );
     
-    if (apiGetArg('version', 0) > 0) {
+    if (apiGetArg('version', 1) > 1) {
       // Provide in indexed array format because iOS dictionaries aren't ordered
       foreach ($data as $type => $formatArray) {
         $newFormatArray = array();
