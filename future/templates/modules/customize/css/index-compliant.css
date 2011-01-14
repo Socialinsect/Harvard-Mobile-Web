@@ -1,36 +1,12 @@
 .nav a {
   background-image: none;
+  float: left;
+  padding: 0 0 0 10px;
+  margin: -3px 0 0 0;
 }
 ul.iconic li {
   background-color: #fff;
   padding-left: 44px;
-}
-.nolink {
-	position: absolute;
-	top: 0;
-}
-.nolinkbuttons {
-	float: right;
-	width: 94px;
-	height: 36px;
-	margin-right: 9px;
-	position: relative;
-}
-ul.iconic li .moveup {
-  position: absolute;
-  left: 5px;
-  top: 5px;
-  width:26px;
-  height:26px;
-  background-image:url(/modules/customize/images/compliant/button-up.png);
-}
-ul.iconic li .movedown {
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  width:26px;
-  height:26px;
-  background-image:url(/modules/customize/images/compliant/button-down.png);
 }
 ul.iconic li:first-child {
   -webkit-border-top-left-radius: 9px;	
@@ -54,9 +30,8 @@ ul.iconic span.nolink {
 }
 ul.iconic span.nolinkbuttons {
   float: right;
-  position: absolute;
-  top: 0px;
-  right: 0px;
+  width: 75px;
+  height: 25px;
 }
 ul.iconic input {
   width: 21px; 

@@ -1,12 +1,9 @@
 .springboard {
 	padding: 0;
 }
-
 .springboard div {
 	margin: 1px 4px;
 	line-height: 1.1em;
-  	height: 100px;
-	width: 100px;
 }
 .springboard div a {	
 	padding: 4px 6px;
