@@ -485,7 +485,7 @@ class LibrariesModule extends Module {
           }
           
           $collections = $entry['collections'];
-          error_log(print_r($collections, true));
+          
           foreach ($collections as $colIndex => $collection) {
             foreach ($collection['categories'] as $catIndex => $category) {
               foreach ($category['items'] as $itemIndex => $item) {
