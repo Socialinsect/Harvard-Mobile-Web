@@ -11,13 +11,8 @@
   {/if}
 {/block}
 
-{block name="footer"}
-  {$smarty.block.parent}
-  
+{block name="footerJavascript"}
   {if strlen($gaImageURL)}
     <img src="{$gaImageURL}" />
   {/if}
-{/block}
-
-{block name="footerJavascript"}
 {/block}

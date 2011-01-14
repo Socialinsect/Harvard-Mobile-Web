@@ -82,9 +82,7 @@ class MapModule extends Module {
        $imageWidth = 200; $imageHeight = 200;
        break;
     }
-    $this->assign('imageHeight', $imageHeight);
-    $this->assign('imageWidth',  $imageWidth);
-  
+
     if (!isset($bbox)) {
       if (strpos($name, ',') !== FALSE) {
         $nameparts = explode(',', $name);
@@ -166,7 +164,8 @@ class MapModule extends Module {
         $bbox = $wms->calculateBBox($imageWidth, $imageHeight, $minBBox);
   
       } else { // no search results
-        $imageUrl = 'images/map_not_found_placeholder.jpg';
+        $imageUrl = '/common/images/map_not_found_placeholder.jpg';
+        $imageWidth = 200; $imageHeight = 200;
       }
     }
   
@@ -249,6 +248,9 @@ JS;
 
     $this->addOnLoad("loadImage(getMapURL(mapBaseURL),'mapimage');");
     
+    $this->assign('imageHeight', $imageHeight);
+    $this->assign('imageWidth',  $imageWidth);
+  
     return $hasMap;
   }
   

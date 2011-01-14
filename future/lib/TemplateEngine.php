@@ -163,6 +163,9 @@ class TemplateEngine extends Smarty {
     
     // remove all newlines before and after tags.
     $source = preg_replace('/\n*(<[^>]+>)\n*/m', '\1', $source);
+
+    // strip spaces around non-breaking spaces
+    $source = preg_replace('/\s*&nbsp;\s*/m', '&nbsp;', $source);
     
     // replace runs of spaces with a single space.
     $source = preg_replace('/\s+/m', ' ', $source);

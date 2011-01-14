@@ -18,6 +18,7 @@ ul {
     border-bottom: 1px solid #CCC;
     border-collapse: collapse;
     background-color: white;
+    overflow: hidden;
     list-style-type: none; /* important to keep all drawing inside of element, or else animations become choppy */
     line-height: 32px;
     padding: 0;

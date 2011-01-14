@@ -129,14 +129,14 @@ function isDisabledModule(module) {
 
 function writeCookies() {
   // null means never expire
-  writeCookie(moduleOrderCookie, modules.join(), null, httpRoot);
-  writeCookie(disabledModulesCookie, disabledModules.join(), null, httpRoot);
+  writeCookie(MODULE_ORDER_COOKIE, modules.join(), MODULE_ORDER_COOKIE_LIFESPAN, COOKIE_PATH);
+  writeCookie(DISABLED_MODULES_COOKIE, disabledModules.join(), MODULE_ORDER_COOKIE_LIFESPAN, COOKIE_PATH);
 }
 
-function writeCookie(name, value, expiredays, path) {
+function writeCookie(name, value, expireseconds, path) {
   var exdate=new Date();
-  exdate.setDate(exdate.getDate()+expiredays);
-  var exdateclause = (expiredays == null) ? "" : "; expires="+exdate.toGMTString();
+  exdate.setTime(exdate.getTime() + (expireseconds*1000));
+  var exdateclause = (expireseconds == 0) ? "" : "; expires="+exdate.toGMTString();
   var pathclause = (path == null) ? "" : "; path="+path;
   document.cookie= name + "=" + value + exdateclause + pathclause;
 }

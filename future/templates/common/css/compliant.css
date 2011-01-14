@@ -1260,12 +1260,12 @@ h2.icon {
 
 .devicedetection {
   border: none;
-  margin: 1.5em 0;
-  width: 100%;
+  margin: 1.5em .5em;
+  width: auto;
 }
 .devicedetection th,
 .devicedetection td {
-  font-size: 75%;
+  font-size: 65.71%;
   line-height: 1.2em;
   padding: 0 .25em;
   margin: 0;
@@ -1275,12 +1275,6 @@ h2.icon {
   font-weight: bold;
   text-align: right;
   white-space: nowrap;
-  width: 50%;
-}
-.devicedetection th[colspan],
-.devicedetection td[colspan] {
-  width: auto;
-  text-align: center;
 }
 
 #share {
