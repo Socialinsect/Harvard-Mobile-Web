@@ -3,7 +3,7 @@
 }
 
 .springboard div {
-	margin: 1px 4px;
+	margin: 2px 4px;
 	line-height: 1.1em;
   	height: 100px;
 	width: 100px;
@@ -62,27 +62,30 @@
 	margin: 0 0;
 }
 
-#tabs li {
-	padding: 4px 10px 5px 10px;
-}
-
-#tabs li.active {
-	margin-top: -2px;
-	padding-top: 5px;
-	padding-bottom: 6px;
-}
-
 #tabs li a {
 	display: block;
 	text-decoration: none;
-	min-width: 40px;
+	padding: 7px 11px 9px 11px;
+	min-width: 30px;
 }
 
 #tabs.smalltabs li {
 	font-size: 88.235%;
 	margin-right: 3px;
-	padding-right: 6px;
-	padding-left: 6px;
+}
+
+#tabs.smalltabs li a {
+	padding-right: 8px;
+	padding-left: 8px;
+}
+
+#tabs li.active {
+	margin-top: -2px;
+}
+
+#tabs li.active a {
+	padding-top: 8px;
+	padding-bottom: 10px;
 }
 
 #tabbodies {
