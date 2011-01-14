@@ -6,7 +6,7 @@
     <img src="{$imageUrl}" width="{$imageWidth}" height="{$imageHeight}" alt="Map" />
   </p>
   {if $hasMap}
-    <p>
+    <p id="mapscrollers">
       Scroll: 
       <a href="{$scrollNorth}">N</a>&nbsp;|&nbsp;
       <a href="{$scrollSouth}">S</a>&nbsp;|&nbsp;
