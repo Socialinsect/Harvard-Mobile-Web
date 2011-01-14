@@ -1,22 +1,15 @@
 {extends file="findExtends:common/tabs.tpl"}
 
-{block name="tabsStart"}
-  <p class="tabs top">
-{/block}
-
 {block name="tab"}
-  {if $tabKey == $tabbedView['current']}
-      <span class="active">{$tabInfo['title']}</span>
-  {else}
-      <a href="{$tabInfo['url']}">{$tabInfo['title']}</a>
-  {/if}
-  {if !$isLastTab} | {/if}
+  <li{if $tabKey == $tabbedView['current']} class="active"{/if}>
+    <a {if $tabKey != $tabbedView['current']}href="{$tabInfo['url']}"{/if}>{$tabInfo['title']}</a>
+  </li>
 {/block}
     
-{block name="tabsEnd"}
-  </p>
-{/block}
-
 {block name="tabBodies"}
-  {$tabBodies[$tabbedView['current']]}
+  <div id="tabbodies">
+    <div class="tabbody" id="{$tabKey}Tab">
+      {$tabBodies[$tabbedView['current']]}
+    </div>
+  </div>
 {/block}

@@ -166,8 +166,10 @@ class TransitModule extends Module {
          }
           
           $routeInfo['stops'][$stopID]['img'] = '/common/images/';
-          if ($this->pagetype == 'basic' || $this->pagetype == 'touch') {
+          if ($this->pagetype == 'basic') {
             $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'bus.gif' : 'bus-spacer.gif';
+          } else if ($this->pagetype == 'touch') {
+            $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
           } else {
             $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
           }
@@ -224,14 +226,15 @@ class TransitModule extends Module {
       
       case 'info':
         $infoType = $this->getArg('id');
-
-        $feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/{$this->id}-info.ini");
-        if ($feedConfigFile) {
-          $infoConfig = parse_ini_file($feedConfigFile, true);
-        }
+        
+        $infoConfig = $GLOBALS['siteConfig']->loadFeedData("{$this->id}-info");
         
         if (!isset($infoConfig[$infoType]) || !strlen($infoConfig[$infoType])) {
           $this->redirectTo('index', array());
+        }
+        
+        if ($this->pagetype == 'basic' || $this->pagetype == 'touch') {
+          $infoConfig[$infoType] = str_replace('.png"', '.gif"', $infoConfig[$infoType]);
         }
         
         $this->addInlineCSS('h2 { padding-top: 10pt; }');

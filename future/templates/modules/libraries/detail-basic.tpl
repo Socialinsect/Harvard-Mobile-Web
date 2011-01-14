@@ -1,12 +1,9 @@
 {extends file="findExtends:modules/{$moduleID}/detail.tpl"}
 
-{block name="title"}
-{/block}
-
-{block name="header"}
-  {if $item['edition']}{$item['edition']} | {/if}
+{block name="itemDetails"}
   {if $item['creator']}<a class="authorLink" href="{$item['creatorURL']}">{$item['creator']}</a> | {/if}
-  {if $item['date']}{$item['date']} | {/if}
+  {if $item['edition']}{$item['edition']} | {/if}
+  {if $item['date'] || $item['publisher']}{$item['publisher']} {$item['date']} | {/if}
   {$item['format']|capitalize}{if strlen($item['type'])}: {$item['type']}{/if}
   {if $item['workType']}<br/>Work Type: {$item['workType']}{/if}
   {if $item['thumbnail']}
@@ -17,7 +14,13 @@
     <br/><img src="{$item['thumbnail']}" alt="{$item['title']} thumbnail image" />
     
   {/if}
-  <br/>
+{/block}
+
+{block name="itemDetailHeader"}
+  <h2>{$item['title']}</h2>
+  <p class="smallprint">
+    {$itemDetails}
+  </p>
   <img src="/common/images/bookmark-{if $item['bookmarked']}on{else}off{/if}.gif" alt="" />
   <a id="bookmark" href="{$bookmarkURL}">
     {if $item['bookmarked']}Remove bookmark{else}Bookmark this item{/if}

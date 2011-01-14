@@ -42,7 +42,7 @@
       {/if}
       {if $routeInfo['running']}
         Refreshed at {$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span>
-        {if $routeConfig['serviceName']} using {$routeConfig['serviceName']}{/if}
+        {if $routeConfig['serviceName']}&nbsp;using {$routeConfig['serviceName']}{/if}
       {else}
         Bus not running.
       {/if}

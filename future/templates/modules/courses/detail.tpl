@@ -51,16 +51,16 @@
 {/capture}
 {$tabBodies['staff'] = $staffPane}
 
-{block name="tabView"}
-	<a name="scrolldown"></a>		
-	<div class="focal shaded">
+<a name="scrolldown"></a>		
+<div class="focal shaded">
 
+  {block name="courseHeader"}
     <a id="myclasses" class="{if $isInMyClasses}ms_on{else}ms_off{/if}" onclick="toggleMyClasses(this, '{$classId} {$term}')"></a>
     <h2>{$className}: {$classTitle}</h2>
     <p class="address">{$term}{if strlen($classUrl)} | <a href="{$classUrl}" target="_new">Course Website</a>{/if}</p>
+  {/block}
 
-    {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
-  </div>
-{/block}
+  {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
+</div>
 
 {include file="findInclude:common/footer.tpl"}

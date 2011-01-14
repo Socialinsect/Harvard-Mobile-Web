@@ -12,8 +12,3 @@
   {$smarty.block.parent}
   (<a href="{$refreshURL}">refresh</a>)
 {/block}
-
-{block name="tabView"}
-    {$tabBodies['stops']}
-    {$tabBodies['map']}
-{/block}

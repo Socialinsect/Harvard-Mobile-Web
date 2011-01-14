@@ -39,8 +39,8 @@ class DeviceClassifier {
       $json = file_get_contents($GLOBALS['siteConfig']->getVar('MOBI_SERVICE_URL').'?'.$query);
       $data = json_decode($json, true);
       
-      switch ($data['pagetype']) {
-        case 'Basic':
+      switch (strtolower($data['pagetype'])) {
+        case 'basic':
           if ($data['platform'] == 'computer' || $data['platform'] == 'spider') {
             $this->pagetype = 'compliant';
             
@@ -52,15 +52,16 @@ class DeviceClassifier {
           }
           break;
         
-        case 'Touch':
+        case 'touch':
           if ($data['platform'] == 'blackberry') {
             $this->pagetype = 'compliant'; // Storm and Storm 2
+          } else {
+            $this->pagetype = 'touch';
           }
-          $this->pagetype = 'touch';
           break;
           
-        case 'Compliant':
-        case 'Webkit':
+        case 'compliant':
+        case 'webkit':
         default:
           $this->pagetype = 'compliant';
           break;

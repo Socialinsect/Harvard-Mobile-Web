@@ -364,17 +364,23 @@ class CoursesModule extends Module {
           } else if ($this->args['action'] == 'remove') {
             if ($isInMyClasses) {
               array_splice($myClassTags, array_search($classTag, $myClassTags), 1);
-            } else {
-              foreach ($myClassTags as $item) {
-                if (strpos($item, $classId) !== false) {
-                  array_splice($myClassTags, array_search($item, $myClassTags), 1);
-                }
+            }
+            // Also remove any from other terms
+            foreach ($myClassTags as $item) {
+              if (strpos($item, $classId) !== false) {
+                array_splice($myClassTags, array_search($item, $myClassTags), 1);
               }
             }
           }
           $this->setMyClasses($myClassTags);
-          $this->redirectTo($this->page, $this->args);
+          $this->redirectTo($this->page, array(
+            'class'  => $classId,
+          ));
         }
+        $toggleMyClassesURL = $this->buildBreadcrumbURL($this->page, array(
+          'class'  => $classId,
+          'action' => $isInMyClasses ? 'remove' : 'add',
+        ), false);
         
         // Info
         $meetingTimes = $classInfo['meeting_times'];
@@ -423,15 +429,16 @@ class CoursesModule extends Module {
           }
         }
         
-        $this->assign('term',          $termId);
-        $this->assign('classId',       $classId);
-        $this->assign('className',     $classInfo['name']);
-        $this->assign('classTitle',    $classInfo['title']);
-        $this->assign('classUrl',      self::argVal($classInfo, 'url', ''));
-        $this->assign('times',         $times);
-        $this->assign('infoItems',     $infoItems);
-        $this->assign('staff',         $staff);
-        $this->assign('isInMyClasses', $isInMyClasses);
+        $this->assign('term',               $termId);
+        $this->assign('classId',            $classId);
+        $this->assign('className',          $classInfo['name']);
+        $this->assign('classTitle',         $classInfo['title']);
+        $this->assign('classUrl',           self::argVal($classInfo, 'url', ''));
+        $this->assign('times',              $times);
+        $this->assign('infoItems',          $infoItems);
+        $this->assign('staff',              $staff);
+        $this->assign('isInMyClasses',      $isInMyClasses);
+        $this->assign('toggleMyClassesURL', $toggleMyClassesURL);
         
         $this->enableTabs(array('info', 'staff'));
         
