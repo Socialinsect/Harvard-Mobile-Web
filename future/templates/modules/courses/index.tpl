@@ -12,7 +12,7 @@
   </div> 
 {/if}
 {if count($myClasses)}
-  {include file="findInclude:common/navlist.tpl" navlistItems=$myClasses}
+  {include file="findInclude:common/navlist.tpl" navlistItems=$myClasses accessKey=false}
 {/if}
 {if count($myRemovedClasses)}
   <div class="nonfocal legend">

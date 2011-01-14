@@ -63,7 +63,7 @@ class CoursesModule extends Module {
   }
   
   private function setMyClasses($classes) {
-    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MYCOURSES_EXPIRE_TIME);
+    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MYCOURSES_EXPIRE_TIME, COOKIE_PATH);
   }
   
   private function coursesURL($school, $addBreadcrumb=true) {
@@ -449,7 +449,10 @@ class CoursesModule extends Module {
         
         $this->enableTabs(array('info', 'staff'));
         
-        $this->addInlineJavascript('var MY_CLASSES_COOKIE = "'.MY_CLASSES_COOKIE.'";');
+        $this->addInlineJavascript(
+          'var MY_CLASSES_COOKIE = "'.MY_CLASSES_COOKIE.'";'.
+          'var COOKIE_PATH = "'.COOKIE_PATH.'";'
+        );
         break;
     }
   }
