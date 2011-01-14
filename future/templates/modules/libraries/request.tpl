@@ -9,7 +9,7 @@
       {$info['name']}
       {if $info['primaryname'] != $info['name']}<br/>({$info['primaryname']}){/if}
     </h2>
-    {if $info['status'] == 'available'}
+    {if $info['state'] == 'available'}
       <span class="distance">
         {if $info['hours'] && $info['hours'] != 'closed'}
           Open today {$info['hours']}
@@ -25,7 +25,10 @@
   {if $info['holdingStatus'] != 'collection' || $info['callNumber']}
     <p class="smallprint">
       {if $info['callNumber']}{$info['callNumber']}{/if}
-      {if $info['holdingStatus'] != 'collection'}<br/>{$info['holdingStatus']}{/if}
+      {if $info['holdingStatus'] != 'collection'}
+        {if $info['callNumber']}<br/>{/if}
+        {$info['holdingStatus']}
+      {/if}
       <br/>
       {$info['state']}
       {if $info['secondaryStatus']}({$info['secondaryStatus']}){/if}

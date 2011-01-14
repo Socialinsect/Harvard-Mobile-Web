@@ -485,26 +485,21 @@ class LibrariesModule extends Module {
           }
           
           $collections = $entry['collections'];
-          
-          foreach ($collections as $col => $collection) {
-            foreach ($collection['categories'] as $cat => $category) {
-              foreach ($category['items'] as $i => $item) {
+          error_log(print_r($collections, true));
+          foreach ($collections as $colIndex => $collection) {
+            foreach ($collection['categories'] as $catIndex => $category) {
+              foreach ($category['items'] as $itemIndex => $item) {
                 if (self::argVal($item, 'requestURL') || self::argVal($item, 'scanAndDeliverURL')) {
                   $url = $this->buildBreadcrumbURL('request', array(
-                    'libId'      => $id, 
-                    'libType'    => $type, 
-                    'libName'    => $name, 
-                    'itemId'     => $itemId,
-                    'cName'      => $collection['name'], 
-                    'cNumber'    => $item['callNumber'], 
-                    'hStatus'    => $category['holdingStatus'],
-                    'state'      => $item['state'],
-                    'sStatus'    => self::argVal($item, 'secondaryStatus', ''),
-                    'requestURL' => self::argVal($item, 'requestURL', ''),
-                    'scanURL'    => self::argVal($item, 'scanAndDeliverURL', ''),
+                    'id'     => $id, 
+                    'type'   => $type, 
+                    'itemId' => $itemId,
+                    'coli'   => $colIndex,
+                    'cati'   => $catIndex,
+                    'itemi'  => $itemIndex,
                   ));
                   
-                  $collections[$col]['categories'][$cat]['items'][$i]['url'] = $url;
+                  $collections[$colIndex]['categories'][$catIndex]['items'][$itemIndex]['url'] = $url;
                 }
               }
             }
@@ -522,49 +517,88 @@ class LibrariesModule extends Module {
 
         //error_log(print_r($location, true));
         
-        $this->assign('infoURL',  $this->locationAndHoursURL($type, $id, $name, false, true));
+        $this->assign('infoURL',  $this->locationAndHoursURL($type, $id, $name/*, false, true*/));
         $this->assign('location', $location);
         $this->assign('title',    $this->formatDetail($itemData, 'title', 'Unknown title'));
         break;
         
       case 'request':
-        $libType = $this->getArg('libType');
-        $libId   = $this->getArg('libId');
-        $libName = $this->getArg('libName');
-          
         $itemId = $this->getArg('itemId');
-        if (!$itemId) {
-          $this->redirectTo('index');
-        }
+        $type   = $this->getArg('type');
+        $id     = $this->getArg('id');
+
+        $info = array();
+
         $itemData = Libraries::getItemRecord($itemId);
-
-        if ($libType == 'library') {
-          $libData = Libraries::getLibraryDetails($libId, $libName);
-          //error_log(print_r($libData, true));
-          
-        } else if ($libType == 'archive') {
-          $libData = Libraries::getArchiveDetails($libId, $libName);
-          //error_log(print_r($libData, true));
         
-        } else {
-          $this->redirectTo('index');
+        $data = Libraries::getItemAvailability($itemId);
+
+        foreach ($data['institutions'] as $entry) {
+          if ($entry['id'] != $id) { continue; }
+          //error_log(print_r($entry, true));
+          
+          $name = $entry['name'];
+
+          if (!$name) {
+            $this->redirectTo('index');
+          }
+  
+          if ($type == 'library') {
+            $libData = Libraries::getLibraryDetails($id, $name);
+            //error_log(print_r($libData, true));
+            
+          } else if ($type == 'archive') {
+            $libData = Libraries::getArchiveDetails($id, $name);
+            //error_log(print_r($libData, true));
+          
+          } else {
+            $this->redirectTo('index');
+          }
+          
+          $colIndex  = $this->getArg('coli');
+          $catIndex  = $this->getArg('cati');
+          $itemIndex = $this->getArg('itemi');
+
+          $collections = $entry['collections'];
+          
+          foreach ($collections as $col => $collection) {
+            if ($colIndex != $col) { continue; }
+          
+            foreach ($collection['categories'] as $cat => $category) {
+              if ($catIndex != $cat) { continue; }
+          
+              foreach ($category['items'] as $i => $item) {
+                if ($itemIndex != $i) { continue; }
+
+                $info = array(
+                  'name'            => $name,
+                  'primaryname'     => $this->formatDetail($libData, 'primaryname'),
+                  'hours'           => $this->formatDetail($libData, 'hrsOpenToday'),
+                  'infoUrl'         => $this->locationAndHoursURL($type, $id, $name/*, false, true*/),
+                  
+                  'title'           => $this->formatDetail($itemData, 'title', 'Unknown title'),
+                  'collectionName'  => $collection['name'],
+                  'callNumber'      => $item['callNumber'],
+                  'holdingStatus'   => $category['holdingStatus'],
+                  'state'           => $item['state'],
+                  'secondaryStatus' => self::argVal($item, 'secondaryStatus', ''),
+                  'requestURL'      => self::argVal($item, 'requestURL', ''),
+                  'scanURL'         => self::argVal($item, 'scanAndDeliverURL', ''),
+                );
+                break;
+              }
+              break;
+            }
+            break;
+          }
+          break;
         }
 
-        $this->assign('info', array(
-          'name'            => $libName,
-          'primaryname'     => $this->formatDetail($libData, 'primaryname'),
-          'hours'           => $this->formatDetail($libData, 'hrsOpenToday'),
-          'infoUrl'         => $this->locationAndHoursURL($libType, $libId, $libName, false, true),
-          
-          'title'           => $this->formatDetail($itemData, 'title', 'Unknown title'),
-          'collectionName'  => $this->getArg('cName'),
-          'callNumber'      => $this->getArg('cNumber'),
-          'holdingStatus'   => $this->getArg('hStatus'),
-          'state'           => $this->getArg('state'),
-          'secondaryStatus' => $this->getArg('sStatus'),
-          'requestURL'      => $this->getArg('requestURL'),
-          'scanURL'         => $this->getArg('scanURL'),
-        ));
+        if (!$info) {
+          $this->redirectTo('index');
+        }
+        
+        $this->assign('info', $info);
         break;
       
       case 'advanced':

@@ -484,9 +484,18 @@ abstract class Module {
   //
   // Breadcrumbs
   //
+  
+  private function encodeBreadcrumbParam($breadcrumbs) {
+    return urlencode(gzdeflate(json_encode($breadcrumbs), 9));
+  }
+  
+  private function decodeBreadcrumbParam($breadcrumbs) {
+    return json_decode(gzinflate(urldecode($breadcrumbs)), true);
+  }
+  
   private function loadBreadcrumbs() {
     if (isset($this->args[MODULE_BREADCRUMB_PARAM])) {
-      $breadcrumbs = unserialize(urldecode($this->args[MODULE_BREADCRUMB_PARAM]));
+      $breadcrumbs = $this->decodeBreadcrumbParam($this->args[MODULE_BREADCRUMB_PARAM]);
       if (is_array($breadcrumbs)) {
         for ($i = 0; $i < count($breadcrumbs); $i++) {
           $b = $breadcrumbs[$i];
@@ -504,7 +513,7 @@ abstract class Module {
             $this->cleanBreadcrumbs(&$linkCrumbs);
             
             $crumbParam = http_build_query(array(
-              MODULE_BREADCRUMB_PARAM => urlencode(serialize($linkCrumbs))
+              MODULE_BREADCRUMB_PARAM => $this->encodeBreadcrumbParam($linkCrumbs),
             ));
             if (strlen($crumbParam)) {
               $breadcrumbs[$i]['url'] .= (strlen($b['a']) ? '&' : '?').$crumbParam;
@@ -544,7 +553,7 @@ abstract class Module {
       );
     }
     //error_log(__FUNCTION__."(): saving breadcrumbs ".print_r($breadcrumbs, true));
-    return urlencode(serialize($breadcrumbs));
+    return $this->encodeBreadcrumbParam($breadcrumbs);
   }
   
   private function getBreadcrumbArgs($addBreadcrumb=true) {
