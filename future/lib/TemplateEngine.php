@@ -211,7 +211,9 @@ class TemplateEngine extends Smarty {
         $smarty->trigger_error("assign: missing 'index' parameter");
         return;
     }
-    self::$accessKey = $params['index'];
+    if (self::$accessKey == 0 || (isset($params['force']) && $params['force'])) {
+      self::$accessKey = $params['index'];
+    }
   }
   
   

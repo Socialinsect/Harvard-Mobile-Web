@@ -16,7 +16,7 @@
     {/capture}
     
     {if $moduleID != 'home'}
-      {html_access_key_reset index=0}
+      {html_access_key_reset index=0 force=true}
       <p class="bottomnav">
         <a href="#top">Back to top</a>
         {$breadcrumbSeparator}

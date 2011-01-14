@@ -55,5 +55,5 @@ function setMyClasses(myClasses) {
 	} else {
 		ex_date = new Date(current_date.getTime() + (160 * 24 * 60 * 60 * 1000));
 	}
-	document.cookie= MY_CLASSES_COOKIE+"="+ myClasses + ";expires=" + ex_date.toGMTString() + ";";
+	document.cookie = MY_CLASSES_COOKIE+"="+myClasses+";expires="+ex_date.toGMTString()+";path="+COOKIE_PATH;
 }
