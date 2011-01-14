@@ -1,5 +1,5 @@
 <div id="share">
-  <a onclick="showShare()"><img src="/device/compliant/common/images/share.png"/></a>
+  <a onclick="showShare()"><img src="/common/images/share.png"/></a>
   <div id="sharesheet">
     <div id="shareback"> </div>
     <div id="sharedialog">
@@ -7,15 +7,15 @@
       <ul>
         {if $shareEmailURL}
           <li>
-            <a class="sharelink" href="{$shareEmailURL}"><img src="/device/compliant/common/images/button-email.png" alt="" width="32" height="32" />Email</a>
+            <a class="sharelink" href="{$shareEmailURL}"><img src="/common/images/button-email.png" alt="" width="32" height="32" />Email</a>
           </li>
         {/if}
         {if $shareURL}
           <li>
-            <a class="sharelink" href="http://m.facebook.com/sharer.php?u={$shareURL}&t={$shareRemark}"><img src="/device/compliant/common/images/button-facebook.png" alt="" width="32" height="32" />Facebook</a>
+            <a class="sharelink" href="http://m.facebook.com/sharer.php?u={$shareURL}&t={$shareRemark}"><img src="/common/images/button-facebook.png" alt="" width="32" height="32" />Facebook</a>
           </li>
           <li>
-            <a class="sharelink" href="http://m.twitter.com/share?url={$shareURL}&amp;text={$shareRemark}&amp;Via=Harvard"><img src="/device/compliant/common/images/button-twitter.png" alt="" width="32" height="32" />Twitter</a>
+            <a class="sharelink" href="http://m.twitter.com/share?url={$shareURL}&amp;text={$shareRemark}&amp;Via=Harvard"><img src="/common/images/button-twitter.png" alt="" width="32" height="32" />Twitter</a>
           </li>
         {/if}
 			</ul>

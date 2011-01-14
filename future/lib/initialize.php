@@ -80,7 +80,7 @@ function Initialize(&$path=null) {
     }
   }
   define('URL_BASE', $foundPath ? $urlBase : '/');
-  define('FULL_URL_BASE', sprintf("http://%s%s", $_SERVER['HTTP_HOST'], URL_BASE));
+  define('FULL_URL_BASE', "http://{$_SERVER['HTTP_HOST']}".URL_BASE);
 
   define('COOKIE_PATH', URL_BASE); // We are installed under URL_BASE
 
@@ -119,6 +119,7 @@ function Initialize(&$path=null) {
   
   $device = null;
   $urlPrefix = URL_BASE;
+  $urlDeviceDebugPrefix = '/';
   
   // Check for device classification in url and strip it if present
   if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG') && 
@@ -126,9 +127,12 @@ function Initialize(&$path=null) {
     $device = $matches[1];  // layout forced by url
     $path = $matches[2];
     $urlPrefix .= "device/$device/";
+    $urlDeviceDebugPrefix .= "device/$device/";
   }
   
+  define('URL_DEVICE_DEBUG_PREFIX', $urlDeviceDebugPrefix);
   define('URL_PREFIX', $urlPrefix);
+  define('FULL_URL_PREFIX', "http://{$_SERVER['HTTP_HOST']}".URL_PREFIX);
 
   //error_log(__FUNCTION__."(): prefix: $urlPrefix");
   //error_log(__FUNCTION__."(): path: $path");
