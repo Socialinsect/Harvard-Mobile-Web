@@ -189,19 +189,16 @@ class CoursesModule extends Module {
         $schoolsInfo = CourseData::get_schoolsAndCourses();
         $schools = array();
         foreach ($schoolsInfo as $schoolInfo) {
-          $courses   = $schoolInfo->courses;
-          $name      = $schoolInfo->school_name;
-          $shortName = $schoolInfo->school_name_short;
+          $courses   = $schoolInfo['courses'];
+          $name      = $schoolInfo['school_name'];
+          $shortName = $schoolInfo['school_name_short'];
         
           $school = array(
-            'title' => $schoolInfo->school_name_short
+            'title' => $schoolInfo['school_name_short']
           );
-          if (!count($courses)) {
+          if (count($courses) < 2) {
             $school['url'] = $this->courseURL($name, $shortName, $name, $shortName);
               
-          } else if (count($courses) == 1 && $courses[0]->name == $shortName) {
-            $school['url'] = $this->courseURL($courses[0]->name, $shortName, $name, $shortName);
-            
           } else {
             $school['url'] = $this->coursesURL($name);
           }
@@ -219,9 +216,9 @@ class CoursesModule extends Module {
         $schoolNameShort = '';
         $coursesInfo = array();
         foreach($schoolsInfo as $schoolInfo) {
-          if ($schoolInfo->school_name == $schoolName) {
-            $coursesInfo = $schoolInfo->courses;
-            $schoolNameShort = $schoolInfo->school_name_short;
+          if ($schoolInfo['school_name'] == $schoolName) {
+            $coursesInfo = $schoolInfo['courses'];
+            $schoolNameShort = $schoolInfo['school_name_short'];
             break;
           }
         }
@@ -229,12 +226,7 @@ class CoursesModule extends Module {
         $this->setBreadcrumbTitle($schoolNameShort);
 
         $courses = array();
-        foreach ($coursesInfo as $courseInfo) {
-          $courseName = $courseInfo->name;
-          if (!strlen($courseName)) {
-            $courseName = $schoolNameShort.'-other';
-          }
-          
+        foreach ($coursesInfo as $courseName) {
           $courses[] = array(
             'title' => $courseName,
             'url'   => $this->courseURL($courseName, $courseName, $schoolName, $schoolNameShort),
@@ -258,7 +250,7 @@ class CoursesModule extends Module {
         
         $this->setBreadcrumbTitle($courseNameShort);
 
-        $classes = CourseData::get_subjectsForCourse(str_replace('-other', '', $courseName), $schoolName);
+        $classes = CourseData::get_subjectsForCourse($courseName, $schoolName);
 
         $extraSearchArgs = array(
           'school'      => $schoolName,

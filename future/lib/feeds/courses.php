@@ -3,6 +3,8 @@
 require_once realpath(LIB_DIR.'/DiskCache.php');
 require_once realpath(LIB_DIR.'/feeds/html2text.php');
 
+define('MISC_CLASSES_SUFFIX', ' - other');
+
 function compare_courseNumber($a, $b)
 {
   return strnatcmp($a['name'], $b['name']);
@@ -10,7 +12,7 @@ function compare_courseNumber($a, $b)
 
 function compare_schoolName($a, $b)
 {
-  return strcmp($a->school_name_short, $b->school_name_short);
+  return strcmp($a['school_name_short'], $b['school_name_short']);
 }
 
 class MeetingTime {
@@ -321,6 +323,28 @@ class CourseData {
     
     return $results;
   }
+  
+  private static function stripMiscClassesSuffix($school, $course) {
+    // strip off any suffix present
+    if (substr($course, -1*strlen(MISC_CLASSES_SUFFIX)) == MISC_CLASSES_SUFFIX) {
+      $course = substr($course, 0, strlen($course) - strlen(MISC_CLASSES_SUFFIX));
+    }
+    
+    // Sometimes the course is the short version of a school name.
+    // if so, get the long name
+    $data = self::get_schoolsAndCourses();
+    
+    foreach ($data as $schoolData) {
+      if ($schoolData['school_name'] == $school) {
+        if ($course == $schoolData['school_name_short']) {
+          $course = $schoolData['school_name'];
+        }
+        break;
+      }
+    }
+    
+    return array($school, $course);
+  }
 
   private static function clean_text($text) {
     $text = str_replace(chr(194), '', $text);
@@ -421,64 +445,25 @@ class CourseData {
     $subject_array = array();
     $single_course = $xml_obj->courses->course;
     $subject_fields = array();
-    $id = explode(':',$single_course['id']);
-    $nm = explode(':', $single_course->course_number);
-    $subject_fields['name'] = $nm[0];
-    $subject_fields['masterId'] = $id[0];
-    $titl = explode(':', $single_course->title);
-    $len = count($titl);
-    $subject_fields['title'] = '';
-    for ($ind = 0; $ind < $len; $ind++) {
-      if ($ind == $len-1)
-        $subject_fields['title'] = $subject_fields['title'] .$titl[$ind];
-      else
-        $subject_fields['title'] = $subject_fields['title'] .$titl[$ind] .':';
-    }
+    $subject_fields['name'] = strval($single_course->course_number);
+    $subject_fields['masterId'] = strval($single_course['id']);
+    $subject_fields['title'] = strval($single_course->title);
+    $subject_fields['description'] = HTML2TEXT(strval($single_course->description));
 
-    //$subject_fields['title'] = $titl[0];
-    $desc = explode(':', $single_course->description);
-    $len = count($desc);
-    $subject_fields['description'] = '';
-    for ($ind = 0; $ind < $len; $ind++) {
-      if ($ind == $len-1)
-        $subject_fields['description'] = $subject_fields['description'] .$desc[$ind];
-      else
-        $subject_fields['description'] = $subject_fields['description'] .$desc[$ind] .':';
-    }
-    $subject_fields['description'] = HTML2TEXT($subject_fields['description']);
-    // $subject_fields['description'] = $desc[0];
-    $pre_req = explode(':', $single_course->prereq);
-    $subject_fields['preReq'] = $pre_req[0];
-    $credits = explode(':', $single_course->credits);
-    $subject_fields['credits'] = $credits[0];
-    $cross_reg = explode(':', $single_course->crossreg);
-    $subject_fields['cross_reg'] = $cross_reg[0];
-    $exam_group = explode(':', $single_course->exam_group);
-    $subject_fields['exam_group'] = $exam_group[0];
-    $dept = explode(':', $single_course->department);
-    $subject_fields['department'] = $dept[0];
-    $school = explode(':', $single_course->school_name);
-    $subject_fields['school'] = $school[0];
-    //$trm = explode(':',$single_course->term_description);
-    //$subject_fields['term'] = $trm[0];
+    $subject_fields['preReq'] = strval($single_course->prereq);
+    $subject_fields['credits'] = strval($single_course->credits);
+    $subject_fields['cross_reg'] = strval($single_course->crossreg);
+    $subject_fields['exam_group'] = strval($single_course->exam_group);
+    $subject_fields['department'] = strval($single_course->department);
+    $subject_fields['school'] = strval($single_course->school_name);
+    //$subject_fields['term'] = strval($single_course->term_description);
     $subject_fields['term'] = self::get_term();
-    $ur = explode(':',$single_course->url);
-    if (count($ur) > 1)
-      $subject_fields['url'] = $ur[0].':'.$ur[1];
+    $subject_fields['url'] = strval($single_course->url);
 
     $classtime['title'] = 'Lecture';
-    $loc = explode(':',$single_course->location);
-    $classtime['location'] = $loc[0];
+    $classtime['location'] = strval($single_course->location);
 
-    $m_time = explode(':', $single_course->meeting_time);
-    $len = count($m_time);
-    $classtime['time'] = '';
-    for ($ind = 0; $ind < $len; $ind++) {
-      if ($ind == $len-1)
-        $classtime['time'] = $classtime['time'] .$m_time[$ind];
-      else
-        $classtime['time'] = $classtime['time'] .$m_time[$ind] .':';
-    }
+    $classtime['time'] = strval($single_course->meeting_time);
 
     $classtime_array[] = $classtime;
 
@@ -506,6 +491,8 @@ class CourseData {
   }
 
   public static function get_subjectsForCourse($course, $school) {
+    list($school, $course) = self::stripMiscClassesSuffix($school, $course);
+  
     $args = array(
       'start' => 0, // start must be first
     );
@@ -553,25 +540,16 @@ class CourseData {
     
       foreach($xml_obj->courses->course as $single_course) {
         $subject_fields = array();
-        $id = explode(':',$single_course['id']);
-        $nm = explode(':', $single_course->course_number);
         
-        if (ctype_alpha(str_replace(' ', '', $nm[0])) || (substr($nm[0], 0, 1) == '0')) {
-          $nm[0] = '0' .$nm[0];
-        }
+        /* Is this actually needed?
+        $num = strval($single_course->course_number);
+        if (ctype_alpha(str_replace(' ', '', $num)) || (substr($num, 0, 1) == '0')) {
+          $num = '0'.$num;
+        }*/
         
-        $subject_fields['name'] = $nm[0];
-        $subject_fields['masterId'] = $id[0];
-        $titl = explode(':', $single_course->title);
-        $len = count($titl);
-        $subject_fields['title'] = '';
-        for ($ind = 0; $ind < $len; $ind++) {
-          if ($ind == $len-1)
-            $subject_fields['title'] = $subject_fields['title'] .$titl[$ind];
-          else
-            $subject_fields['title'] = $subject_fields['title'] .$titl[$ind] .':';
-        }
-        //$subject_fields['title'] = $titl[0];
+        $subject_fields['name'] = strval($single_course->course_number);
+        $subject_fields['masterId'] = strval($single_course['id']);
+        $subject_fields['title'] = strval($single_course->title);
         $subject_fields['term'] = self::get_term();
         
         $ta_array = array();
@@ -609,7 +587,7 @@ class CourseData {
       $urlString = $GLOBALS['siteConfig']->getVar('COURSES_BASE_URL').http_build_query($args);
       self::condenseXMLFileForCoursesAndWrite($urlString, $cacheName);
     }
-    $schoolsAndCourses = json_decode($cache->read($cacheName));
+    $schoolsAndCourses = json_decode($cache->read($cacheName), true);
     if (is_array($schoolsAndCourses)) {
         usort($schoolsAndCourses, "compare_schoolName");
     } else {
@@ -620,7 +598,7 @@ class CourseData {
   }
 
 
-  public static function condenseXMLFileForCoursesAndWrite($xmlURLPath, $cacheName) {
+  private static function condenseXMLFileForCoursesAndWrite($xmlURLPath, $cacheName) {
     $xml = file_get_contents($xmlURLPath);
     if($xml == "") {
       // if failed to grab xml feed, then run the generic error handler
@@ -654,13 +632,19 @@ class CourseData {
             if ($fcm['name'] == 'dept_area_category') {
               foreach($fcm->field as $fieldMap) {
                 if (isset($fieldMap['name']) && $fieldMap['name']) {
-                  $course_array[] = array(
-                    'name'  => strval($fieldMap['name']),
-                    'short' => '1',
-                  );
+                  $course_array[] = strval($fieldMap['name']);
                 }
               }
             }
+          }
+          
+          if (!count($course_array)) {
+            // there are no courses - return one entry for the whole school
+            $course_array = array(strval($field['short_name']));
+            
+          } else {
+            // Add the main department to the end so we can see classes not in one of the courses
+            $course_array[] = strval($field['short_name']).MISC_CLASSES_SUFFIX;
           }
     
           if (strval($field['name'])) {
@@ -680,6 +664,8 @@ class CourseData {
   }
 
   public static function search_subjects($terms, $school, $courseTitle) {    
+    list($school, $courseTitle) = self::stripMiscClassesSuffix($school, $courseTitle);
+    
     $args = array(
       'start' => 0,  // start must be first
     );
@@ -729,8 +715,7 @@ class CourseData {
             );
           }
       }
-      $count_array = explode(':', $count);
-      $too_many_results['count'] = $count_array[0];
+      $too_many_results['count'] = strval($count);
       $too_many_results['schools'] = $schools;
       return $too_many_results;
     }
@@ -792,10 +777,8 @@ class CourseData {
       }
     }
     
-    $count_array = explode(':', $count);
-    $courseToSubject ['count'] = $count_array[0];
-    $actual_count_array = explode(':', $actual_count);
-    $courseToSubject['actual_count'] = $actual_count_array[0];
+    $courseToSubject ['count'] = strval($count);
+    $courseToSubject['actual_count'] = strval($actual_count);
     $courseToSubject ['classes'] = $subject_array;
 
     return $courseToSubject;

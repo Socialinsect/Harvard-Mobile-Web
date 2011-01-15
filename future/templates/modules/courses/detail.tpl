@@ -21,7 +21,7 @@
         {foreach $infoItems as $item}
           <li>
             <h3>{$item['header']}</h3>
-            <p>{$item['content']|escape}</p>
+            <p>{$item['content']}</p>
           </li>
         {/foreach}
       {/if}

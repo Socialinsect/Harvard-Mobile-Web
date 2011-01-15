@@ -15,13 +15,25 @@ $command = apiGetArg('command');
 switch ($command) {
   case 'courses':
     $data = CourseData::get_schoolsAndCourses();
+    
+    // native apps can't handle empty course lists and need fake 'short' name
+    foreach ($data as $i => $schoolData) {
+      $newCoursesArray = array();
+      foreach ($schoolData['courses'] as $courseName) {
+        $newCoursesArray[] = array(
+          'name'  => $courseName,
+          'short' => '1',
+        );
+      }
+      $data[$i]['courses'] = $newCoursesArray;
+    }
     break;
   
   case 'subjectList':
     $course = apiGetArg('id');
-    $school = str_replace('-other', '', apiGetArg('coursegroup'));
+    $school = apiGetArg('coursegroup');
     $data = CourseData::get_subjectsForCourse($course, $school);
-  
+    
     if (isset($_REQUEST['checksum'])) {
       $checksum = md5(json_encode($data));
       if (isset($_REQUEST['full'])) {
@@ -51,8 +63,8 @@ switch ($command) {
   
   case 'search':
     $query = apiGetArg('query');
-    $school = str_replace('-other', '', apiGetArg('courseGroup'));
-    $course = str_replace('-other', '', apiGetArg('courseName'));
+    $school = apiGetArg('courseGroup');
+    $course = apiGetArg('courseName');
   
     $data = CourseData::search_subjects($query, $school, $course);
     break;
