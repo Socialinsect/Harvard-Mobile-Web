@@ -1,9 +1,10 @@
 .nav a {
   background-image: none;
   float: left;
-  padding: 0 0 0 10px;
-  margin: -3px 0 0 0;
+  margin: 0;
+  padding: 7px;
 }
+
 ul.iconic li {
   background-color: #fff;
   padding-left: 44px;
@@ -17,10 +18,10 @@ ul.iconic li:last-child {
   -webkit-border-bottom-right-radius: 9px;	
 }
 ul.iconic li:first-child .moveup {
-  background-image:url(/modules/customize/images/compliant/button-up-alpha.png);
+  opacity: 0.33;
 }
 ul.iconic li:last-child .movedown {
-  background-image:url(/modules/customize/images/compliant/button-down-alpha.png);
+  opacity: 0.33;
 }
 ul.iconic span.nolink { 
   position: relative;
@@ -30,8 +31,9 @@ ul.iconic span.nolink {
 }
 ul.iconic span.nolinkbuttons {
   float: right;
-  width: 75px;
-  height: 25px;
+  width: 85px;
+  height: 38px;
+  margin: -11px;
 }
 ul.iconic input {
   width: 21px; 
