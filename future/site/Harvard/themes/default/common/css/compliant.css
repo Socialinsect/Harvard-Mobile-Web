@@ -28,31 +28,31 @@ a, a:visited {
 
 h1 {
 	font-family: Georgia, serif;
-	font-size: 29px;
+	font-size: 170.6%;
 	font-weight: normal;
 	color: #fff;
 }
 
 h2 {
 	font-family: Georgia, serif;
-	font-size: 21px;
+	font-size: 123.5%;
 	font-weight: normal;
 	color: #000;
 }
 
 h3 {
-	font-size: 1em;
+	font-size: 100%;
 	font-weight: bold;
 	color: #554c41;
 }
 
 h4 {
-	font-size: 1em;
+	font-size: 100%;
 	font-weight: normal;
 	color: #554c41;
 }
 
-dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
+dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek, .fontsize {
 	/* Accent text color for several types of secondary text that appears on white backgrounds, e.g., label in label/value pairs, e.g., People Directory detail screen and for labels in certain calendar listing screens */
 	/* Often the same as the secondary text color defined in the next rule */
 	color: #554c41;
@@ -85,7 +85,7 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 #navbar {
 	height: 48px; 
 	background: url(/common/images/navback.png) repeat-x;
-	font-size: 16px;
+	font-size: 94.118%;
 }
 
 /* Uncomment this rule and comment out the previous one to use a background gradient rather than image
@@ -93,7 +93,7 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 	height: 45px;
 	background: #800;	
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#d02023), to(#400006));
-	font-size: 16px;
+	font-size: 94.118%;
 }
 */
 
@@ -106,7 +106,8 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 /* Footer */
 
 #footer {
-	font-size: 12px;
+	font-size: 70.589%;
+	line-height: 1.2em;
 }
 
 #footer .copyright {
@@ -114,7 +115,7 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 }
 
 #footerlinks {
-	color: #554C41
+	color: white;
 }
 
 
@@ -126,14 +127,14 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 
 .inputcombo .forminput {
 	border: 1px 0 1px 1px solid #666; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */
-	-webkit-border-bottom-left-radius: 11px;	
-	-webkit-border-top-left-radius: 11px;	
+	-webkit-border-bottom-left-radius: 8px;	
+	-webkit-border-top-left-radius: 8px;	
 }
 
 .emphasized  .forminput {
 	border: 3px solid #666; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */; border weight should be 2px greater than border weight of .inputcombo .forminput */	
-	-webkit-border-bottom-left-radius: 13px; 	/* Corner radius should be 2px greater than corner radius of .inputcombo .forminput */	
-	-webkit-border-top-left-radius: 13px;	
+	-webkit-border-bottom-left-radius: 10px; 	/* Corner radius should be 2px greater than corner radius of .inputcombo .forminput */	
+	-webkit-border-top-left-radius: 10px;	
 }
 
 
@@ -143,36 +144,39 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 	/* Overall size of one cell in the springboard */
 	width: 76px;
 	height: 94px;
-	font-size: 13px;
-	line-height: 14px;
 }
 
-.springboard a {	
-	color: #404355;
+.springboard div a {	
+	/* Color and size of text label below each springboard icon */
+	color: #3a342e;
+	font-size: 76.47%;
+	line-height: 1.1em;
 }
 
 .springboard a img {
 	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
-	width: 62px;
-	height: 62px;
+	width: 60px;
+	height: 60px;
 }
 
 .springboard div.utility {
 	/* Overall size of one cell in the springboard's fixed utility-type items */
 	width: 76px;
 	height: 86px;
-	font-size: 12px;
-	line-height: 13px;
+}
+
+.springboard div.utility a {
+	font-size: 70.589%;
 }
 
 .springboard div.utility a img {
 	/* Size of actual item icon in the springboard's fixed utility-type items - for best results make actual PNGs match this size */
-	width: 36px;
-	height: 36px;
+	width: 34px;
+	height: 34px;
 }
 
 .springboard .separator {
-	height: 18px;
+	height: 20px;
 }
 
 /* Navigation and results lists */
@@ -203,8 +207,8 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 }
 
 .announcements li {	
-	font-size: 14px;
-	line-height: 19px;
+	font-size: 83.353%;
+	line-height: 1.46em;
 	color: #202020;
 }
 

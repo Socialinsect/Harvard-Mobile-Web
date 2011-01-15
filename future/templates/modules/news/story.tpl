@@ -1,14 +1,11 @@
-{block name="header"}
-    {include file="findInclude:common/header.tpl"}
-{/block}
+{include file="findInclude:common/header.tpl"}
 
 <div class="news">
   <h1 class="slugline">{$title}</h1>
 
   <div id="storysubhead">
-      {include file="findInclude:common/share.tpl" urlToBeShared={$storyURL}
-      shareRemark={$title} shareEmailUrl={$shareEmailURL}}
-      
+    {include file="findInclude:common/share.tpl" shareURL={$storyURL} shareRemark={$shareRemark} shareEmailURL={$shareEmailURL}}
+            
     {if $pager['pageNumber'] == 0}
         <p class="byline">
           {block name="byline"}
@@ -20,10 +17,10 @@
             <span class="postdate">{$date}</span>
           {/block}
         </p>    
-    {/if}
+    {/if}        
   </div><!--storysubhead-->
   
-    
+  <div id="storybody">
     {if $pager['pageNumber'] == 0}
         {if isset($image)}
           <div id="image">
@@ -32,7 +29,8 @@
         {/if}
     {/if}
     
-  {include file="findInclude:common/pager.tpl"}
+    {include file="findInclude:common/pager.tpl"}
+  </div><!--storybody-->
 </div>
 
 {include file="findInclude:common/footer.tpl"}

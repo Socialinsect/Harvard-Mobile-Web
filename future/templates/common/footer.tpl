@@ -14,29 +14,30 @@
     {if $COPYRIGHT_LINK}
       </a>
     {/if}
-    {if $moduleID == 'home' && $showDeviceDetection}
-      <table class="devicedetection">
-        <tr><th colspan="2">User Agent:</th></tr>
-        <tr><td colspan="2">{$smarty.server.HTTP_USER_AGENT}</td></tr>
-        <tr><th>Pagetype-Platform:</th><td>{$pagetype}-{$platform}</td></tr>
-        <tr><th>Certificates:</th><td>{if $supportsCerts}yes{else}no{/if}</td></tr>
-      </table>
-    {/if}
   {/capture}
   
-  {block name="footer"}
-
+  {block name="footerNavLinks"}
     {if $moduleID != 'home'}
       <div id="footerlinks">
         <a href="#top">Back to top</a> | <a href="../home/">{$SITE_NAME} home</a>{if $session_userID} | <a href="../login">{$session_userID} logged in</a>{/if}
       </div>
     {/if}
+  {/block}
 
+  {block name="footer"}
     <div id="footer">
       {$footerHTML}
     </div>
-
   {/block}
+
+  {if $moduleID == 'home' && $showDeviceDetection}
+    <table class="devicedetection">
+      <tr><th>Pagetype:</th><td>{$pagetype}</td></tr>
+      <tr><th>Platform:</th><td>{$platform}</td></tr>
+      <tr><th>Certificates:</th><td>{if $supportsCerts}yes{else}no{/if}</td></tr>
+      <tr><th>User Agent:</th><td>{$smarty.server.HTTP_USER_AGENT}</td></tr>
+    </table>
+  {/if}
 
   {block name="footerJavascript"}
     {foreach $inlineJavascriptFooterBlocks as $script}

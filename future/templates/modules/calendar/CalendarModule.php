@@ -255,7 +255,7 @@ class CalendarModule extends Module {
     return count($iCalEvents);
   }
   
-  protected function urlForSearch($searchTerms) {
+  protected function urlForFederatedSearch($searchTerms) {
     return $this->buildBreadcrumbURL("/{$this->id}/search", array(
       'filter'    => $searchTerms,
       'timeframe' => '0',
@@ -286,8 +286,8 @@ class CalendarModule extends Module {
   }
  
   protected function initialize() {
-    $this->feeds      = $this->loadFeedData();
-    $this->timezone   = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
+    $this->feeds    = $this->loadFeedData();
+    $this->timezone = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
   }
 
   protected function initializeForPage() {
@@ -324,7 +324,7 @@ class CalendarModule extends Module {
       
       case 'category':
         $type    = $this->getArg('type', 'events');
-        $catid      = $this->getArg('catid', '');
+        $catid   = $this->getArg('catid', '');
         $name    = $this->getArg('name', '');
         $current = $this->getArg('time', time());
         $next    = $current + DAY_SECONDS;
@@ -377,7 +377,6 @@ class CalendarModule extends Module {
         break;
       
       case 'day':  
-
         $current = $this->getArg('time', time());
         $type = $this->getArg('type', 'events');
         $next = strtotime("+1 day", $current);
@@ -513,11 +512,12 @@ class CalendarModule extends Module {
         break;
         
       case 'search':
-        if (isset($this->args['filter'], $this->args['timeframe'])) {
-          $searchTerms = trim($this->args['filter']);
-          $timeframeKey = $this->args['timeframe'];
+        $searchTerms  = $this->getArg('filter');
+        $timeframeKey = $this->getArg('timeframe', 0);
+        $type         = $this->getArg('type', 'events');
+        
+        if ($searchTerms && isset($this->searchOptions[$timeframeKey])) {
           $searchOption = $this->searchOptions[$timeframeKey];
-          $type = $this->getArg('type', 'events');
           
           $feed = $this->getFeed($type);
           
@@ -542,8 +542,10 @@ class CalendarModule extends Module {
             );
           }
                     
-          $this->assign('events',      $events);        
-          $this->assign('searchTerms', $searchTerms);        
+          $this->assign('events',         $events);        
+          $this->assign('searchTerms',    $searchTerms);
+          $this->assign('selectedOption', $timeframeKey);
+          $this->assign('searchOptions',  $this->searchOptions);
 
         } else {
           $this->redirectTo('index');

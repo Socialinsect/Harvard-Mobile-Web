@@ -7,21 +7,36 @@
  *
  *****************************************************************/
 
+require_once realpath(LIB_DIR.'/api.php');
 require_once realpath(LIB_DIR.'/feeds/courses.php');
 
-switch ($_REQUEST['command']) {
+$command = apiGetArg('command');
+
+switch ($command) {
   case 'courses':
     $data = CourseData::get_schoolsAndCourses();
+    
+    // native apps can't handle empty course lists and need fake 'short' name
+    foreach ($data as $i => $schoolData) {
+      $newCoursesArray = array();
+      foreach ($schoolData['courses'] as $courseName) {
+        $newCoursesArray[] = array(
+          'name'  => $courseName,
+          'short' => '1',
+        );
+      }
+      $data[$i]['courses'] = $newCoursesArray;
+    }
     break;
   
   case 'subjectList':
-    $course = stripslashes($_REQUEST['id']);
-    $school = str_replace('-other', '', stripslashes($_REQUEST['coursegroup']));
+    $course = apiGetArg('id');
+    $school = apiGetArg('coursegroup');
     $data = CourseData::get_subjectsForCourse($course, $school);
-  
-    if(isset($_REQUEST['checksum'])) {
+    
+    if (isset($_REQUEST['checksum'])) {
       $checksum = md5(json_encode($data));
-      if(isset($_REQUEST['full'])) {
+      if (isset($_REQUEST['full'])) {
         $data = array('checksum' => $checksum, 'classes' => $data);
       }
       else {
@@ -35,7 +50,7 @@ switch ($_REQUEST['command']) {
     break;
   
   case 'subjectInfo':
-    $subjectId = stripslashes($_REQUEST['id']);
+    $subjectId = apiGetArg('id');
     $data = CourseData::get_subject_details($subjectId);
     if(!$data) {
       $data = array('error' => 'SubjectNotFound', 'message' => 'Courses could not find this subject');
@@ -47,9 +62,9 @@ switch ($_REQUEST['command']) {
     break;
   
   case 'search':
-    $query = stripslashes($_REQUEST['query']);
-    $school = str_replace('-other', '', stripslashes($_REQUEST['courseGroup']));
-    $course = str_replace('-other', '', stripslashes($_REQUEST['courseName']));
+    $query = apiGetArg('query');
+    $school = apiGetArg('courseGroup');
+    $course = apiGetArg('courseName');
   
     $data = CourseData::search_subjects($query, $school, $course);
     break;

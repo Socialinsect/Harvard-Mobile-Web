@@ -1,25 +1,27 @@
-<div class="share">
-Share article:
-    
-    <ul>
-        <li>
-            {block name="shareImage"}
-              <a href="{$shareEmailUrl}"><img src="/common/images/share.png"/></a>Email
-            {/block}
-        </li>
-        <li>
-            <script src="http://connect.facebook.net/en_US/all.js#xfbml=1"></script>
-            <fb:like href="{$urlToBeShared}" layout="button_count" show_faces="false" width="100" action="recommend"></fb:like>
-        </li>
-        <li>
-            <a href="http://twitter.com/share" 
-            class="twitter-share-button" 
-            data-text="{$shareRemark}"
-            data-url="http://bit.ly/twitter-api-announce" data-count="none" data-via="harvard">Tweet</a>
-            
-            <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
-        </li>
-    </ul>
+<div id="share">
+  <a onclick="showShare()"><img src="/common/images/share.png"/></a>
+  <div id="sharesheet">
+    <div id="shareback"> </div>
+    <div id="sharedialog">
+      <h1>Share this story</h1>
+      <ul>
+        {if $shareEmailURL}
+          <li>
+            <a class="sharelink" href="{$shareEmailURL}"><img src="/common/images/button-email.png" alt="" width="32" height="32" />Email</a>
+          </li>
+        {/if}
+        {if $shareURL}
+          <li>
+            <a class="sharelink" href="http://m.facebook.com/sharer.php?u={$shareURL}&t={$shareRemark}"><img src="/common/images/button-facebook.png" alt="" width="32" height="32" />Facebook</a>
+          </li>
+          <li>
+            <a class="sharelink" href="http://m.twitter.com/share?url={$shareURL}&amp;text={$shareRemark}&amp;Via=Harvard"><img src="/common/images/button-twitter.png" alt="" width="32" height="32" />Twitter</a>
+          </li>
+        {/if}
+			</ul>
+      <div class="formbuttons">
+        <a class="formbutton" onclick="hideShare()"><div>Cancel</div></a>
+      </div>
+		</div>
+	</div>
 </div>
-
-<br /><br />

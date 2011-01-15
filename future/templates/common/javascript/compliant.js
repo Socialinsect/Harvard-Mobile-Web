@@ -262,3 +262,16 @@ function setCookie(c_name, value, expiredays) {
   document.cookie = c_name + "=" + escape(value) +
     ((expiredays == null) ? "" : ";expires=" + exdate.toUTCString());
 }
+
+// Share-related functions
+function showShare() {
+	document.getElementById("sharesheet").style.visibility="visible";
+	document.addEventListener('touchmove', doNotScroll, true);
+}
+function hideShare() {
+	document.getElementById("sharesheet").style.visibility="hidden";
+	document.removeEventListener('touchmove', doNotScroll, true);
+}
+function doNotScroll( event ) {
+	event.preventDefault(); event.stopPropagation();
+}

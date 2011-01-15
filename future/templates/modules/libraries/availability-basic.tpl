@@ -3,6 +3,7 @@
 {block name="header"}
   <h2>
     {$location['name']}
+    {if $location['primaryname'] != $location['name']}<br/>({$location['primaryname']}){/if}
   </h2>
   <span class="smallprint">
     {if $location['hours'] && $location['hours'] != 'closed'}
@@ -15,15 +16,18 @@
 {/block}
 
 {block name="itemTitle"}
-  <img src="/modules/{$moduleID}/images/{$class}.gif" alt="" />
-  {$info['count']}
-  {if $type == 'available'}
-    available
-  {elseif $type == 'collection'}
-    may be available
-  {elseif $info['status']}
-    {$info['status']}
-  {else}
-    {$type}
-  {/if}
+  {$item['count']} {$item['state']}
+  {if $item['secondaryStatus']}({$item['secondaryStatus']}){/if}
+  <br/>
+{/block}
+{block name="extraItemInfo"}
+  {capture name="label" assign="label"}
+    <img src="/modules/{$moduleID}/images/{$class}.gif" alt="" />
+  {/capture}
+  {$listItem['label'] = $label}
+  {capture name="subtitle" assign="subtitle"}
+    {if $item['callNumber']}{$item['callNumber']}{if $item['description']}, {/if}{/if}
+    {if $item['description']}{$item['description']}{/if}
+  {/capture}
+  {$listItem['subtitle'] = $subtitle}
 {/block}

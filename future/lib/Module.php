@@ -5,6 +5,8 @@ require_once realpath(LIB_DIR.'/HTMLPager.php');
 require_once realpath(LIB_DIR.'/User.php');
 
 define('MODULE_BREADCRUMB_PARAM', '_b');
+define('DISABLED_MODULES_COOKIE', 'disabledmodules');
+define('MODULE_ORDER_COOKIE', 'moduleorder');
 
 abstract class Module {
 
@@ -18,6 +20,8 @@ abstract class Module {
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
   protected $supportsCerts = false;
+  
+  protected $imageExt = '.png';
   
   private $pageConfig = null;
   
@@ -237,25 +241,16 @@ abstract class Module {
     return "$page.php".(strlen($argString) ? "?$argString" : "");
   }
   
-  protected function buildMailtoLink($to, $subject, $body) {
+  protected function buildMailToLink($to, $subject, $body) {
     $to = trim($to);
     
-    // Some old BlackBerries will give you an error about unsupported protocol
-    // if you have a mailto: link that doesn't have a "@" in the recipient 
-    // field. So we can't leave this field blank for these models. It's not
-    // a matter of being <= 9000 either, since there are Curves that are fine.
-    $modelsNeedingToField = array("8100", "8220", "8230", "9000");
-    if ($to == '') {
-      foreach ($modelsNeedingToField as $model) {
-        if (strpos($_SERVER['HTTP_USER_AGENT'], "BlackBerry".$model) !== FALSE) {
-          $to = '@';
-          break;
-        }
-      }
+    if ($to == '' && $GLOBALS['deviceClassifier']->mailToLinkNeedsAtInToField()) {
+      $to = '@';
     }
 
     $url = "mailto:{$to}?".http_build_query(array("subject" => $subject, 
-                                                  "body" => $body));
+                                                  "body"    => $body));
+    
     // mailto url's do not respect '+' (as space) so we convert to %20
     $url = str_replace('+', '%20', $url); 
     
@@ -284,16 +279,6 @@ abstract class Module {
     error_log('Redirecting to: '.$url);
     header("Location: $url");
     exit;
-  }
-  
-  protected function loadFeedData() {
-    $data = null;
-    $feedConfigFile = realpath_exists(SITE_CONFIG_DIR."/feeds/{$this->id}.ini");
-    if ($feedConfigFile) {
-      $data = parse_ini_file($feedConfigFile, true);
-    } 
-    
-    return $data;
   }
   
   //
@@ -389,6 +374,17 @@ abstract class Module {
       $this->fontsize = $_COOKIE['fontsize'];
     }
     
+    switch ($this->pagetype) {
+      case 'compliant':
+        $this->imageExt = '.png';
+        break;
+        
+      case 'touch':
+      case 'basic':
+        $this->imageExt = '.gif';
+        break;
+    }
+    
     $this->initialize();
   }
   
@@ -413,24 +409,23 @@ abstract class Module {
     $modules = $this->getAllModules();
     
     foreach ($modules as $id => $info) {
-      if (!$info['homescreen'] || $info['disabled']) {
+      if (!$info['homescreen']) {
         unset($modules[$id]);
       }
     }
     
-    if (isset($_COOKIE["visiblemodules"])) {
-      if ($_COOKIE["visiblemodules"] == "NONE") {
-        $visibleModuleIDs = array();
-      } else {
-        $visibleModuleIDs = array_flip(explode(",", $_COOKIE["visiblemodules"]));
-      }
-      foreach ($modules as $moduleID => &$info) {
-         $info['disabled'] = !isset($visibleModuleIDs[$moduleID]) && $info['disableable'];
+    if (isset($_COOKIE[DISABLED_MODULES_COOKIE]) && $_COOKIE[DISABLED_MODULES_COOKIE] != "NONE") {
+      $hiddenModuleIDs = explode(",", $_COOKIE[DISABLED_MODULES_COOKIE]);
+
+      foreach ($hiddenModuleIDs as $moduleID) {
+        if (isset($modules[$moduleID]) && $modules[$moduleID]['disableable']) {
+          $modules[$moduleID]['disabled'] = true;
+        }
       }
     }
 
-    if (isset($_COOKIE["moduleorder"])) {
-      $sortedModuleIDs = explode(",", $_COOKIE["moduleorder"]);
+    if (isset($_COOKIE[MODULE_ORDER_COOKIE])) {
+      $sortedModuleIDs = explode(",", $_COOKIE[MODULE_ORDER_COOKIE]);
       $unsortedModuleIDs = array_diff(array_keys($modules), $sortedModuleIDs);
             
       $sortedModules = array();
@@ -449,18 +444,18 @@ abstract class Module {
     $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
     $value = implode(",", $moduleIDs);
     
-    setcookie("moduleorder", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["moduleorder"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
+    setcookie(MODULE_ORDER_COOKIE, $value, time() + $lifespan, COOKIE_PATH);
+    $_COOKIE[MODULE_ORDER_COOKIE] = $value;
+    //error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
   
-  protected function setHomeScreenVisibleModules($moduleIDs) {
+  protected function setHomeScreenHiddenModules($moduleIDs) {
     $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
     $value = count($moduleIDs) ? implode(",", $moduleIDs) : 'NONE';
     
-    setcookie("visiblemodules", $value, time() + $lifespan, COOKIE_PATH);
-    $_COOKIE["visiblemodules"] = $value;
-    error_log(__FUNCTION__.'(): '.print_r($value, true));
+    setcookie(DISABLED_MODULES_COOKIE, $value, time() + $lifespan, COOKIE_PATH);
+    $_COOKIE[DISABLED_MODULES_COOKIE] = $value;
+    //error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
 
   //
@@ -489,9 +484,18 @@ abstract class Module {
   //
   // Breadcrumbs
   //
+  
+  private function encodeBreadcrumbParam($breadcrumbs) {
+    return urlencode(gzdeflate(json_encode($breadcrumbs), 9));
+  }
+  
+  private function decodeBreadcrumbParam($breadcrumbs) {
+    return json_decode(gzinflate(urldecode($breadcrumbs)), true);
+  }
+  
   private function loadBreadcrumbs() {
     if (isset($this->args[MODULE_BREADCRUMB_PARAM])) {
-      $breadcrumbs = unserialize(urldecode($this->args[MODULE_BREADCRUMB_PARAM]));
+      $breadcrumbs = $this->decodeBreadcrumbParam($this->args[MODULE_BREADCRUMB_PARAM]);
       if (is_array($breadcrumbs)) {
         for ($i = 0; $i < count($breadcrumbs); $i++) {
           $b = $breadcrumbs[$i];
@@ -509,7 +513,7 @@ abstract class Module {
             $this->cleanBreadcrumbs(&$linkCrumbs);
             
             $crumbParam = http_build_query(array(
-              MODULE_BREADCRUMB_PARAM => urlencode(serialize($linkCrumbs))
+              MODULE_BREADCRUMB_PARAM => $this->encodeBreadcrumbParam($linkCrumbs),
             ));
             if (strlen($crumbParam)) {
               $breadcrumbs[$i]['url'] .= (strlen($b['a']) ? '&' : '?').$crumbParam;
@@ -549,7 +553,7 @@ abstract class Module {
       );
     }
     //error_log(__FUNCTION__."(): saving breadcrumbs ".print_r($breadcrumbs, true));
-    return urlencode(serialize($breadcrumbs));
+    return $this->encodeBreadcrumbParam($breadcrumbs);
   }
   
   private function getBreadcrumbArgs($addBreadcrumb=true) {
@@ -606,11 +610,20 @@ abstract class Module {
   }
   
   // Programmatic overrides for titles generated from backend data
+  protected function getPageTitle() {
+    return $this->pageTitle;
+  }
   protected function setPageTitle($title) {
     $this->pageTitle = $title;
   }
+  protected function getBreadcrumbTitle() {
+    return $this->breadcrumbTitle;
+  }
   protected function setBreadcrumbTitle($title) {
     $this->breadcrumbTitle = $title;
+  }
+  protected function getBreadcrumbLongTitle() {
+    return $this->breadcrumbLongTitle;
   }
   protected function setBreadcrumbLongTitle($title) {
     $this->breadcrumbLongTitle = $title;
@@ -647,6 +660,14 @@ abstract class Module {
     }
     
     return $themeVars;
+  }
+  
+  //
+  // Feed config files
+  //
+  
+  protected function loadFeedData() {
+    return $GLOBALS['siteConfig']->loadFeedData($this->id);
   }
   
   //
@@ -775,7 +796,7 @@ abstract class Module {
     return 0;
   }
   
-  protected function urlForSearch($searchTerms) {
+  protected function urlForFederatedSearch($searchTerms) {
     return $this->buildBreadcrumbURL("/{$this->id}/search", array(
       'filter' => $searchTerms,
     ), false);

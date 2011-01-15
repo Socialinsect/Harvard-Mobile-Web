@@ -16,13 +16,13 @@ class HomeModule extends Module {
         $whatsNewCount = 0;
         $modules = array();
         $secondaryModules = array();
-        
+                
         foreach ($this->getHomeScreenModules() as $id => $info) {
           if (!$info['disabled']) {
             $module = array(
               'title' => $info['title'],
-              'url'   => isset($info['url']) ? $info['url'] : "/$id/",
-              'img'   => isset($info['img']) ? $info['img'] : "/modules/{$this->id}/images/$id.png",
+              'url'   => self::argVal($info, 'url', "/$id/"),
+              'img'   => self::argVal($info, 'img', "/modules/{$this->id}/images/$id").$this->imageExt,
             );
             if ($id == 'about' && $whatsNewCount > 0) {
               $module['badge'] = $whatsNewCount;
@@ -59,7 +59,7 @@ class HomeModule extends Module {
               'title'   => $info['title'],
               'results' => $results,
               'total'   => $total,
-              'url'     => $module->urlForSearch($searchTerms),
+              'url'     => $module->urlForFederatedSearch($searchTerms),
             );
             unset($module);
           }

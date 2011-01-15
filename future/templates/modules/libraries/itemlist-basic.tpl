@@ -1,7 +1,7 @@
 {extends file="findExtends:modules/{$moduleID}/itemlist.tpl"}
 
 {block name="itemTitle"}
-  {$item@iteration}. {$item['title']}
+  {$item['index']}. {$item['title']}
 {/block}
 
 {block name="itemSubtitle"}

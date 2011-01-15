@@ -1,7 +1,4 @@
-{block name="header"}
-    {include file="findInclude:common/header.tpl"}
-{/block}
-
+{include file="findInclude:common/header.tpl"}
 
 <div class="nonfocal">
 	<h2>
@@ -18,7 +15,7 @@
         &lt; {$prev['timestamp']|date_format:"%a %b %e"}
       </a>
     {/if}
-    {if isset($prev) && isset( $next)} | {/if}
+    {if isset($prev) && isset( $next)}&nbsp;|{/if}
     {if isset($next)}    
       <a href="{$next['url']}">
         {$next['timestamp']|date_format:"%a %b %e"} &gt;
@@ -73,23 +70,33 @@
   {$statusImages['closedrestrictions']['alt']   = "Closed with Upcoming Restrictions"}
   {$statusImages['closedrestrictions']['title'] = "Upcoming restrictions"}
 
-  {block name="locationPane"}
+  {foreach $statusImages as $status => $statusImage}
+    {block name="locationStatusImageDetails"}
+      {$statusImages[$status]['src']    = $statusImages[$status]['src']|cat:"@2x.png"}
+      {$statusImages[$status]['height'] = "20"}
+      {$statusImages[$status]['width']  = "20"}
+    {/block}
+  {/foreach}
+
+  {block name="locationStatusKeys"}
     <div class="columns2">
       {foreach $statusImages as $statusImage}
         <ul class="iconlegend col">
           <li>
-            <img src="/modules/{$moduleID}/images/{$statusImage['src']}@2x.png" width="20" height="20" alt="{$statusImage['alt']}"/>
+            <img src="/modules/{$moduleID}/images/{$statusImage['src']}" width="{$statusImage['height']}" height="{$statusImage['width']}" alt="{$statusImage['alt']}"/>
             {$statusImage['title']}
           </li>
         </ul>    
       {/foreach}
       <div class="clear"></div>
     </div> <!-- class="columns" -->
+  {/block}
   
     <p class="fineprint">
       Harvard student ID required. Schedule shown does not account for holidays and other closures.
     </p>
     
+  {block name="locationDiningStatuses"}
     <ul class="nav nested">
       {foreach $diningStatuses as $diningStatus}
         <li class="dininghall {$diningStatus['status']}">

@@ -1,14 +1,26 @@
 {extends file="findExtends:modules/{$moduleID}/detail.tpl"}
 
-{block name="title"}
+{block name="itemDetails"}
+  {if $item['creator']}<a class="authorLink" href="{$item['creatorURL']}">{$item['creator']}</a> | {/if}
+  {if $item['edition']}{$item['edition']} | {/if}
+  {if $item['date'] || $item['publisher']}{$item['publisher']} {$item['date']} | {/if}
+  {$item['format']|capitalize}{if strlen($item['type'])}: {$item['type']}{/if}
+  {if $item['workType']}<br/>Work Type: {$item['workType']}{/if}
+  {if $item['thumbnail']}
+    {if $item['id']}<br/>HOLLIS #: {$item['id']}{/if}
+    <br/><span class="smallprint">1 of {$item['imageCount']} images
+      {if $item['fullImageUrl']}<a href="{$item['fullImageUrl']}">(full image)</a>{/if}
+    </span>
+    <br/><img src="{$item['thumbnail']}" alt="{$item['title']} thumbnail image" />
+    
+  {/if}
 {/block}
 
-{block name="header"}
-  {if $item['edition']}{$item['edition']} | {/if}
-  {if $item['creator']}{$item['creator']} | {/if}
-  {if $item['date']}{$item['date']} | {/if}
-  {$item['format']|capitalize}{if strlen($item['type'])}: {$item['type']}{/if}
-  <br/>
+{block name="itemDetailHeader"}
+  <h2>{$item['title']}</h2>
+  <p class="smallprint">
+    {$itemDetails}
+  </p>
   <img src="/common/images/bookmark-{if $item['bookmarked']}on{else}off{/if}.gif" alt="" />
   <a id="bookmark" href="{$bookmarkURL}">
     {if $item['bookmarked']}Remove bookmark{else}Bookmark this item{/if}
@@ -21,9 +33,7 @@
 {/block}
 
 {block name="item"}
-  <img src="/modules/{$moduleID}/images/{$class}.gif" alt="" />
-  {$info['available']} of {$info['total']}
-  {if $info['type'] != collection}available - {$info['type']}{else}restricted{/if}<br/>
+  <img src="/modules/{$moduleID}/images/{$class}.gif" alt="" /> {$itemText}<br/>
 {/block}
 
 {block name="fulllist"}

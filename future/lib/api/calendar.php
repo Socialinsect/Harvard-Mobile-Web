@@ -1,119 +1,149 @@
 <?php
 
-require_once(LIB_DIR . '/ICalendar.php');
+/****************************************************************
+ *
+ *  Copyright 2010 The President and Fellows of Harvard College
+ *  Copyright 2010 Modo Labs Inc.
+ *
+ *****************************************************************/
+
+require_once realpath(LIB_DIR.'/api.php');
+require_once realpath(LIB_DIR . '/ICalendar.php');
 
 $data = array();
 
-$module = Module::factory('calendar', '', $_GET);
+$feeds = $GLOBALS['siteConfig']->loadFeedData('calendar');
+$timezone = new DateTimeZone($GLOBALS['siteConfig']->getVar('LOCAL_TIMEZONE'));
+$suppressedCustomFields = $GLOBALS['siteConfig']->getAPIVar(apiGetArg('module'), 'suppressedCustomFields');
 
-switch ($_REQUEST['command']) {
+function getFeed($feeds, $index) {
+  if (isset($feeds[$index])) {
+    $feedData = $feeds[$index];
+    $controller = CalendarDataController::factory($feedData);
+    $controller->setDebugMode($GLOBALS['siteConfig']->getVar('DATA_DEBUG'));
+    return $controller;
+  } else {
+    error_log("Error getting calendar feed for index $index");
+    return null;
+  }
+}
 
+switch (apiGetArg('command')) {
   case 'day':
-    $type = isset($_REQUEST['type']) ? strtolower($_REQUEST['type']) : 'events';
-    $time = isset($_REQUEST['time']) ? $_REQUEST['time'] : time();
+    $type = strtolower(apiGetArg('type', 'events'));
+    $time = apiGetArg('time', time());
     
-    $feed = $module->getFeed($type);
+    $feed = getFeed($feeds, $type);
     
-    $start = new DateTime(date('Y-m-d H:i:s', $time), $module->timezone());
-    $start->setTime(0,0,0);
-    $end = clone $start;
-    $end->setTime(23,59,59);
-
-    $feed->setStartDate($start);
-    $feed->setEndDate($end);
-    $iCalEvents = $feed->items();
-            
-    foreach($iCalEvents as $iCalEvent) {
-      $data[] = $iCalEvent->apiArray();
+    if ($feed) {
+      $start = new DateTime(date('Y-m-d H:i:s', $time), $timezone);
+      $start->setTime(0,0,0);
+      $end = clone $start;
+      $end->setTime(23,59,59);
+  
+      $feed->setStartDate($start);
+      $feed->setEndDate($end);
+      $iCalEvents = $feed->items();
+              
+      foreach($iCalEvents as $iCalEvent) {
+        $data[] = $iCalEvent->apiArray($suppressedCustomFields);
+      }
     }
     break;
 
-
   case 'search':
-    $type = isset($_REQUEST['type']) ? strtolower($_REQUEST['type']) : 'events';
-    $searchString = isset($_REQUEST['q']) ? $_REQUEST['q'] : '';
+    $type = strtolower(apiGetArg('type', 'events'));
+    $searchString = apiGetArg('q');
     
-    $feed = $module->getFeed($type);
+    $feed = getFeed($feeds, $type);
     
-    $start = new DateTime(null, $module->timezone());
-    $start->setTime(0,0,0);
-    $feed->setStartDate($start);
-    $feed->setDuration(7,'day');
-    $feed->addFilter('search', $searchString);
-    $iCalEvents = $feed->items();
-    
-    foreach($iCalEvents as $iCalEvent) {
-      $data[] = $iCalEvent->apiArray();
+    if ($feed) {
+      $start = new DateTime(null, $timezone);
+      $start->setTime(0,0,0);
+      $feed->setStartDate($start);
+      $feed->setDuration(7,'day');
+      $feed->addFilter('search', $searchString);
+      $iCalEvents = $feed->items();
+      
+      foreach($iCalEvents as $iCalEvent) {
+        $data[] = $iCalEvent->apiArray($suppressedCustomFields);
+      }
+      
+      $data = array('events'=>$data);
     }
-    
-    $data = array('events'=>$data);
     break;
 
   case 'category':
-    $type = isset($_REQUEST['type']) ? strtolower($_REQUEST['type']) : 'events';
-    if ($id = $_REQUEST['id']) {
-      $start = isset($_REQUEST['start']) ? $_REQUEST['start'] : time();
-      $end = isset($_REQUEST['end']) ? $_REQUEST['end'] : $start + 86400;
+    $type = strtolower(apiGetArg('type', 'events'));
+    $id = apiGetArg('id');
+    
+    if ($id) {
+      $start = apiGetArg('start', time());
+      $end = apiGetArg('end', $start + 86400);
 
       $events = array();
       
       if (strlen($id) > 0) {
-        $feed = $module->getFeed($type);
+        $feed = getFeed($feeds, $type);
         
-        $start = new DateTime(date('Y-m-d H:i:s', $start), $module->timezone());
-        $start->setTime(0,0,0);
-        $end = clone $start;
-        $end->setTime(23,59,59);
-      
-        $feed->setStartDate($start);
-        $feed->setEndDate($end);
-        $feed->addFilter('category', $id);
-        $events = $feed->items();
-        foreach ($events as $event) {
-          $data[] = $event->apiArray();
+        if ($feed) {
+          $start = new DateTime(date('Y-m-d H:i:s', $start), $timezone);
+          $start->setTime(0,0,0);
+          $end = clone $start;
+          $end->setTime(23,59,59);
+        
+          $feed->setStartDate($start);
+          $feed->setEndDate($end);
+          $feed->addFilter('category', $id);
+          $events = $feed->items();
+          foreach ($events as $event) {
+            $data[] = $event->apiArray($suppressedCustomFields);
+          }
         }
       }
     }
    break;
 
   case 'categories':
-    $type = isset($_REQUEST['type']) ? strtolower($_REQUEST['type']) : 'events';
-    $feed = $module->getFeed($type);
-    $categoryObjects = $feed->getEventCategories();
-
-    foreach ($categoryObjects as $categoryObject) {
- 
-      $name = ucwords($categoryObject->get_name());
-      $catid = $categoryObject->get_cat_id();
-      $url = $categoryObject->get_url();
-
-      $catData = array(
-        'name' => $name,
-        'catid' => $catid,
-        'url' => $url
-      );
-
-      $data[] = $catData;
+    $type = strtolower(apiGetArg('type', 'events'));
+    $feed = getFeed($feeds, $type);
+    
+    if ($feed) {
+      $categoryObjects = $feed->getEventCategories();
+  
+      foreach ($categoryObjects as $categoryObject) {
+        $name = ucwords($categoryObject->get_name());
+        $catid = $categoryObject->get_cat_id();
+        $url = $categoryObject->get_url();
+  
+        $catData = array(
+          'name' => $name,
+          'catid' => $catid,
+          'url' => $url
+        );
+  
+        $data[] = $catData;
+      }
     }
     break;
 
   case 'academic':
-    $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
+    $year = intval(apiGetArg('year', date('Y')));
 
-    $start = new DateTime( $year   ."0901", $module->timezone());        
-    $end   = new DateTime(($year+1)."0831", $module->timezone());
+    $start = new DateTime( $year   ."0901", $timezone);        
+    $end   = new DateTime(($year+1)."0831", $timezone);
     
-    $feed = $module->getFeed('academic');
-    $feed->setStartDate($start);
-    $feed->setEndDate($end);
-    $iCalEvents = $feed->items();
-
-    foreach($iCalEvents as $event) {
-        $data[] = $event->apiArray();
+    $feed = getFeed($feeds, 'academic');
+    
+    if ($feed) {
+      $feed->setStartDate($start);
+      $feed->setEndDate($end);
+      $iCalEvents = $feed->items();
+  
+      foreach($iCalEvents as $event) {
+        $data[] = $event->apiArray($suppressedCustomFields);
+      }
     }
-    break;
-
-  default:
     break;
 }
 

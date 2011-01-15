@@ -1,6 +1,4 @@
-{block name="header"}
-    {include file="findInclude:common/header.tpl"}
-{/block}
+{include file="findInclude:common/header.tpl"}
 
 {$tabBodies = array()}
 {capture name="infoPane" assign="infoPane"}
@@ -23,7 +21,7 @@
         {foreach $infoItems as $item}
           <li>
             <h3>{$item['header']}</h3>
-            <p>{$item['content']|escape}</p>
+            <p>{$item['content']}</p>
           </li>
         {/foreach}
       {/if}
@@ -38,31 +36,31 @@
         <li><h3>Instructor(s):</h3></li>
         {foreach $staff['instructors'] as $instructor}
           <li><a href="{$instructor['url']}" class="people">{$instructor['title']}</a></li>
- 		  <li></li>
-       {/foreach}
+        {/foreach}
         
         {if count($staff['tas'])}
+          <li></li>
           <li><h3>TAs:</h3></li>
           {foreach $staff['tas'] as $ta}
             <li><a href="{$ta['url']}" class="people">{$ta['title']}</a></li>
           {/foreach}
-		  <li></li>
         {/if}
+        <li></li>
     </ul>
   {/block}
 {/capture}
 {$tabBodies['staff'] = $staffPane}
 
-{block name="tabView"}
-	<a name="scrolldown"></a>		
-	<div class="focal shaded">
+<a name="scrolldown"></a>		
+<div class="focal shaded">
 
+  {block name="courseHeader"}
     <a id="myclasses" class="{if $isInMyClasses}ms_on{else}ms_off{/if}" onclick="toggleMyClasses(this, '{$classId} {$term}')"></a>
     <h2>{$className}: {$classTitle}</h2>
     <p class="address">{$term}{if strlen($classUrl)} | <a href="{$classUrl}" target="_new">Course Website</a>{/if}</p>
+  {/block}
 
-    {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
-  </div>
-{/block}
+  {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
+</div>
 
 {include file="findInclude:common/footer.tpl"}

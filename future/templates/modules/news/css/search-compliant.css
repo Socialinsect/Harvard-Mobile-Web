@@ -19,14 +19,14 @@ li.story {
     left: 0;
     margin: 0;
     padding: 3px 25px 3px 0;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 82.35%
+    line-height: 1.43em;
     padding-bottom: .25em;
     height: 64pt;
 }
 
 .results li.story a .title {
-    font-size: 17px;
+    font-size: 100%;
     padding-bottom: .25em;
 }
 
@@ -36,6 +36,8 @@ li.story {
     padding-right: 7px;
     width: 70pt;
     height: 70pt;
+    background: transparent url('/common/images/news-placeholder.png') no-repeat top left;
+    background-size: 70pt;
 }
 #category-switcher table {
     padding-top: 2px;
@@ -99,7 +101,7 @@ form {
 .header form select {
     line-height: normal;
     padding: 4px 6px;
-    font-size: 15px;
+    font-size: 88.23%;
 }
 #search-form .toggle-search-button {
 }

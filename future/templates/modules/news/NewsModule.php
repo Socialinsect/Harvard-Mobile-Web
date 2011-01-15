@@ -9,22 +9,10 @@ if (!function_exists('mb_substr')) {
 class NewsModule extends Module {
   protected $id = 'news';
   protected $feeds = array();
-  private $feedIndex=0;
+  private   $feedIndex = 0;
   protected $feed;
   protected $maxPerPage;
   
-  private function basicDeck($story, $bbplus) {
-    $limit = $bbplus ? 95 : 75;
-    
-    $deck = $story["description"];
-    if(strlen($deck) > $limit) {
-      $deck = mb_substr($deck, 0, $limit, 'UTF-8');
-      return trim($deck) . "...";
-    } else {
-      return $deck;
-    }
-  }
-
   private function feedURLForFeed($feedIndex) {
     return isset($this->feeds[$feedIndex]) ? 
       $this->feeds[$feedIndex]['baseURL'] : null;
@@ -151,19 +139,20 @@ class NewsModule extends Module {
         }
 
         $body = $story->getDescription()."\n\n".$story->getLink();
-        $shareEmailURL = $this->buildMailtoLink("", $story->getTitle(), $body);
+        $shareEmailURL = $this->buildMailToLink("", $story->getTitle(), $body);
 
         $pubDate = strtotime($story->getProperty("pubDate"));
         $date = date("M d, Y", $pubDate);
         
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
-        $this->assign('date',     $date);
-        $this->assign('storyURL', $story->getLink());
+        $this->assign('date',          $date);
+        $this->assign('storyURL',      urlencode($story->getLink()));
         $this->assign('shareEmailURL', $shareEmailURL);
-        $this->assign('title',    $story->getTitle());
-        $this->assign('author',   $story->getProperty('harvard:author'));
-        $this->assign('image',    $this->getImageForStory($story));
+        $this->assign('title',         $story->getTitle());
+        $this->assign('shareRemark',   urlencode($story->getTitle()));
+        $this->assign('author',        $story->getProperty('harvard:author'));
+        $this->assign('image',         $this->getImageForStory($story));
         break;
         
       case 'search':
@@ -196,17 +185,17 @@ class NewsModule extends Module {
               $previousUrl = $this->buildBreadcrumbURL($this->page, $args, false);
             }
             
-            if ($totalItems - $start <= $this->maxPerPage) {
+            if (($totalItems - $start) > $this->maxPerPage) {
               $args['start'] = $start + $this->maxPerPage;
               $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
             }
           }
 
           $extraArgs = array(
-            'section'=>$this->feedIndex
+            'section' => $this->feedIndex
           );
 
-          $this->assign('extraArgs',     $extraArgs);
+          $this->assign('extraArgs',   $extraArgs);
           $this->assign('searchTerms', $searchTerms);
           $this->assign('stories',     $stories);
           $this->assign('previousUrl', $previousUrl);
@@ -232,8 +221,10 @@ class NewsModule extends Module {
             $previousUrl = $this->buildBreadcrumbURL($this->page, $args, false);
           }
           
-          $args['start'] = $start + $this->maxPerPage;
-          $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
+          if (($totalItems - $start) > $this->maxPerPage) {
+            $args['start'] = $start + $this->maxPerPage;
+            $nextUrl = $this->buildBreadcrumbURL($this->page, $args, false);
+          }
         }
         
         $stories = array();

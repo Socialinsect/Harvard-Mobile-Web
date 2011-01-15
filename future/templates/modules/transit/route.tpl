@@ -42,7 +42,7 @@
       {/if}
       {if $routeInfo['running']}
         Refreshed at {$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span>
-        {if $routeConfig['serviceName']} using {$routeConfig['serviceName']}{/if}
+        {if $routeConfig['serviceName']}&nbsp;using {$routeConfig['serviceName']}{/if}
       {else}
         Bus not running.
       {/if}
@@ -52,7 +52,7 @@
       {if $routeConfig['serviceLogo']}
         <span id="servicelogo">
           {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}" />
+            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
           {if $routeConfig['serviceLink']}</a>{/if}
         </span>
       {/if}

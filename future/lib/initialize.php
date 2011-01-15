@@ -64,6 +64,7 @@ function Initialize(&$path=null) {
   
   $testPath = DOCUMENT_ROOT.DIRECTORY_SEPARATOR;
   $urlBase = '/';
+  $foundPath = false;
   if (realpath($testPath) != realpath(WEBROOT_DIR)) {
     foreach ($pathParts as $dir) {
       $test = $testPath.$dir.DIRECTORY_SEPARATOR;
@@ -72,13 +73,14 @@ function Initialize(&$path=null) {
         $testPath = $test;
         $urlBase .= $dir.'/';
         if (realpath($test) == realpath(WEBROOT_DIR)) {
+          $foundPath = true;
           break;
         }
       }
     }
   }
-  define('URL_BASE', $urlBase);
-  define('FULL_URL_BASE', sprintf("http://%s%s", $_SERVER['HTTP_HOST'], URL_BASE));
+  define('URL_BASE', $foundPath ? $urlBase : '/');
+  define('FULL_URL_BASE', "http://{$_SERVER['HTTP_HOST']}".URL_BASE);
 
   define('COOKIE_PATH', URL_BASE); // We are installed under URL_BASE
 
@@ -99,7 +101,10 @@ function Initialize(&$path=null) {
   } else {
     set_exception_handler("exceptionHandlerForDevelopment");
   }
-    
+  
+  // Strips out the leading part of the url for sites where 
+  // the base is not located at the document root, ie.. /mobile or /m 
+  // Also strips off the leading slash (needed by device debug below)
   if (isset($path)) {
     // Strip the URL_BASE off the path
     $baseLen = strlen(URL_BASE);
@@ -108,15 +113,13 @@ function Initialize(&$path=null) {
     }
   }  
 
-
-
-
   //
   // Initialize global device classifier
   //
   
   $device = null;
   $urlPrefix = URL_BASE;
+  $urlDeviceDebugPrefix = '/';
   
   // Check for device classification in url and strip it if present
   if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG') && 
@@ -124,9 +127,12 @@ function Initialize(&$path=null) {
     $device = $matches[1];  // layout forced by url
     $path = $matches[2];
     $urlPrefix .= "device/$device/";
+    $urlDeviceDebugPrefix .= "device/$device/";
   }
   
+  define('URL_DEVICE_DEBUG_PREFIX', $urlDeviceDebugPrefix);
   define('URL_PREFIX', $urlPrefix);
+  define('FULL_URL_PREFIX', "http://{$_SERVER['HTTP_HOST']}".URL_PREFIX);
 
   //error_log(__FUNCTION__."(): prefix: $urlPrefix");
   //error_log(__FUNCTION__."(): path: $path");

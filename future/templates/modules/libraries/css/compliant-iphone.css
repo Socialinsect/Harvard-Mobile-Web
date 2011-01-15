@@ -1,3 +1,3 @@
-table.search td.wrap {
-  padding-right: 24px; /* handle input padding */
+table.search td.wrap div {
+  padding-right: 13px;  /* handle input padding */
 }

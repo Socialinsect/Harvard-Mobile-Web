@@ -12,10 +12,12 @@ var dirtyBit = false; // needs saving
 
 function init() {
     // 1. set up reorderable list
-    var cookie = getCookie("visiblemodules");
-    var activeModules = (cookie) ? cookie.split(",") : [];
-    cookie = getCookie("moduleorder");
+    var cookie = getCookie(DISABLED_MODULES_COOKIE);
+    var disabledModules = (cookie) ? cookie.split(",") : [];
+    
+    cookie = getCookie(MODULE_ORDER_COOKIE);
     var moduleOrder = (cookie) ? cookie.split(",") : [];
+    
     var container = document.getElementById("dragReorderList");
     var checkboxes = container.getElementsByTagName("input");
     // deal with sort order
@@ -33,17 +35,15 @@ function init() {
     }
     // deal with checkboxes
     for (var i=0; i < checkboxes.length; i++) {
-        // mark active modules as active
-        for (var j=0; j < activeModules.length; j++) {
-            if (activeModules[j] == checkboxes[i].getAttribute("name")) {
-                checkboxes[i].checked = true;
+        checkboxes[i].checked = true;
+
+        // mark disabled modules as disabled
+        for (var j=0; j < disabledModules.length; j++) {
+            if (disabledModules[j] == checkboxes[i].getAttribute("name") && !hasClass(checkboxes[i], "required")) {
+                checkboxes[i].checked = false;
                 break;
             }
         };
-        // make sure inactive ones are marked as off, skipping required ones
-        if (activeModules.length > 0 && j >= activeModules.length && !hasClass(checkboxes[i], "required")) {
-            checkboxes[i].checked = false;
-        }
         checkboxes[i].addEventListener("change", updateCookie, false);
     };
     // important to do this after applying changes from cookie. otherwise domIndex attr is wrong
@@ -245,24 +245,20 @@ function updateCookie() {
         };
     };
 
-    cookieName = "moduleorder";
-    var expiredays = null; // never expire
-    setCookie(cookieName, moduleNames.join(), null, httpRoot);
+    setCookie(MODULE_ORDER_COOKIE, moduleNames.join(), MODULE_ORDER_COOKIE_LIFESPAN, COOKIE_PATH);
 
     moduleNames = [];
     for (var i=0; i < rows.length; i++) {
         var checks = rows[i].getElementsByTagName("input");
         for (var j=0; j < checks.length; j++) {
-            if (checks[j].getAttribute("type") == "checkbox" && checks[j].checked) {
+            if (checks[j].getAttribute("type") == "checkbox" && !checks[j].checked) {
                 moduleNames.push(checks[j].getAttribute("name"));
                 break;
             }
         };
     };
 
-    cookieName = "visiblemodules";
-    expiredays = null; // never expire
-    setCookie(cookieName, moduleNames.join(), null, httpRoot);
+    setCookie(DISABLED_MODULES_COOKIE, moduleNames.join(), MODULE_ORDER_COOKIE_LIFESPAN, COOKIE_PATH);
     
     dirtyBit = false; // reset "needs saving" flag
     
@@ -278,10 +274,10 @@ function updateCookie() {
     }, 0);
 }
 
-function setCookie(name, value, expiredays, path) {
+function setCookie(name, value, expireseconds, path) {
     var exdate=new Date();
-    exdate.setDate(exdate.getDate()+expiredays);
-    var exdateclause = (expiredays == null) ? "" : "; expires="+exdate.toGMTString();
+    exdate.setTime(exdate.getTime() + (expireseconds*1000));
+    var exdateclause = (expireseconds == 0) ? "" : "; expires="+exdate.toGMTString();
     var pathclause = (path == null) ? "" : "; path="+path;
     document.cookie= name + "=" + value + exdateclause + pathclause;
 }

@@ -1,23 +1,10 @@
-.springboard a img {
-	margin-bottom: 1px;
-	border: none;
-    height: 64px;
-    width: 64px;
+h1 {
+	padding: 24px 0;
+	text-align: center;
+	color: #000;
+	font-size: 171%;
 }
 
-.springboard div.utility {
-	/* Overall size of one cell in the springboard's fixed utility-type items */
-	width: 64px;
-	height: 64px;
-	font-size: 12px;
-	line-height: 13px;
-}
-
-.springboard div.utility a img {
-	/* Size of actual item icon in the springboard's fixed utility-type items */
-	width: 64px;
-	height: 64px;
-}
-
-#download {
+#homegrid {
+	margin-top: 12px;
 }

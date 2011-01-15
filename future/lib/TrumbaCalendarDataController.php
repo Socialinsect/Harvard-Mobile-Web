@@ -86,7 +86,10 @@ class TrumbaEvent extends ICalEvent
             if (array_key_exists('NAME', $params)) {
                 $name = $params['NAME'];
                 unset($params['NAME']);
-                $this->TrumbaCustomFields[$name] = $value;
+                
+                // Intentionally adding quotes to the keys in order to maintain
+                // backwards compatibility with previous API.
+                $this->TrumbaCustomFields['"' . $name . '"'] = $value;
                 $this->set_attribute($name, $value, $params);
             }
             break;

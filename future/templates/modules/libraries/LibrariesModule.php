@@ -1,9 +1,10 @@
 <?php
 
 require_once realpath(LIB_DIR.'/Module.php');
-require_once realpath(LIB_DIR.'/feeds/LibrariesInfo.php');
+require_once realpath(LIB_DIR.'/feeds/Libraries.php');
 
-define('LIBRARY_LOCATIONS_COOKIE', 'libraryLocations');
+define('LIBRARY_LIBRARIES_COOKIE', 'libraryLocations');
+define('LIBRARY_ARCHIVES_COOKIE',  'libraryArchives');
 define('LIBRARY_ITEMS_COOKIE',     'libraryItems');
 
 
@@ -11,15 +12,88 @@ class LibrariesModule extends Module {
   protected $id = 'libraries';
   private static $typeToCookie = array(
     'item'    => LIBRARY_ITEMS_COOKIE,
-    'library' => LIBRARY_LOCATIONS_COOKIE,
-    'archive' => LIBRARY_LOCATIONS_COOKIE,
+    'library' => LIBRARY_LIBRARIES_COOKIE,
+    'archive' => LIBRARY_ARCHIVES_COOKIE,
   );
   private $bookmarks = array(
     'item'    => null,
     'library' => null,
     'archive' => null,
   );
+  private static $statusMapping = array(
+    'available'   => 'availableItems',
+    'requestable' => 'checkedOutItems',
+    'unavailable' => 'unavailableItems',
+    'collection'  => 'collectionOnlyItems',
+  );
+  
+  private function groupByFirstLetterRange($entries, $maxGroupSize) {
+    $letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     
+    $firstLetterGroups = array();
+    for ($i = 0; $i < strlen($letters); $i++) {
+      $firstLetterGroups[substr($letters, $i, 1)] = array();
+    }
+    
+    foreach ($entries as $i => $entry) {
+      $firstLetter = strtoupper(substr($entry['title'], 0, 1));
+      if (!isset($firstLetterGroups[$firstLetter])) {
+        $firstLetterGroups[$firstLetter] = array();
+      }
+      $firstLetterGroups[$firstLetter][] = $entry;
+    }
+    
+    $letterGroups = array();
+    foreach ($firstLetterGroups as $letter => $e) {
+      $i = count($letterGroups)-1;
+      if ($i < 0 || (count($letterGroups[$i]['entries']) + count($e)) > $maxGroupSize) {
+        $letterGroups[] = array(
+          'letters' => array(),
+          'entries' => array(),
+        );
+        $i++;
+      }
+      $letterGroups[$i]['letters'][] = $letter;
+      $letterGroups[$i]['entries'] = array_merge($letterGroups[$i]['entries'], $e);
+      
+    }
+    
+    $groups = array();
+    foreach ($letterGroups as $i => $group) {
+      $first = reset($group['letters']);
+      $last = end($group['letters']);
+      
+      if ($first == $last) {
+        $groups[$first] = $group['entries'];
+      } else {
+        $groups["$first-$last"] = $group['entries'];
+      }    
+    }
+    unset($letterGroups);
+    
+    return $groups;
+  }
+  
+  private function filterByLetterRange($entries, $range) {
+    $parts = explode('-', $range);
+    if (count($parts) && strlen(trim($parts[0]))) {
+      $first = trim($parts[0]);
+      $last = count($parts) == 1 ? $first : trim($parts[1]);
+      
+      $results = array();
+      foreach ($entries as $entry) {
+        $title = strtoupper(substr($entry['title'], 0, 1));
+        if (strcmp($first, $title) <= 0 && strcmp($title, $last) <= 0) {
+          $results[] = $entry;
+        }
+      }
+      
+      return $results;
+    }
+    
+    return false;
+  }
+
   private function getBookmarks($type) {
     if (isset(self::$typeToCookie[$type])) {
       if (!isset($this->bookmarks[$type])) {
@@ -113,9 +187,13 @@ class LibrariesModule extends Module {
       case 'movie':
         return 'video';
         
+      case '':
+        error_log("Warning empty library item format"); 
+        return 'book';
+        
       default:
         error_log("Warning unknown library item format '$format'"); 
-        return 'book';
+        return $formatDetail;
     }
   }
   
@@ -125,6 +203,9 @@ class LibrariesModule extends Module {
     } else {
       $detail = $data;
     }
+    
+    // restore newlines
+    $detail = str_replace("\n", '<br/>', $detail);
     
     // no phone numbers in item details:
     $detail = str_replace('-', '-&shy;', $detail);
@@ -136,20 +217,40 @@ class LibrariesModule extends Module {
   }
   
   private function getItemDetails($data) {
+    // error_log(json_encode($data));
     $details = array(
-      'id'         => $data['itemId'],
-      'title'      => $this->formatDetail($data, 'title', 'Unknown title'),
-      'creator'    => $this->formatDetail($data, 'creator'),
-      'publisher'  => $this->formatDetail($data, 'publisher'),
-      'date'       => $this->formatDetail($data, 'date'),
-      'format'     => $this->translateFormat(self::argVal($data['format'], 'formatDetail', 'Book')),
-      'formatDesc' => $this->formatDetail($data['format'], 'formatDetail'),
-      'type'       => $this->formatDetail($data['format'], 'typeDetail'),
-      'url'        => $this->detailURL($data['itemId']),
-      'bookmarked' => $this->isBookmarked('item', $data['itemId']),
-      'cookie'     => LIBRARY_ITEMS_COOKIE,
+      'id'              => $data['itemId'],
+      'title'           => $this->formatDetail($data, 'title', 'Unknown title'),
+      // Used for non-english versions of the title, creator, UTF-8 encoded:
+      'nonLatinTitle'   => $this->formatDetail($data, 'nonLatinTitle'),
+      'nonLatinCreator' => $this->formatDetail($data, 'nonLatinCreator'),
+      'creator'         => $this->formatDetail($data, 'creator'),
+      'publisher'       => $this->formatDetail($data, 'publisher'),
+      'date'            => $this->formatDetail($data, 'date'),
+      'format'          => $this->translateFormat(self::argVal($data['format'], 'formatDetail', '')),
+      'formatDesc'      => $this->formatDetail($data['format'], 'formatDetail'),
+      'type'            => $this->formatDetail($data['format'], 'typeDetail'),
+      'url'             => $this->detailURL($data['itemId']),
+      'bookmarked'      => $this->isBookmarked('item', $data['itemId']),
+      'cookie'          => LIBRARY_ITEMS_COOKIE,
     );
     
+    if ($details['creator']) {
+      $creatorLink = self::argVal($data, 'creatorLink', '');
+      if ($creatorLink) {
+        $details['creatorURL'] = $this->buildBreadcrumbURL('search', array(
+          'q' => $creatorLink,
+        ));
+      } else {
+        $details['creatorURL'] = $this->buildBreadcrumbURL('search', array(
+          'author' => self::argVal($data, 'creator', ''),
+        ));
+      }
+    };
+
+    if (isset($data['index'])) {
+      $details['index'] = $data['index'];
+    }
     if (isset($data['identifier'])) {
       foreach ($data['identifier'] as $identifier) {
         if (isset($identifier['type']) && strtolower($identifier['type']) == 'net') {
@@ -173,95 +274,6 @@ class LibrariesModule extends Module {
     return $details;
   }
   
-  private function formatItemAvailabilityInfo($entry) {
-    $results = array();
-    
-    foreach ($entry['collection'] as $collection) {
-      $items = array();
-      
-      $collectionCallNumber = self::argVal($collection, 'collectionCallNumber');
-      
-      foreach ($collection['itemsByStat'] as $statItems) {
-        $item = array(
-          'type'           => self::argVal($statItems, 'statMain'),
-          'available'      => 0,
-          'requestable'    => 0,
-          'total'          => 0,
-          'types'          => array(),
-        );
-        
-        if (!$item['type']) {
-          $item['type'] = 'collection';
-        }
-        
-        $countMapping = array(
-          'available'   => 'availCount',
-          'requestable' => 'checkedOutCount',
-          'unavailable' => 'unavailCount',
-          'collection'  => 'collectionOnlyCount',
-        );
-        
-        $typeMapping = array(
-          'available'   => 'availableItems',
-          'requestable' => 'checkedOutItems',
-          'unavailable' => 'unavailableItems',
-          'collection'  => 'collectionOnlyItems',
-        );
-        
-        foreach ($typeMapping as $typeKey => $statKey) {
-          $count = count($statItems[$statKey]);
-          
-          if ($count > 0) {
-            $item['total'] += $count;
-            if ($typeKey == 'available') {
-              $item['available'] += $count;
-            }
-            if ($typeKey == 'requestable') {
-              $item['requestable'] += $count;
-            }
-            
-            $itemType = array(
-              'count' => $count,
-              'status' => $typeKey,
-            );
-            foreach ($statItems[$statKey] as $statItem) {
-              if (self::argVal($statItem, 'requestUrl')) {
-                $itemType['url'] = $this->formatDetail($statItem, 'requestUrl');
-              }
-              if (self::argVal($statItem, 'statSecondary')) {
-                $itemType['status'] = $this->formatDetail($statItem, 'statSecondary');
-              }
-              if (self::argVal($statItem, 'callNumber')) {
-                $itemType['callNumber'] = $this->formatDetail($statItem, 'callNumber');
-                if (!$collectionCallNumber) {
-                  $collectionCallNumber = $this->formatDetail($statItem, 'callNumber');
-                }
-              }
-              if (self::argVal($statItem, 'collectionCallNumber')) {
-                $itemType['callNumber'] = $this->formatDetail($statItem, 'collectionCallNumber');
-                if (!$collectionCallNumber) {
-                  $collectionCallNumber = $this->formatDetail($statItem, 'collectionCallNumber');
-                }
-              }
-            }
-            $item['types'][$typeKey] = $itemType;
-          }
-        }
-        $items[] = $item;
-      }
-      
-      if (count($items)) {
-        $results[] = array(
-          'name'       => $this->formatDetail($collection, 'collectionName'),
-          'callNumber' => $collectionCallNumber,
-          'items'      => $items,
-        );
-      }
-    }
-    
-    return $results;
-  }
-
   private function detailURL($id, $toggleBookmark=false, $addBreadcrumb=true) {
     $args = array(
       'id' => $id,
@@ -272,15 +284,15 @@ class LibrariesModule extends Module {
     return $this->buildBreadcrumbURL('detail', $args, !$toggleBookmark && $addBreadcrumb);
   }
   
-  private function availabilityURL($itemID, $type, $id) {
+  private function availabilityURL($itemId, $type, $id) {
     return $this->buildBreadcrumbURL('availability', array(
-      'itemID' => $itemID,
+      'itemId' => $itemId,
       'type'   => $type,
       'id'     => $id,
     ));
   }
   
-  private function locationAndHoursURL($type, $id, $name, $toggleBookmark=false) {
+  private function locationAndHoursURL($type, $id, $name, $toggleBookmark=false, $dropBreadcrumbs=false) {
     $args = array(
       'type' => $type,
       'id'   => $id,
@@ -289,7 +301,11 @@ class LibrariesModule extends Module {
     if ($toggleBookmark) {
       $args['toggleBookmark'] = 1;
     }
-    return $this->buildBreadcrumbURL('locationAndHours', $args, !$toggleBookmark);
+    if ($dropBreadcrumbs) {
+      return $this->buildURL('locationAndHours', $args);
+    } else {
+      return $this->buildBreadcrumbURL('locationAndHours', $args, !$toggleBookmark);
+    }
   }
   
   private function mapURL($type, $id, $name) {
@@ -310,42 +326,6 @@ class LibrariesModule extends Module {
 
   private static function titleSort($a, $b) {
     return strcmp($a['title'], $b['title']);
-  }
-  
-  protected function urlForSearch($searchTerms) {
-    return $this->buildBreadcrumbURL("/{$this->id}/search", array(
-      'keywords' => $searchTerms,
-    ), false);
-  }
-
-  public function federatedSearch($searchTerms, $maxCount, &$results) {
-    $count = 0;
-    $results = array();
-  
-    $data = array_values(Libraries::searchItems($searchTerms, '', ''));
-    $count = count($data);
-
-    if ($count) {
-      $limit = min($maxCount, $count);
-      
-      for ($i = 0; $i < $limit; $i++) {
-        $subtitle = trim(self::argVal($data[$i], 'date', ''));
-        $creator = self::argVal($data[$i], 'creator', '');
-        if ($creator) {
-          if ($subtitle && $creator) { $subtitle .= ' | '; }
-          $subtitle .= $creator;
-        }
-      
-        $results[] = array(
-          'title'    => self::argVal($data[$i], 'title', 'Unknown title'),
-          'subtitle' => $subtitle ? $subtitle : null,
-          'url'      => $this->buildBreadcrumbURL("/{$this->id}/detail", array(
-            'id' => $data[$i]['itemId'],
-          ), false),
-        );
-      }
-    }
-    return $count;
   }
   
   protected function initializeForPage() {
@@ -431,43 +411,35 @@ class LibrariesModule extends Module {
         $item = $this->getItemDetails($data);
         //error_log(print_r($data, true));
         
-        $data = Libraries::getFullAvailability($id);
+        $data = Libraries::getItemAvailabilitySummary($id);
         //error_log(print_r($data, true));
         
-        $locations = array();
+        $locations = $data['institutions'];
         $locationCoords = array();
-        foreach ($data as $entry) {
-          $collections = $this->formatItemAvailabilityInfo($entry);
-          if (!count($collections)) { continue; }
-          
-          $locations[] = array(
-            'id'          => $entry['id'],
-            'type'        => $entry['type'],
-            'name'        => $this->formatDetail($entry, 'name'),
-            'collections' => $collections,
-            'url'         => $this->availabilityURL($id, $entry['type'], $entry['id']),
-          );
-          
-          $ldata = null;
-          if ($entry['type'] == 'library') {
-            $ldata = Libraries::getLibraryDetails($entry['id'], $entry['name']);
+        foreach ($locations as $index => $location) {
+          $locations[$index]['name'] = $this->formatDetail($location, 'name');
+          $locations[$index]['url'] = 
+            $this->availabilityURL($id, $location['type'], $location['id']);
+                    
+          $libData = null;
+          if ($location['type'] == 'library') {
+            $libData = Libraries::getLibraryDetails($location['id'], $location['name']);
             
-          } else if ($entry['type'] == 'archive') {
-            $ldata = Libraries::getArchiveDetails($entry['id'], $entry['name']);
-          
+          } else if ($location['type'] == 'archive') {
+            $libData = Libraries::getArchiveDetails($location['id'], $location['name']);
           }
           
-          if ($ldata) {
-            $locationCoords[$entry['id']] = array(
-              'lat' => floatVal($ldata['latitude']),
-              'lon' => floatVal($ldata['longitude']),
+          if ($libData) {
+            $locationCoords[$location['id']] = array(
+              'lat' => floatVal($libData['latitude']),
+              'lon' => floatVal($libData['longitude']),
             );
           }
         }
         
         $this->addInlineJavascript('var locationCoords = '.json_encode($locationCoords).';');
         $this->addOnLoad('setLocationDistances(locationCoords);');
-        //error_log(print_r($item, true));
+        //error_log(print_r($locations, true));
         
         $this->assign('locations',   $locations);
         $this->assign('item',        $item);
@@ -475,53 +447,158 @@ class LibrariesModule extends Module {
         break;
       
       case 'availability':
-        $itemID = $this->getArg('itemID');
+        $itemId = $this->getArg('itemId');
         $type   = $this->getArg('type');
         $id     = $this->getArg('id');
           
-        if (!$itemID || !$id) {
+        if (!$itemId || !$id) {
           $this->redirectTo('index');
         }
         
-        $items = array();
+        $itemData = Libraries::getItemRecord($itemId);
+
+        $location = array();
         $name = '';
         
-        $data = Libraries::getFullAvailability($itemID);
-        
-        foreach ($data as $entry) {
+        $data = Libraries::getItemAvailability($itemId);
+
+        foreach ($data['institutions'] as $entry) {
           if ($entry['id'] != $id) { continue; }
           //error_log(print_r($entry, true));
+          
           $name = $entry['name'];
-          $collections = $this->formatItemAvailabilityInfo($entry);
 
+          if (!$name) {
+            $this->redirectTo('index');
+          }
+  
+          if ($type == 'library') {
+            $libData = Libraries::getLibraryDetails($id, $name);
+            //error_log(print_r($libData, true));
+            
+          } else if ($type == 'archive') {
+            $libData = Libraries::getArchiveDetails($id, $name);
+            //error_log(print_r($libData, true));
+          
+          } else {
+            $this->redirectTo('index');
+          }
+          
+          $collections = $entry['collections'];
+          
+          foreach ($collections as $colIndex => $collection) {
+            foreach ($collection['categories'] as $catIndex => $category) {
+              foreach ($category['items'] as $itemIndex => $item) {
+                if (self::argVal($item, 'requestURL') || self::argVal($item, 'scanAndDeliverURL')) {
+                  $url = $this->buildBreadcrumbURL('request', array(
+                    'id'     => $id, 
+                    'type'   => $type, 
+                    'itemId' => $itemId,
+                    'coli'   => $colIndex,
+                    'cati'   => $catIndex,
+                    'itemi'  => $itemIndex,
+                  ));
+                  
+                  $collections[$colIndex]['categories'][$catIndex]['items'][$itemIndex]['url'] = $url;
+                }
+              }
+            }
+          }
+          
+          $location = array(
+            'type'        => $libData['type'],
+            'name'        => $name,
+            'primaryname' => $this->formatDetail($libData, 'primaryname'),
+            'hours'       => $this->formatDetail($libData, 'hrsOpenToday'),
+            'collections' => $collections,
+          );
           break; // assume libraries are not listed multiple times
         }
 
-        if (!$name) {
-          $this->redirectTo('index');
+        //error_log(print_r($location, true));
+        
+        $this->assign('infoURL',  $this->locationAndHoursURL($type, $id, $name/*, false, true*/));
+        $this->assign('location', $location);
+        $this->assign('title',    $this->formatDetail($itemData, 'title', 'Unknown title'));
+        break;
+        
+      case 'request':
+        $itemId = $this->getArg('itemId');
+        $type   = $this->getArg('type');
+        $id     = $this->getArg('id');
+
+        $info = array();
+
+        $itemData = Libraries::getItemRecord($itemId);
+        
+        $data = Libraries::getItemAvailability($itemId);
+
+        foreach ($data['institutions'] as $entry) {
+          if ($entry['id'] != $id) { continue; }
+          //error_log(print_r($entry, true));
+          
+          $name = $entry['name'];
+
+          if (!$name) {
+            $this->redirectTo('index');
+          }
+  
+          if ($type == 'library') {
+            $libData = Libraries::getLibraryDetails($id, $name);
+            //error_log(print_r($libData, true));
+            
+          } else if ($type == 'archive') {
+            $libData = Libraries::getArchiveDetails($id, $name);
+            //error_log(print_r($libData, true));
+          
+          } else {
+            $this->redirectTo('index');
+          }
+          
+          $colIndex  = $this->getArg('coli');
+          $catIndex  = $this->getArg('cati');
+          $itemIndex = $this->getArg('itemi');
+
+          $collections = $entry['collections'];
+          
+          foreach ($collections as $col => $collection) {
+            if ($colIndex != $col) { continue; }
+          
+            foreach ($collection['categories'] as $cat => $category) {
+              if ($catIndex != $cat) { continue; }
+          
+              foreach ($category['items'] as $i => $item) {
+                if ($itemIndex != $i) { continue; }
+
+                $info = array(
+                  'name'            => $name,
+                  'primaryname'     => $this->formatDetail($libData, 'primaryname'),
+                  'hours'           => $this->formatDetail($libData, 'hrsOpenToday'),
+                  'infoUrl'         => $this->locationAndHoursURL($type, $id, $name/*, false, true*/),
+                  
+                  'title'           => $this->formatDetail($itemData, 'title', 'Unknown title'),
+                  'collectionName'  => $collection['name'],
+                  'callNumber'      => $item['callNumber'],
+                  'holdingStatus'   => $category['holdingStatus'],
+                  'state'           => $item['state'],
+                  'secondaryStatus' => self::argVal($item, 'secondaryStatus', ''),
+                  'requestURL'      => self::argVal($item, 'requestURL', ''),
+                  'scanURL'         => self::argVal($item, 'scanAndDeliverURL', ''),
+                );
+                break;
+              }
+              break;
+            }
+            break;
+          }
+          break;
         }
 
-        if ($type == 'library') {
-          $data = Libraries::getLibraryDetails($id, $name);
-          //error_log(print_r($data, true));
-          
-        } else if ($type == 'archive') {
-          $data = Libraries::getArchiveDetails($id, $name);
-          //error_log(print_r($data, true));
-        
-        } else {
+        if (!$info) {
           $this->redirectTo('index');
         }
         
-        $location = array(
-          'type'        => $data['type'],
-          'name'        => $this->formatDetail($data, 'name'),
-          'hours'       => $this->formatDetail($data, 'hrsOpenToday'),
-          'collections' => $collections,
-        );
-        
-        $this->assign('infoURL', $this->locationAndHoursURL($type, $id, $name));
-        $this->assign('location', $location);
+        $this->assign('info', $info);
         break;
       
       case 'advanced':
@@ -529,9 +606,11 @@ class LibrariesModule extends Module {
         
         $locations = $searchConfig['locations'] + Libraries::getLibrarySearchCodes();
         $formats   = $searchConfig['formats']   + Libraries::getFormatSearchCodes();
-
+        $pubDates  = $searchConfig['pubDates']  + Libraries::getPubDateSearchCodes();
+        
         $this->assign('locations', $locations);
         $this->assign('formats',   $formats);
+        $this->assign('pubDates',  $pubDates);
         break;
 
       case 'search':
@@ -539,50 +618,91 @@ class LibrariesModule extends Module {
 
         $locations = $searchConfig['locations'] + Libraries::getLibrarySearchCodes();
         $formats   = $searchConfig['formats']   + Libraries::getFormatSearchCodes();
+        $pubDates  = $searchConfig['pubDates']  + Libraries::getPubDateSearchCodes();
         
-        $keywords     = trim($this->getArg('keywords'));
-        $title        = trim($this->getArg('title'));
-        $author       = trim($this->getArg('author'));
-        $locationTerm = $this->getArg('location');
-        $formatTerm   = $this->getArg('format');
-
-        $searchTerms = '';
-        if ($keywords) {
-          $searchTerms .= '"'.$keywords.'"';
-        }
-        if ($title) {
-          $searchTerms .= 'title:"'.$title.'"';
-        }
-        if ($author) {
-          $searchTerms .= 'author:"'.$author.'"';
-        }
-        if ($locationTerm == 'any' || $locationTerm == 'all') {
-          $locationTerm = '';
-        }
-        if ($formatTerm == 'any' || $formatTerm == 'all') {
-          $formatTerm = '';
-        } 
+        $q          = trim($this->getArg('q'));  // full query
+        $keywords   = trim($this->getArg('keywords'));
+        $title      = trim($this->getArg('title'));
+        $author     = trim($this->getArg('author'));
+        $location   = $this->getArg('location');
+        $format     = $this->getArg('format');
+        $pubDate    = $this->getArg('pubDate');
+        $language   = $this->getArg('language');
+        $pageNumber = $this->getArg('page', 1);
         
+        // Sanity check arguments
+        if ($pageNumber < 1) { $pageNumber = 1; }
+        if ($location == 'any' || $location == 'all') { $location = ''; }
+        if ($format   == 'any' || $format   == 'all') { $format   = ''; } 
+        if ($pubDate  == 'any' || $pubDate  == 'all') { $pubDate  = ''; } 
+        
+        $firstIndex = 1;
+        $lastIndex = 1;
+        $totalCount = 0;
+        $pageSize = 0;
+        $pageCount = 0;
         $results = array();
-        if ($searchTerms) {
+        if ($q || $keywords || $title || $author) {
           $results = array();
-          $data = Libraries::searchItems($searchTerms, $locationTerm, $formatTerm);
+          $data = Libraries::searchItems(array(
+            'q'        => $q, 
+            'keywords' => $keywords, 
+            'title'    => $title,
+            'author'   => $author,
+            'location' => $location, 
+            'format'   => $format, 
+            'pubDate'  => $pubDate, 
+            'language' => $language,
+          ), $pageNumber);
           //error_log(print_r($data, true));
-        
-          foreach ($data as $entry) {
-            $results[] = $this->getItemDetails($entry);
+          
+          if (count($data['items'])) {
+            $totalCount = $data['total'];
+            $firstIndex = $data['start'];
+            $lastIndex  = $data['end'];
+            $pageSize   = $data['pagesize'];            
+            $pageCount  = ceil($totalCount / $pageSize);
+          }
+          foreach ($data['items'] as $item) {
+            $results[] = $this->getItemDetails($item);
           }
         }
+
+        $prevURL = '';
+        $nextURL = '';
+        if ($pageNumber > 1) {
+          $args = $this->args;
+          $args['page'] = $pageNumber-1;
+          $prevURL = $this->buildBreadcrumbURL($this->page, $args, false);
+        }
+        if ($pageNumber < $pageCount) {
+          $args = $this->args;
+          $args['page'] = $pageNumber+1;
+          $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
+        }
         
-        $this->assign('keywords',    $keywords);
+        $this->assign('keywords',    implode(' ', array($keywords, $q)));
         $this->assign('title',       $title);
         $this->assign('author',      $author);
-        $this->assign('location',    $this->getArg('location'));
-        $this->assign('format',      $this->getArg('format'));
+        $this->assign('location',    $location);
+        $this->assign('format',      $format);
+        $this->assign('pubDate',     $pubDate);
+        $this->assign('language',    $language);
+        
         $this->assign('locations',   $locations);
         $this->assign('formats',     $formats);
-        $this->assign('resultCount', count($results));
+        $this->assign('pubDates',    $pubDates);
+        
         $this->assign('results',     $results);
+        $this->assign('firstIndex',  $firstIndex);
+        $this->assign('lastIndex',   $lastIndex);
+        $this->assign('totalCount',  $totalCount);
+        
+        $this->assign('pageNumber',  $pageNumber);
+        $this->assign('pageCount',   $pageCount);
+        $this->assign('pageSize',    $pageSize);
+        $this->assign('prevURL',     $prevURL);
+        $this->assign('nextURL',     $nextURL);
         break;
 
       case 'bookmarks':
@@ -597,28 +717,28 @@ class LibrariesModule extends Module {
           foreach ($bookmarks as $id) {
             if ($type == 'library') {
               if (!isset($libraries)) {
-                $libraries = Libraries::getAllLibraries();
+                $libraries = Libraries::getLibraries();
               }
               
               foreach ($libraries as $entry) {
                 if ($entry['id'] == $id) {
                   $results[] = array(
-                    'title' => $this->formatDetail($entry, 'primaryName'),
-                    'url' => $this->locationAndHoursURL('library', $entry['id'], $entry['primaryName']),
+                    'title' => $this->formatDetail($entry, 'primaryname'),
+                    'url'   => $this->locationAndHoursURL('library', $entry['id'], $entry['primaryname']),
                   );
                   break;
                 }
               }
             } else if ($type == 'archive') {
               if (!isset($archives)) {
-                $archives = Libraries::getAllArchives();
+                $archives = Libraries::getArchives();
               }
               
               foreach ($archives as $entry) {
                 if ($entry['id'] == $id) {
                   $results[] = array(
-                    'title' => $this->formatDetail($entry, 'primaryName'),
-                    'url' => $this->locationAndHoursURL('archive', $entry['id'], $entry['primaryName']),
+                    'title' => $this->formatDetail($entry, 'primaryname'),
+                    'url'   => $this->locationAndHoursURL('archive', $entry['id'], $entry['primaryname']),
                   );
                   break;
                 }
@@ -632,36 +752,90 @@ class LibrariesModule extends Module {
           }
         }
         
+        // Index the items for bookmark display (currently used by items only)
+        foreach ($results as $i => $result) {
+          $results[$i]['index'] = $i+1;
+        }
+        
+        //error_log(print_r($results, true));
+        
         $this->assign('bookmarkType', $type);
         $this->assign('results', $results);
         break;
         
       case 'libraries':
-        $openOnly = $this->getArg('openOnly', false) ? true : false;
-        $openNowToggleURL = $this->buildBreadcrumbURL($this->page, 
-          $openOnly ? array() : array('openOnly' => 'true'), false);// toggle
+        $range = $this->getArg('range');
+        $printableRange = implode(' - ', explode('-', $range));
+        
+        if ($range && $this->pagetype == 'basic') {
+          $this->setPageTitle($this->getPageTitle()." ($printableRange)");
+          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($printableRange)");
+          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($printableRange)");
+        }
+        
+        $openOnly = $this->getArg('openOnly', 0) ? true : false;
         
         $data = Libraries::getOpenNow();
         //error_log(print_r($data, true));
         
         $libraries = array();
         foreach ($data as $entry) {
-          if (!isset($libraries[$entry['name']]) && (!$openOnly || $entry['isOpenNow'] == 'YES')) {
+          if (!isset($libraries[$entry['name']]) && (!$openOnly || $entry['isOpenNow'])) {
             $libraries[$entry['name']] = array(
               'title' => $this->formatDetail($entry, 'name'),
-              'url' => $this->locationAndHoursURL('library', $entry['id'], $entry['name']),
+              'url'   => $this->locationAndHoursURL('library', $entry['id'], $entry['name']),
             );
           }
         }
         ksort($libraries);
         
+        $entries = array();
+
+        if ($this->pagetype == 'basic' && count($libraries) > 20) {
+          $entries = $this->filterByLetterRange($libraries, $range);
+          
+          if ($entries === false) {
+            $groups = $this->groupByFirstLetterRange($libraries, 20);
+            
+            $entries = array();
+            foreach ($groups as $groupRange => $group) {
+              $args = $this->args;
+              $args['range'] = $groupRange;
+              $printableRange = implode(' - ', explode('-', $groupRange));
+              
+              $entries[] = array(
+                'title' => $printableRange,
+                'url' => $this->buildBreadcrumbURL($this->page, $args),
+              );
+            }
+          }
+        } else {
+          $entries = $libraries;
+        }
+        
+        $toggleOpenArgs = $this->args;
+        if ($openOnly) {
+          unset($toggleOpenArgs['openOnly']);
+        } else {
+          $toggleOpenArgs['openOnly'] = 1;
+        }
+        
         $this->assign('openOnly',         $openOnly);
-        $this->assign('openNowToggleURL', $openNowToggleURL);
-        $this->assign('libraries',        $libraries);
+        $this->assign('openNowToggleURL', $this->buildURL($this->page, $toggleOpenArgs, false));
+        $this->assign('entries',          $entries);
         break;
         
       case 'archives':
-        $data = Libraries::getAllArchives();
+        $range = $this->getArg('range');
+        $printableRange = implode(' - ', explode('-', $range));
+
+        if ($range && $this->pagetype == 'basic') {
+          $this->setPageTitle($this->getPageTitle()." ($printableRange)");
+          $this->setBreadcrumbTitle($this->getBreadcrumbTitle()." ($printableRange)");
+          $this->setBreadcrumbLongTitle($this->getBreadcrumbLongTitle()." ($printableRange)");
+        }
+
+        $data = Libraries::getArchives();
         //error_log(print_r($data, true));
         
         $archives = array();
@@ -669,13 +843,37 @@ class LibrariesModule extends Module {
           if (!isset($archives[$entry['name']])) {
             $archives[$entry['name']] = array(
               'title' => $this->formatDetail($entry, 'name'),
-              'url' => $this->locationAndHoursURL('archive', $entry['id'], $entry['name']),
+              'url'   => $this->locationAndHoursURL('archive', $entry['id'], $entry['name']),
             );
           }
         }
         ksort($archives);
 
-        $this->assign('archives', $archives);
+        $entries = array();
+        
+        if ($this->pagetype == 'basic' && count($archives) > 20) {
+          $entries = $this->filterByLetterRange($archives, $range);
+        
+          if ($entries === false) {
+            $groups = $this->groupByFirstLetterRange($archives, 20);
+            
+            $entries = array();
+            foreach ($groups as $range => $group) {
+              $printableRange = implode(' - ', explode('-', $range));
+              
+              $entries[] = array(
+                'title' => $printableRange,
+                'url' => $this->buildBreadcrumbURL($this->page, array(
+                  'range' => $range
+                )),
+              );
+            }
+          }
+        } else {
+          $entries = $archives;
+        }
+
+        $this->assign('entries', $entries);
         break;
         
       case 'locationAndHours':        
@@ -701,16 +899,25 @@ class LibrariesModule extends Module {
           }
           $info['hours'][] = array(
             'label' => null,
-            'title' => "Full week's schedule",
+            'title' => "7-day schedule",
             'url'   => $this->fullHoursURL($type, $id, $name),            
           );
           $info['hours'] = array_values($info['hours']);
           
         } else if (strlen($data['hoursOfOperationString'])) {
-          $info['hours'][] = array(
-            'label' => 'Hours',
-            'title' => $data['hoursOfOperationString'],
-          );
+          if (strpos($data['hoursOfOperationString'], 'http') !== 0) {
+            $info['hours'][] = array(
+              'label' => 'Hours',
+              'title' => $data['hoursOfOperationString'],
+            );
+          } else {
+            $info['hours'][] = array(
+              'label' => 'Hours',
+              'title' => 'See website',
+              'url'   => $data['hoursOfOperationString'],
+              'class' => 'external',
+            );
+         }
         }
         if (!count($info['hours'])) {
           unset($info['hours']);
@@ -718,23 +925,28 @@ class LibrariesModule extends Module {
         
         $info['directions'] = array();
         if ($data['address']) {
-          $info['directions'][] = array(
+          $location = array(
             'label' => 'Location',
             'title' => $this->formatDetail($data, 'address'),
-            'url'   => $this->mapURL($type, $id, $name),
             'class' => 'map',
           );
+          if ($data['latitude'] && $data['longitude']) {
+            $location['url'] = $this->mapURL($type, $id, $name);
+          }
+          $info['directions'][] = $location;
         }
         if ($data['directions']) {
           $directions = trim($data['directions']);
           
           $entry = array(
             'label' => 'Directions',
-            'title' => $this->formatDetail($directions),
           );
           if (strpos($directions, 'http') === 0) {
+            $entry['title'] = 'See website';
             $entry['url'] = $directions;
             $entry['class'] = 'external';
+          } else {
+            $entry['title'] = $this->formatDetail($directions);
           }
           
           $info['directions'][] = $entry;
@@ -785,7 +997,7 @@ class LibrariesModule extends Module {
           'fullName'     => $this->formatDetail($data, 'primaryname'),
           'type'         => $type,
           'bookmarked'   => $this->isBookmarked($type, $id),
-          'cookie'       => LIBRARY_LOCATIONS_COOKIE,
+          'cookie'       => self::$typeToCookie[$type],
           'infoSections' => $info,
         );
         
@@ -823,7 +1035,7 @@ class LibrariesModule extends Module {
           'fullName'   => $this->formatDetail($data, 'primaryname'),
           'type'       => $type,
           'bookmarked' => $this->isBookmarked($type, $id),
-          'cookie'     => LIBRARY_LOCATIONS_COOKIE,
+          'cookie'     => self::$typeToCookie[$type],
           'hours'      => $hours,
         );
         
@@ -839,15 +1051,16 @@ class LibrariesModule extends Module {
         
         switch ($this->pagetype) {
           case 'compliant':
-            $imageWidth = 290; $imageHeight = 300;
-            break;
-          
-          case 'basic':
             if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
               $imageWidth = 410; $imageHeight = 360;
             } else {
-              $imageWidth = 200; $imageHeight = 200;
+              $imageWidth = 290; $imageHeight = 300;
             }
+            break;
+          
+          case 'touch':
+          case 'basic':
+            $imageWidth = 200; $imageHeight = 200;
             break;
         }
         
@@ -855,6 +1068,7 @@ class LibrariesModule extends Module {
         $this->assign('imageHeight', $imageHeight);
         
         $imgSrc = $GLOBALS['siteConfig']->getVar('GOOGLE_STATIC_MAPS_URL').http_build_query(array(
+          'zoom'    => 15,
           'sensor'  => 'false',
           'size'    => "{$imageWidth}x{$imageHeight}",
           'markers' => "color:0xb12727|{$data['latitude']},{$data['longitude']}",
@@ -866,7 +1080,7 @@ class LibrariesModule extends Module {
           'fullName'   => $this->formatDetail($data, 'primaryname'),
           'type'       => $type,
           'bookmarked' => $this->isBookmarked($type, $id),
-          'cookie'     => LIBRARY_LOCATIONS_COOKIE,
+          'cookie'     => self::$typeToCookie[$type],
           'imgSrc'     => $imgSrc,
         );
         

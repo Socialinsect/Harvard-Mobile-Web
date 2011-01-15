@@ -37,7 +37,7 @@ class WhatsNew extends RSS {
 
   public static function setLastTime() {
     // expires 160 days from now
-    setcookie("whatsnewtime", time(), time() + self::$cookie_timeout*24*60*60, "/");
+    setcookie("whatsnewtime", time(), time() + self::$cookie_timeout*24*60*60, COOKIE_PATH);
   }
 
   public function getTopItemName() {

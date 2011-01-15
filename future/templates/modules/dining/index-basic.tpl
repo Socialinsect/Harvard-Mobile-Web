@@ -26,23 +26,27 @@
   </p>
 {/block}
 
-{block name="locationPane"}
+{block name="locationStatusImageDetails"}
+  {$statusImages[$status]['src']    = $statusImages[$status]['src']|cat:".gif"}
+  {$statusImages[$status]['height'] = "13"}
+  {$statusImages[$status]['width']  = "13"}
+{/block}
+
+{block name="locationStatusKeys"}
   <p class="iconlegend"></p>
   {foreach $statusImages as $statusImage}
     <p>
-      <img src="/modules/{$moduleID}/images/{$statusImage['src']}.gif" width="13" height="13" alt="{$statusImage['alt']}"/>
+      <img src="/modules/{$moduleID}/images/{$statusImage['src']}" width="{$statusImage['height']}" height="{$statusImage['width']}" alt="{$statusImage['alt']}"/>
       {$statusImage['title']}&nbsp;
     </p>    
   {/foreach}
-    
-  <p class="fineprint">
-    Harvard student ID required. Schedule shown does not account for holidays and other closures.
-  </p>
-  
+{/block}
+
+{block name="locationDiningStatuses"}  
   {foreach $diningStatuses as $diningStatus}
     {$statusImage = $statusImages[$diningStatus['status']]}
     <p>
-      <img src="/modules/{$moduleID}/images/{$statusImage['src']}.gif" width="13" height="13" alt="{$statusImage['alt']}"/>
+      <img src="/modules/{$moduleID}/images/{$statusImage['src']}" width="{$statusImage['height']}" height="{$statusImage['width']}" alt="{$statusImage['alt']}"/>
       <a class="dininghall {$diningStatus['status']}" href="{$diningStatus['url']}">
         {$diningStatus['name']}
       </a><span class="smallprint">: {$diningStatus['summary']}</span>

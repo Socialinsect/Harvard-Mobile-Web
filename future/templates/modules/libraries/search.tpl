@@ -1,10 +1,10 @@
 {include file="findInclude:common/header.tpl" scalable=false}
 
-{if $resultCount > 0}
+{if $totalCount > 0}
   <div class="nonfocal">
     <p>
-      {$resultCount} match{if $resultCount != 1}es{/if} found
-      {if $resultCount > 2} 
+      {$totalCount} match{if $totalCount != 1}es{/if} found
+      {if $totalCount > 2} 
         (<a href="#search">refine search</a>)
       {/if}
     </p>

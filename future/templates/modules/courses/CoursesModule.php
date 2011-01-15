@@ -63,7 +63,7 @@ class CoursesModule extends Module {
   }
   
   private function setMyClasses($classes) {
-    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MYCOURSES_EXPIRE_TIME);
+    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MYCOURSES_EXPIRE_TIME, COOKIE_PATH);
   }
   
   private function coursesURL($school, $addBreadcrumb=true) {
@@ -106,6 +106,13 @@ class CoursesModule extends Module {
     }        
     
     return $listItems;
+  }
+
+  private function formatDetails($string) {
+    return str_replace(
+      array('-',      '@'),
+      array('-&shy;', '@&shy;'),
+      $string);
   }
 
   private function courseURL($course, $courseShort, $school, $schoolShort, $addBreadcrumb=true) {
@@ -182,19 +189,16 @@ class CoursesModule extends Module {
         $schoolsInfo = CourseData::get_schoolsAndCourses();
         $schools = array();
         foreach ($schoolsInfo as $schoolInfo) {
-          $courses   = $schoolInfo->courses;
-          $name      = $schoolInfo->school_name;
-          $shortName = $schoolInfo->school_name_short;
+          $courses   = $schoolInfo['courses'];
+          $name      = $schoolInfo['school_name'];
+          $shortName = $schoolInfo['school_name_short'];
         
           $school = array(
-            'title' => $schoolInfo->school_name_short
+            'title' => $schoolInfo['school_name_short']
           );
-          if (!count($courses)) {
+          if (count($courses) < 2) {
             $school['url'] = $this->courseURL($name, $shortName, $name, $shortName);
               
-          } else if (count($courses) == 1 && $courses[0]->name == $shortName) {
-            $school['url'] = $this->courseURL($courses[0]->name, $shortName, $name, $shortName);
-            
           } else {
             $school['url'] = $this->coursesURL($name);
           }
@@ -212,9 +216,9 @@ class CoursesModule extends Module {
         $schoolNameShort = '';
         $coursesInfo = array();
         foreach($schoolsInfo as $schoolInfo) {
-          if ($schoolInfo->school_name == $schoolName) {
-            $coursesInfo = $schoolInfo->courses;
-            $schoolNameShort = $schoolInfo->school_name_short;
+          if ($schoolInfo['school_name'] == $schoolName) {
+            $coursesInfo = $schoolInfo['courses'];
+            $schoolNameShort = $schoolInfo['school_name_short'];
             break;
           }
         }
@@ -222,12 +226,7 @@ class CoursesModule extends Module {
         $this->setBreadcrumbTitle($schoolNameShort);
 
         $courses = array();
-        foreach ($coursesInfo as $courseInfo) {
-          $courseName = $courseInfo->name;
-          if (!strlen($courseName)) {
-            $courseName = $schoolNameShort.'-other';
-          }
-          
+        foreach ($coursesInfo as $courseName) {
           $courses[] = array(
             'title' => $courseName,
             'url'   => $this->courseURL($courseName, $courseName, $schoolName, $schoolNameShort),
@@ -251,16 +250,20 @@ class CoursesModule extends Module {
         
         $this->setBreadcrumbTitle($courseNameShort);
 
-        $classes = CourseData::get_subjectsForCourse(str_replace('-other', '', $courseName), $schoolName);
+        $classes = CourseData::get_subjectsForCourse($courseName, $schoolName);
+
+        $extraSearchArgs = array(
+          'school'      => $schoolName,
+          'schoolShort' => $schoolNameShort,
+        );
+        if ($courseName && $schoolName != $courseName) {
+          $extraSearchArgs['course']      = $courseName;
+          $extraSearchArgs['courseShort'] = $courseNameShort;
+        }
 
         $this->assign('classes',         $this->getClassListItems($classes));
         $this->assign('courseNameShort', $courseNameShort);
-        $this->assign('extraSearchArgs', array(
-          'school'      => $schoolName,
-          'schoolShort' => $schoolNameShort,
-          'course'      => $courseName,
-          'courseShort' => $courseNameShort,
-        ));
+        $this->assign('extraSearchArgs', $extraSearchArgs);
         break;
         
       case 'searchCourses':
@@ -321,15 +324,19 @@ class CoursesModule extends Module {
         $count = $data['count'];
         $classes = isset($data['classes']) ? $data['classes'] : array();
 
-        $this->assign('shortName',   $shortName);
-        $this->assign('classes',     $this->getClassListItems($classes));
-        $this->assign('searchTerms', $searchTerms);
-        $this->assign('extraSearchArgs', array(
+        $extraSearchArgs = array(
           'school'      => $schoolName,
           'schoolShort' => $schoolNameShort,
-          'course'      => $courseName,
-          'courseShort' => $courseNameShort,
-        ));
+        );
+        if ($courseName && $schoolName != $courseName) {
+          $extraSearchArgs['course']      = $courseName;
+          $extraSearchArgs['courseShort'] = $courseNameShort;
+        }
+
+        $this->assign('shortName',       $shortName);
+        $this->assign('classes',         $this->getClassListItems($classes));
+        $this->assign('searchTerms',     $searchTerms);
+        $this->assign('extraSearchArgs', $extraSearchArgs);
         break;
         
       case 'detail':
@@ -356,17 +363,23 @@ class CoursesModule extends Module {
           } else if ($this->args['action'] == 'remove') {
             if ($isInMyClasses) {
               array_splice($myClassTags, array_search($classTag, $myClassTags), 1);
-            } else {
-              foreach ($myClassTags as $item) {
-                if (strpos($item, $classId) !== false) {
-                  array_splice($myClassTags, array_search($item, $myClassTags), 1);
-                }
+            }
+            // Also remove any from other terms
+            foreach ($myClassTags as $item) {
+              if (strpos($item, $classId) !== false) {
+                array_splice($myClassTags, array_search($item, $myClassTags), 1);
               }
             }
           }
           $this->setMyClasses($myClassTags);
-          $this->redirectTo($this->page, $this->args);
+          $this->redirectTo($this->page, array(
+            'class'  => $classId,
+          ));
         }
+        $toggleMyClassesURL = $this->buildBreadcrumbURL($this->page, array(
+          'class'  => $classId,
+          'action' => $isInMyClasses ? 'remove' : 'add',
+        ), false);
         
         // Info
         $meetingTimes = $classInfo['meeting_times'];
@@ -375,20 +388,20 @@ class CoursesModule extends Module {
         if ($meetingTimes->parseSucceeded()) {
           foreach ($meetingTimes->all() as $meetingTime) {
             $time = array(
-              'days' => $meetingTime->daysText(),
-              'time' => $meetingTime->timeText(),
+              'days' => $this->formatDetails($meetingTime->daysText()),
+              'time' => $this->formatDetails($meetingTime->timeText()),
             );
             
             if ($meetingTime->isLocationKnown()) {
-              $time['location'] = $meetingTime->locationText();
+              $time['location'] = $this->formatDetails($meetingTime->locationText());
               $time['url'] = $this->mapURLForClassTime($meetingTime->locationText());
             }
             $times[] = $time;
           }
         } else {
           $times[] = array(
-            'days' => $meetingTimes->rawTimesText(),
-            'time' => $meetingTimes->rawLocationsText(),
+            'days' => $this->formatDetails($meetingTimes->rawTimesText()),
+            'time' => $this->formatDetails($meetingTimes->rawLocationsText()),
           );
         }
         
@@ -397,8 +410,8 @@ class CoursesModule extends Module {
         foreach ($infoFields['info'] as $field => $header) {
           if (isset($classInfo[$field]) && strlen($classInfo[$field])) {
             $infoItems[] = array(
-              'header'  => $header,
-              'content' => $classInfo[$field],
+              'header'  => $this->formatDetails($header),
+              'content' => $this->formatDetails($classInfo[$field]),
             );
           }
         }
@@ -409,25 +422,29 @@ class CoursesModule extends Module {
           $staff[$type] = array();
           foreach ($classInfo['staff'][$type] as $person) {
             $staff[$type][] = array(
-              'title' => $person,
+              'title' => $this->formatDetails($person),
               'url'   => $this->personURL($person),
             );
           }
         }
         
-        $this->assign('term',          $termId);
-        $this->assign('classId',       $classId);
-        $this->assign('className',     $classInfo['name']);
-        $this->assign('classTitle',    $classInfo['title']);
-        $this->assign('classUrl',      self::argVal($classInfo, 'url', ''));
-        $this->assign('times',         $times);
-        $this->assign('infoItems',     $infoItems);
-        $this->assign('staff',         $staff);
-        $this->assign('isInMyClasses', $isInMyClasses);
+        $this->assign('term',               $termId);
+        $this->assign('classId',            $classId);
+        $this->assign('className',          $this->formatDetails($classInfo['name']));
+        $this->assign('classTitle',         $this->formatDetails($classInfo['title']));
+        $this->assign('classUrl',           self::argVal($classInfo, 'url', ''));
+        $this->assign('times',              $times);
+        $this->assign('infoItems',          $infoItems);
+        $this->assign('staff',              $staff);
+        $this->assign('isInMyClasses',      $isInMyClasses);
+        $this->assign('toggleMyClassesURL', $toggleMyClassesURL);
         
         $this->enableTabs(array('info', 'staff'));
         
-        $this->addInlineJavascript('var MY_CLASSES_COOKIE = "'.MY_CLASSES_COOKIE.'";');
+        $this->addInlineJavascript(
+          'var MY_CLASSES_COOKIE = "'.MY_CLASSES_COOKIE.'";'.
+          'var COOKIE_PATH = "'.COOKIE_PATH.'";'
+        );
         break;
     }
   }

@@ -61,6 +61,19 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
     }
   }
 
+} else if (preg_match(';^.*'.ImageLoader::imageDir().'/(.+)$;', $path, $matches)) {
+  //
+  // Autoloaded Images
+  //
+  
+  $fullPath = ImageLoader::load($matches[1]);
+  
+  if ($fullPath) {
+    header('Content-type: '.mime_type($fullPath));
+    echo file_get_contents($fullPath);
+    exit;
+  }
+
 } else if (preg_match(';^.*media/(.*)$;', $path, $matches)) {
   //
   // Media

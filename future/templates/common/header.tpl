@@ -61,6 +61,10 @@
     {/if}
   {/block}
   
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="viewport" id="viewport" 
+    content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no, initial-scale=1.0, maximum-scale=1.0{/if}" />
+  <link rel="apple-touch-icon" href="/common/images/icon-{$moduleID}.png" />
   {block name="additionalHeadTags"}{/block}
 </head>
 
@@ -69,7 +73,7 @@
     {if !$isModuleHome}
       {if $moduleID != 'home'}
         <a href="./" class="module">
-          <img src="/common/images/title-{$navImageID|default:$moduleID}.png"   width="28" height="28" alt="" />
+          <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" />
         </a>
       {/if}
       {foreach $breadcrumbs as $breadcrumb}
@@ -79,15 +83,15 @@
           {if !$breadcrumb@last}
             {$crumbClass = 'crumb2a'}
           {else}
-            {assign var=crumbClass value='crumb2b'}                
+            {assign var=crumbClass value='crumb2b'}
           {/if}
         {elseif count($breadcrumbs) > 2}
           {if $breadcrumb@last}
             {$crumbClass = 'crumb3c'}
           {elseif $breadcrumb@index == ($breadcrumb@total-2)}
-            {assign var=crumbClass value='crumb3b'}                
+            {assign var=crumbClass value='crumb3b'}
           {else}
-            {assign var=crumbClass value='crumb3a'}                
+            {assign var=crumbClass value='crumb3a'}
           {/if}
           
         {/if}
@@ -104,7 +108,7 @@
   {if isset($customHeader)}
     {$customHeader|default:''}
   {else}
-    {block name="header"}
+    {block name="navbar"}
       <div id="navbar"{if $hasHelp} class="helpon"{/if}>
         <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
           <a name="top" href="/home/" class="homelink">

@@ -78,6 +78,105 @@ class GazetteRSScontroller extends RSSDataController
         $items = $this->items();
         return $items;   
     }
+
+    public function getRSSItems($startIndex=0, $limit=null)
+    {
+        $data = $this->getData();
+
+        if ($limit>0) {
+            $endIndex = $startIndex + $limit;
+        } else {
+            $endIndex = PHP_INT_MAX;
+        }
+        
+        $dom = new DomDocument();
+        $dom->loadXML($this->getData());
+        $items = $dom->getElementsByTagName('item');
+        $totalCount = $items->length;
+        $nodesToRemove = array();
+        
+        for ($i = 0; $i < $items->length; $i++) {
+            $item = $items->item($i);
+            if ( ($i < $startIndex) || ($i >= $endIndex)) {
+                $nodesToRemove[] = $item;
+            } else {
+                // translate enclosures to image tags for API compatibility
+                $content = $item->getElementsByTagName('encoded')->item(0);
+                $contentValue = $content->nodeValue;
+                $contentHTML = new DOMDocument();
+                $contentHTML->loadHTML('<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head>'.$contentValue);
+                
+                foreach ($contentHTML->getElementsByTagName('img') as $img) {
+                  if ($img->getAttribute('width') == '1') {
+                    $img->parentNode->removeChild($img);
+                    continue;
+                  }
+                  
+                  $newSrc = GazetteRSSEnclosure::getImageLoaderURL($img->getAttribute('src'), $w, $h);
+                  if ($newSrc) {
+                    $img->setAttribute('src', $newSrc);
+                    $img->setAttribute('width', 300);
+                    $img->setAttribute('height', 'auto');
+        
+                  } else {
+                    $img->parentNode->removeChild($img);
+                  }
+                }
+                $newContent = $dom->createCDATASection($contentHTML->saveHTML());
+                $content->replaceChild($newContent, $content->firstChild);
+                
+                // translate enclosures to image tags for API compatibility
+                $enclosures = $item->getElementsByTagName('enclosure');
+                foreach ($enclosures as $enclosure) {
+                    $type = $enclosure->getAttributeNode('type')->value;
+                    if (strpos($type, 'image/') === FALSE) { continue; }
+                    
+                    $url = $enclosure->getAttributeNode('url')->value;
+                    $width = 0;
+                    $height = 0;
+                    
+                    $url = GazetteRSSEnclosure::getImageLoaderURL($url, $width, $height);
+                    
+                    /* only send real images */
+                    if ($width > 1 && $height > 1) {
+                        $enclosure->setAttributeNode(new DOMAttr('url', $url));
+                        $image = $dom->createElement('image');
+                        $image_url = $dom->createElement('url', $url);
+                        $image->appendChild($image_url);
+                        $item->appendChild($image);
+                    }
+                }
+            }
+        }
+        
+        foreach ($nodesToRemove as $item) {
+            $item->parentNode->removeChild($item);
+        }
+        
+        // iPhone expects this items attr to be set on the channel
+        $channels = $dom->getElementsByTagName('channel');
+        $channels->item(0)->setAttributeNode(new DOMAttr('items', $totalCount));
+        
+        return $dom->saveXML();
+    }
+
+    public function getIndexForItem($id)
+    {
+        if (!$id) {
+            return null;
+        }
+        
+        $items = $this->items();
+        
+        for ($i=0; $i < count($items); $i++) {
+            $item = $items[$i];
+            if ($item->getGUID()==$id || $item->getProperty('HARVARD:WPID')==$id) {
+                return $i;
+            }
+        }
+                
+        return null;
+    }
 }
 
 class GazetteRSSItem extends RSSItem
@@ -106,8 +205,16 @@ class GazetteRSSItem extends RSSItem
 
 class GazetteRSSEnclosure extends RSSEnclosure
 {
-    protected $width;
-    protected $height;
+    protected $width = null;
+    protected $height = null;
+    
+    public function __construct($attribs) {
+        parent::__construct($attribs);
+      
+        if ($this->isImage()) {
+          $this->url = self::getImageLoaderURL($this->url, $this->width, $this->height);
+        }
+    }
     
     protected function standardAttributes()
     {
@@ -119,65 +226,41 @@ class GazetteRSSEnclosure extends RSSEnclosure
 
     public function getHeight()
     {
-        if ($this->cacheImage()) {
-            return $this->height;
-        }
-        
-        return null;
+        return $this->height;
     }
 
     public function getWidth()
     {
-        if ($this->cacheImage()) {
-            return $this->height;
+        return $this->height;
+    }
+
+    public static function getImageLoaderURL($url, &$width, &$height) {
+        if ($url && strpos($url, '/photo-placeholder.gif') !== FALSE) {
+            $url = ''; // skip empty placeholder image 
         }
         
-        return null;
-    }
-    
-    private function cacheFilename()
-    {
-        return md5($this->url);
-    }
-
-    protected function cacheFolder()
-    {
-        return CACHE_DIR . "/GazetteImages";
-    }
-    
-    protected function cacheLifespan()
-    {
-        return $GLOBALS['siteConfig']->getVar('GAZETTE_NEWS_IMAGE_CACHE_LIFESPAN');
-    }
-
-    protected function cacheFileSuffix()
-    {
-        $extension = pathinfo($this->url, PATHINFO_EXTENSION);
-        return $extension ? '.' . $extension : '';
-    }
-
-    private function cacheImage()
-    {
-        if (!$this->url) {
-            return;
-        }
-        
-        $cacheFilename = $this->cacheFilename();
-        $cache = new DiskCache($this->cacheFolder(), $this->cacheLifespan(), TRUE);
-        $cache->setSuffix($this->cacheFileSuffix());
-        $cache->preserveFormat();
-        
-        if (!$cache->isFresh($cacheFilename)) {
-            if ($data = file_get_contents($this->url)) {
-                $cache->write($data, $cacheFilename);
+        if ($url) {
+            switch ($GLOBALS['deviceClassifier']->getPagetype()) {
+                case 'compliant':
+                    $width = 140;
+                    $height = 140;
+                    break;
+                
+                case 'basic':
+                case 'touch':
+                default:
+                    $width = 70;
+                    $height = 70;
+                    break;
             }
+          
+            $extension = pathinfo($url, PATHINFO_EXTENSION);
+            if ($extension) { $extension = ".$extension"; }
+  
+            $url = ImageLoader::precache($url, $width, $height, 'Gazette_'.md5($url).$extension);
         }
-
-        if ($image_size = getimagesize($cache->getFullPath($cacheFilename))) {
-            $this->width = intval($image_size[0]);
-            $this->height = intval($image_size[1]);
-            return true;
-        }
+        
+        return $url;
     }
 }
 

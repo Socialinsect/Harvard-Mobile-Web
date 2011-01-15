@@ -1,12 +1,19 @@
 <?php
 
+/****************************************************************
+ *
+ *  Copyright 2010 The President and Fellows of Harvard College
+ *  Copyright 2010 Modo Labs Inc.
+ *
+ *****************************************************************/
+
+require_once realpath(LIB_DIR.'/api.php');
 require_once realpath(LIB_DIR.'/TransitDataParser.php');
 
 
 $data = array();
-$command = $_REQUEST['command'];
 
-error_log("COMMAND {$_SERVER['REQUEST_URI']}");
+$command = apiGetArg('command');
 
 switch ($command) {
   case 'about':
@@ -16,11 +23,11 @@ switch ($command) {
       exitWithError("Missing configuration file '/feeds/transit-info.ini'");
     }
     
-    $type = ($command == 'calendar') ? 'calendar' : $_REQUEST['agency'];
+    $type = ($command == 'calendar') ? 'calendar' : apiGetArg('agency');
 
     $infoConfig = parse_ini_file($feedConfigFile, true);
     if (!isset($infoConfig[$type])) {
-      exitWithError("unknown agency '{$_REQUEST['agency']}'");
+      exitWithError("unknown agency '$type'");
     }
     
     $data['html'] = $infoConfig[$type];
@@ -29,7 +36,7 @@ switch ($command) {
   case 'stopInfo':
     $view = initTransitDataView();
 
-    $stopID = $_REQUEST['id'];
+    $stopID = apiGetArg('id');
     $time = time();
     
     $stopInfo = $view->getStopInfo($stopID);
@@ -71,8 +78,8 @@ switch ($command) {
     break;
   
   case 'routeInfo':
-    $routeID = $_REQUEST['id'];
-    $addPath = isset($_REQUEST['full']) && $_REQUEST['full'] == 'true';
+    $routeID = apiGetArg('id');
+    $addPath = apiGetArg('full') == 'true';
     
     $time = time();
     if ($routeID) {
@@ -82,6 +89,9 @@ switch ($command) {
       $data = formatRouteInfo($routeID, $routeInfo);
 
       $vehicles = $view->getRouteVehicles($routeID);
+      foreach($vehicles as $id => $vehicle) {
+        $vehicles[$id]['id'] = $id;
+      }
       $data['vehicleLocations'] = array_values($vehicles);
 
       $stops = array();
@@ -128,8 +138,8 @@ switch ($command) {
     $data = array('error' => "could not perform $command");
     
     if ($sub = APNSSubscriber::create()) {
-      $routeID = $_REQUEST['route'];
-      $stopID = $_REQUEST['stop'];
+      $routeID = apiGetArg('route');
+      $stopID = apiGetArg('stop');
       $params = Array(
         'route_id' => $routeID,
         'stop_id'  => $stopID,
@@ -145,7 +155,7 @@ switch ($command) {
           exitWithError("failed to unsubscribe notification for route $routeID, stop $stopID");
         }
       } else {
-        $requestTime = isset($_REQUEST['time']) ? intval($_REQUEST['time']) : time();
+        $requestTime = intval(apiGetArg('time', time()));
         $params['request_time'] = $requestTime;
         
         if ($sub->subscribe("ShuttleSubscription", $params)) {
@@ -208,8 +218,8 @@ function formatRouteInfo($routeID, $routeInfo) {
   if (isset($routeInfo['stopIconUrl'])) {
     $result['stopMarkerUrl'] = $routeInfo['stopIconUrl'];
   }
-  if (isset($routeInfo['genericIconUrl'])) {
-    $result['vehicleIconUrl'] = $routeInfo['vehicleIconUrl'];
+  if (isset($routeInfo['vehicleIconUrl'])) {
+    $result['genericIconUrl'] = $routeInfo['vehicleIconUrl'];
   }
   return $result;
 }

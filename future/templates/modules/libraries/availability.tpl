@@ -7,6 +7,7 @@
         <img class="infoLink" src="/common/images/info_button@2x.png" alt="get info" width="44" height="38" />
       </a>
       {$location['name']}
+      {if $location['primaryname'] != $location['name']}<br/>({$location['primaryname']}){/if}
     </h2>
     <span class="distance">
       {if $location['hours'] && $location['hours'] != 'closed'}
@@ -19,56 +20,47 @@
 </div>
 
 {foreach $location['collections'] as $collection}
-  <div class="nonfocal">
+  <div class="nonfocal itemInfo">
     <h3>{$collection['name']}</h3>
-  {foreach $collection['items'] as $item}
-    {if !$item@first}<div class="focal">{/if}
-      {if $item['type'] != 'collection' || $collection['callNumber']}
-        <span class="smallprint">
-          {if $item['type'] != 'collection'}{$item['type']}{/if}
-          {if $item['type'] != 'collection' && $collection['callNumber']}<br/>{/if}
-          {if $collection['callNumber']}{$collection['callNumber']}{/if}
-        </span>
-      {/if}
+    {if $collection['callNumber']}<span class="smallprint">{$collection['callNumber']}</span><br/>{/if}
+  {foreach $collection['categories'] as $category}
+    {if !$category@first}<div class="nonfocal itemInfo">{/if}
+      {if $category['holdingStatus'] != 'collection'}<span class="smallprint">{$category['holdingStatus']}</span>{/if}
     </div>
     
     {$list = array()}
-    {foreach $item['types'] as $type => $info}
-      {if $type != 'collection'}
-        {$listItem = array()}
-        {capture name="title" assign="title"}
-          {if $type == 'available'}
-            {$class = 'available'}
-          {elseif $type == 'requestable'}
-            {$class = 'requestable'}
-          {else}
-            {$class = 'unavailable'}
-          {/if}
-          {block name="itemTitle"}
-            <span class="itemType {$class}">
-              {$info['count']}
-              {if $type == 'available'}
-                available
-              {elseif $type == 'collection'}
-                may be available
-              {elseif $info['status']}
-                {$info['status']}
-              {else}
-                {$type}
-              {/if}
-            </span>
-          {/block}
-        {/capture}
-        {$listItem['title'] = $title}
-        {if $info['url']}
-          {$listItem['url'] = $info['url']}
+    {foreach $category['items'] as $item}
+      {$listItem = array()}
+      {capture name="title" assign="title"}
+        {if $item['state'] == 'available'}
+          {$class = 'available'}
+        {elseif $item['state'] == 'requestable'}
+          {$class = 'requestable'}
+        {else}
+          {$class = 'unavailable'}
         {/if}
-        {$list[] = $listItem}
+        {block name="itemTitle"}
+          <span class="itemType {$class}">
+            {$item['count']} {$item['state']}
+            {if $item['secondaryStatus']}({$item['secondaryStatus']}){/if}
+          </span>
+          <span class="itemType"><span class="smallprint">
+            {if $item['callNumber']}{$item['callNumber']}{if $item['description']}<br/>{/if}{/if}
+            {if $item['description']}{$item['description']}{/if}
+          </span></span>
+        {/block}
+      {/capture}
+      {$listItem['title'] = $title}
+      {if $item['url']}
+        {$listItem['url'] = $item['url']}
       {/if}
+      {block name="extraItemInfo"}
+      {/block}
+      {$list[] = $listItem}
     {/foreach}
     {if count($list)}
       <div class="items">
-        {include file="findInclude:common/navlist.tpl" navlistItems=$list subTitleNewline=false accessKey=false}
+        {include file="findInclude:common/navlist.tpl" navlistItems=$list subTitleNewline=false accessKey=false labelColon=false}
       </div>
     {/if}
   {/foreach}

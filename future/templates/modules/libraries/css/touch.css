@@ -1,0 +1,168 @@
+.ellipsis_wrapper {
+  position: relative;
+  overflow: hidden;
+}
+.ellipsis {
+  font-size: 100%;
+  line-height: 1.176em;
+  overflow: hidden;
+  max-height: 41px;
+}
+#bookmark {
+	display: block;
+	width: 38px;
+	height: 33px;
+	overflow: hidden;
+	background-image: url(/common/images/bookmark.gif);
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	float: right;
+	margin: -3px -8px 0 0;
+	padding: 0 0 5px 5px;
+}
+
+#bookmark.bookmarked {
+	background-position: 0 -38px;
+}
+
+.itemType {
+  display: block;
+  padding-left: 18px;
+  background-position: left 2px;
+  background-repeat: no-repeat;
+  font-weight: normal;
+  line-height: 1.33em;
+}
+
+.distance {
+  font-size: 88.236%;
+  font-weight: normal;
+  line-height: 1.2em;
+}
+
+.items ul.nav {
+	margin: -4px 0.5em 1em 0.5em;
+}
+
+.available, .requestable, .unavailable {
+  margin-top: 2px;
+  margin-left: 0;
+  line-height: 1.33em;
+}
+.available {
+  background-image: url(/modules/libraries/images/available.gif);
+}
+.requestable {
+  background-image: url(/modules/libraries/images/requestable.gif);
+}
+.unavailable {
+  background-image: url(/modules/libraries/images/unavailable.gif);
+}
+
+.nav .wrapper {
+  display: inline-block;
+}
+
+.infoLink {
+  float: right;
+  margin: -5px -5px;
+}
+
+.listItems .smallprint > div {
+  padding-left: 22px;
+  background-position: left center;
+  background-repeat: no-repeat;
+  line-height: 20px;
+}
+.listItems .book {
+  background-image: url(/modules/libraries/images/book.gif);
+}
+.listItems .image {
+  background-image: url(/modules/libraries/images/image.gif);
+}
+.listItems .journal {
+  background-image: url(/modules/libraries/images/journal.gif);
+}
+.listItems .map {
+  background-image: url(/modules/libraries/images/map.gif);
+}
+.listItems .musicscore {
+  background-image: url(/modules/libraries/images/musicscore.gif);
+}
+.listItems .soundrecording {
+  background-image: url(/modules/libraries/images/soundrecording.gif);
+}
+.listItems .computerfile {
+  background-image: url(/modules/libraries/images/computerfile.gif);
+}
+.listItems .video {
+  background-image: url(/modules/libraries/images/video.gif);
+}
+
+table.search {
+  border: none;
+}
+table.search th, table.search td {
+  vertical-align: middle;
+  padding: 0px 0px 9px 0px;
+  font-size: 88.889%;
+}
+table.search th {
+  text-align: right;
+  font-weight: bold;
+  width: 5em;
+  padding-right: 2px;
+}
+table.search td.wrap div {
+  margin-right: 5px;  /* handle input padding */
+}
+
+table.search input[type=text], table.search select {
+  margin: 0;
+  width: 99.9%;
+  line-height: 22px;
+  font-size: 88.889%;
+}
+
+.value {
+  margin-left: 86px;
+}
+
+.thumbnail {
+  text-align: center;
+  padding-top: 10px;
+}
+.thumbnail a {
+  display: inline-block;
+  position: relative;
+  background-image: none;
+  padding: 0;
+  margin: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  line-height: normal;
+}
+.thumbnail a .smallprint,
+.thumbnail a:visited .smallprint {
+  text-decoration: underline;
+  color: #933;
+}
+
+.nav a.authorLink, .nav a.authorLink:visited {
+  display: inline;
+  color: #933;
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+  text-decoration: underline;
+  background: none;
+  border: none;
+}
+
+.itemInfo h3 {
+	margin-bottom: 1px;
+}
+
+.itemInfo, .itemInfo .smallprint {
+  line-height: 1.1em;
+}

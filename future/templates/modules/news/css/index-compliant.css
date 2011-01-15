@@ -1,7 +1,10 @@
+.results.storylist li {
+	padding: 1px;
+}
 li.story {
     height: 70pt;
-    padding: 1px;
-    padding-right: 10px;
+	margin: 0;
+    padding: 1px 10px 1px 1px;
     overflow: hidden;
     position: relative;
 }
@@ -19,23 +22,25 @@ li.story {
     left: 0;
     margin: 0;
     padding: 3px 25px 3px 0;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 82.35%;
+    line-height: 1.36em;
     padding-bottom: .25em;
-    height: 64pt;
+    height: 62pt;
 }
 
 .results li.story a .title {
-    font-size: 17px;
-    padding-bottom: .25em;
+    font-size: 100%;
+	color: #000;
+    padding: 3px 0;
 }
 
 .thumbnail {
     float:left;
-    padding:0px;
-    padding-right: 7px;
+    padding:0 8px 0 0;
     width: 70pt;
     height: 70pt;
+    background: transparent url('/common/images/news-placeholder.png') no-repeat top left;
+    background-size: 70pt;
 }
 #category-switcher table {
     padding-top: 2px;
@@ -72,18 +77,18 @@ li.story {
 }
 #category-switcher #search-form .togglefield {
     width: 4em;
-    padding: 0 .25em 0 .75em;
+    padding: 0 .25em 0 .5em;
 }
 #search-form .toggle-search-button {
 	font-size: 89%;
-	margin-left: .4em;
+	margin-left: .3em;
 }
 form {
 	margin: -8px 0 0 0;
 	padding: 0;
 }
 .formlabel {
-	width: 60px;
+	width: 62px;
     text-align: right;
 	font-size: 89%;
 }
@@ -98,7 +103,7 @@ form {
 .header form select {
     line-height: normal;
     padding: 4px 6px;
-    font-size: 15px;
+    font-size: 88.23%;
 }
 #search-form .toggle-search-button {
 }
@@ -109,7 +114,12 @@ form {
 .header button {
     display: inline;
 }
-.non-story a {
+
+.results li.non-story {
+	padding: 9px;
+}
+
+.results li.non-story a {
     background-image: none;
 }
 
