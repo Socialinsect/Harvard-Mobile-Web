@@ -1,8 +1,12 @@
 /* Springboards */
 
+.springboard {
+	padding: 0 5px;
+}
+
 .springboard div {
 	/* Overall size of one cell in the springboard */
-	width: 76px;
+	width: 80px;
 	height: 106px;
 }
 
