@@ -14,16 +14,6 @@
 }
 
 
-/*#mapscrollers {
-    position: hidden;
+#mapscrollers {
+  position: static;
 }
-
-.tabbody #mapscrollers {
-	top: 0;		
-	margin-left: -202px;
-}
-
-#mapzoom {
-    margin-left: -2px;
-    width: 297px;
-}*/

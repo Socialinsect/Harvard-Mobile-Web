@@ -521,6 +521,11 @@ JS;
 
           $layer = ArcGISServer::getLayer($category);
           $features = $layer->getFeatureList();
+
+          $categoryTitle = $layer->getName();
+          $this->setBreadcrumbTitle($categoryTitle);
+          $this->setBreadcrumbLongTitle($categoryTitle);
+
           $places = array();
           foreach ($features as $title => $info) {
             $places[] = array(
@@ -528,8 +533,8 @@ JS;
               'url'   => $this->detailURL($title, $category, $info),
             );
           }
-            
-          $this->assign('title',      $layer->getName());          
+          
+          $this->assign('title',      $categoryTitle);
           $this->assign('places',     $places);          
           $this->assign('categories', $categories);
           

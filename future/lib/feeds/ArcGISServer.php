@@ -468,7 +468,7 @@ class ArcGISLayer {
     $this->geometryType = $data->geometryType;
 
     foreach ($data->fields as $fieldInfo) {
-      $this->fields[$fieldInfo->name] = $fieldInfo->alias;
+      $this->fields[$fieldInfo->name] = str_replace('_', ' ', $fieldInfo->alias);
     }
 
     $this->extent = $data->extent;
