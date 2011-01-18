@@ -612,23 +612,27 @@ ul.focal li:first-child {
 	line-height: 1.167em;
 }
 
-.label {	
-	display: inline;
-	font-size: 100%;
-	line-height: 1.1em;
-	font-weight: bold;
+.label {
+    display: block;
+    width: 4.5em;
+    position: relative;
+    font-size: 100%;
+    line-height: 1.3em;
+    height: 1.3em;  /* this assumes that if label is multiline, so is value */
+    font-weight: bold;
+    text-align: right;
+    vertical-align: top;
 }
 
 .value {
-	display: inline;
-	line-height: 1.357em;
-	min-height: 21px;
-	padding-right: 20px;
-}
-
-
-.value a {
-	background-position: 8px right;
+    display: block;
+    margin-top: -1.3em;
+    margin-left: 5em;
+    font-size: 100%;
+    min-height: 1.3em;
+    line-height: 1.3em;
+    word-wrap: break-word;
+    vertical-align: top;
 }
 
 .longlabel {
@@ -640,10 +644,11 @@ ul.focal li:first-child {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: auto;
 }
+
 .longlabel + .value {
   margin-left: 0px;
+  margin-top: 0px;
 }
 
 .more {

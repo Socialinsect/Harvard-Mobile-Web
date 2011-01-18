@@ -124,8 +124,11 @@ table.search input[type=text], table.search select {
   font-size: 88.889%;
 }
 
-.value {
-  margin-left: 86px;
+.label {
+  width: 6.5em;
+}
+.label + .value {
+  margin-left: 7em;
 }
 
 .thumbnail {
