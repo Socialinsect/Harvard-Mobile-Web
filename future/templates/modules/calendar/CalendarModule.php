@@ -574,9 +574,9 @@ class CalendarModule extends Module {
           );
         }
 
-        $current =  $year   .'-'.($year+1);
-        $next    = ($year+1).'-'.($year+2);
-        $prev    = ($year-1).'-'. $year;
+        $current =  $year   .'-&shy;'.($year+1);
+        $next    = ($year+1).'-&shy;'.($year+2);
+        $prev    = ($year-1).'-&shy;'. $year;
 
         if ((date('Y')+1) > $year) {
           $this->assign('next',    $next);
