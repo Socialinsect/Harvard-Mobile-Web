@@ -41,10 +41,12 @@
           <tr>
             <td class="formlabel">Search:</td>
             <td class="inputfield">
-              <input class="newsinput search-field" type="text" id="search_terms" name="filter" value="{$searchTerms|escape}"/>
+              <input class="newsinput search-field" type="text" id="search_terms" 
+              name="filter" value="{$searchTerms|escape}" 
+              onKeyPress="return submitenter(this, event);"/>
             </td>
             <td class="togglefield">
-              <input type="button" class="toggle-search-button"  onclick="return toggleSearch();" value="Cancel" />
+              <input type="button" class="toggle-search-button" onclick="return toggleSearch();" value="Cancel" />
             </td>
           </tr>
         </table>
