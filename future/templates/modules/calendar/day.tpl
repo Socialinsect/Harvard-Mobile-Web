@@ -11,10 +11,10 @@
 
 {capture name="sideNav" assign="sideNav"}
   <div class="{block name='sideNavClass'}sidenav{/block}">
-    <a href="{$prevUrl}">
+    <a href="{$prevURL}">
       &lt; {$prev|date_format:"%a %b %e"}
     </a> | 
-    <a href="{$nextUrl}">
+    <a href="{$nextURL}">
       {$next|date_format:"%a %b %e"} &gt;
     </a>
   </div>

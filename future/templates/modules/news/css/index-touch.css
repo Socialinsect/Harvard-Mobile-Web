@@ -70,12 +70,14 @@ form {
     display: inline;
 }
 
-.results li.non-story {
+.results li.pagerlink {
 	padding: 9px;
 }
 
-.results li.non-story a {
-    background-image: none;
+.results li.pagerlink a {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
 }
 
 .newsinput  {

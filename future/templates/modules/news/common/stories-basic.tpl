@@ -12,11 +12,11 @@
 </div>
 
 <div class="nonfocal">
-  {if $previousUrl}
-    <a href="{$previousUrl}">Previous stories</a>
+  {if $previousURL}
+    <a href="{$previousURL}">< Previous 10 stories</a>
   {/if}
   {if $previousURL && $nextURL}&nbsp;|&nbsp;{/if}
-  {if $nextUrl}
-    <a href="{$nextUrl}">More stories</a>
+  {if $nextURL}
+    <a href="{$nextURL}">Next 10 stories ></a>
   {/if}
 </div>
