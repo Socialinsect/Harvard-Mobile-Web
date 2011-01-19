@@ -14,15 +14,14 @@ li.story {
 }
 .results li.story a .ellipsis {
     overflow: hidden;
-    position: absolute;
     top: 0;
     left: 0;
     margin: 0;
     padding: 3px 25px 3px 0;
     font-size: 82.35%;
-    line-height: 1.36em;
+    line-height: 1.1em;
     padding-bottom: .25em;
-    height: 62pt;
+    height: 66pt;
 }
 
 .results li.story a .title {
