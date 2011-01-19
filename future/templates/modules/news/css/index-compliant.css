@@ -117,9 +117,10 @@ form {
 }
 
 .results li.pagerlink a {
-    color: #1A1611;
-    font-weight: bold;
-    background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  background-image: none;
+  font-size: 90%;
 }
 
 .newsinput  {

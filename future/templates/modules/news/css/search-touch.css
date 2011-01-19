@@ -116,9 +116,10 @@ form {
 	padding: 9px;
 }
 .pagerlink a {
-    background-image: none;
-    color: #1A1611;
-    font-weight: bold;
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
 }
 
 .newsinput  {
