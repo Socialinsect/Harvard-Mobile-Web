@@ -362,7 +362,7 @@ class ArcGISLayer {
   public function __construct($collectionId, $layerId, $url) {
     $this->id = $layerId;
     $this->url = $url;
-    $filename = $GLOBALS['siteConfig']->getVar('ARCGIS_CACHE')."/$collectionId'.$layerId";
+    $filename = $GLOBALS['siteConfig']->getVar('ARCGIS_CACHE')."/$collectionId.$layerId";
     $this->diskCache = new DiskCache($filename, 86400 * 7);
     $this->featureCache = new DiskCache("$filename.features", 86400 * 7);
   }

@@ -64,7 +64,7 @@ class MapModule extends Module {
     return FALSE;
   }
 
-  private function initializeMap($name, $details) {
+  private function initializeMap($name, &$details) {
     $wms = new WMSServer();
     $bbox = isset($this->args['bbox']) ? $this->bboxStr2Arr($this->args['bbox']) : NULL;
   
@@ -587,9 +587,10 @@ JS;
                 'label' => $field,
                 'title' => $value,
               );
-              // There is a bug in some versions of strtr where it can't handle hyphens in hostnames
+              // There is a bug in some versions of filter_var where it can't handle hyphens in hostnames
               if (filter_var(strtr($value, '-', '_'), FILTER_VALIDATE_URL)) {
                 $detail['url'] = $value;
+                $detail['class'] = 'external';
               }
               $displayDetails[] = $detail;
             }

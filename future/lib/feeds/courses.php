@@ -764,8 +764,8 @@ class CourseData {
 
         $temp = self::get_schoolsAndCourses();
         foreach($temp as $schoolsMapping) {
-          if (!strcasecmp($schoolsMapping->school_name, $subject_fields['school'])) {
-            $subject_fields['short_name'] = $schoolsMapping->school_name_short;
+          if (!strcasecmp($schoolsMapping['school_name'], $subject_fields['school'])) {
+            $subject_fields['short_name'] = $schoolsMapping['school_name_short'];
           }
         }
         if (!isset($subject_fields['short_name'])) {
