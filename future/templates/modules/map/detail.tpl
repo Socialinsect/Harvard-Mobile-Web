@@ -60,9 +60,11 @@
           <a href="#" onclick="recenter(); return false;" id="recenter">
             <img src="/common/images/blank.png" width="40" height="34" alt="Recenter" />
           </a>
+          {if $showFullscreen}
           <a href="" id="fullscreen">
             <img src="/common/images/blank.png" width="40" height="34" alt="Full Screen" />
           </a>
+          {/if}
         </div>
       </div>
     {else}

@@ -556,6 +556,10 @@ JS;
         $hasMap = $this->initializeMap($name, $details);
         $this->assign('hasMap', $hasMap);
         
+        $showFullscreen = $GLOBALS['deviceClassifier']->getPlatform() == 'iphone'
+            || $GLOBALS['deviceClassifier']->getPlatform() == 'android';
+        $this->assign('showFullscreen', $showFullscreen);
+        
         // Photo Tab
         $photoFile = null;
         if (array_key_exists('PHOTO_FILE', $details)) {
