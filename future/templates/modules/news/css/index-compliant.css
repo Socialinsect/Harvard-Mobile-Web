@@ -1,6 +1,6 @@
 li.story {
     height: 70pt;
-	margin: 0;
+	  margin: 0;
     padding: 1px;
     overflow: hidden;
     position: relative;
@@ -14,9 +14,6 @@ li.story {
 }
 .results li.story a .ellipsis {
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
     margin: 0;
     padding: 3px 25px 3px 0;
     font-size: 82.35%;
