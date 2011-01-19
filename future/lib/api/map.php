@@ -61,8 +61,7 @@ switch (apiGetArg('command')) {
             unset($jsonObj['items']);
         }
         $content = json_encode($jsonObj);
-        //$content = file_get_contents($url);
-    
+
       } else {
         if ($category) {
           $results = ArcGISServer::search($searchTerms, $category);
