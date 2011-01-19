@@ -56,7 +56,7 @@ class DeviceClassifier {
           if ($data['platform'] == 'blackberry') {
             $this->pagetype = 'compliant'; // Storm, Storm 2
             
-          } else if ($data['platform'] == 'windowsphone7') {
+          } else if ($data['platform'] == 'winphone7') {
             $this->pagetype = 'compliant'; // Windows Phone 7
             
           } else {
