@@ -1,0 +1,19 @@
+﻿Manifest-Version:  1.0
+MIDlet-Version:  1.2
+MIDlet-Jar-Size:  12382
+RIM-COD-Module-Dependencies:  net_rim_cldc,net_rim_bbapi_browser
+MicroEdition-Configuration:  CLDC-1.1
+MIDlet-Jar-URL:  HarvardMobileWeb.jar
+RIM-MIDlet-Flags-1:  0
+RIM-COD-Module-Name:  HarvardMobileWeb
+MIDlet-Name:  HarvardMobileWeb
+RIM-COD-Creation-Time:  1295471592
+MIDlet-1: Harvard Mobile Web,..\..\src\com\bblauncher\launcher\order4314\item1\images\default-normal.png,
+MIDlet-Description: Harvard Mobile Web
+RIM-MIDlet-NameResourceId-1:  0
+MicroEdition-Profile:  MIDP-2.0
+MIDlet-Vendor:  Harvard University
+RIM-MIDlet-NameResourceBundle-1:  com.bblauncher.launcher.order4314.item1.resources.LauncherStrings
+RIM-COD-URL: HarvardMobileWeb.cod
+RIM-COD-SHA1:  f5 45 ed 4e 50 13 ff f4 36 c8 df 40 c7 3b 88 ed a9 bb e0 25
+RIM-COD-Size: 9496

@@ -4,7 +4,9 @@
   {block name="header"}
     <h2>
       <a id="infoLink" href="{$info['infoUrl']}">
-        <img class="infoLink" src="/common/images/info_button@2x.png" alt="get info" width="44" height="38" />
+		  {block name="infobutton"}
+	        <img class="infoLink" src="/common/images/info_button@2x.png" alt="get info" width="44" height="38" />
+		  {/block}
       </a>
       {$info['name']}
       {if $info['primaryname'] != $info['name']}<br/>({$info['primaryname']}){/if}
