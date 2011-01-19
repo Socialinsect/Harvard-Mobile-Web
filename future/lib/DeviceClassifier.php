@@ -54,7 +54,11 @@ class DeviceClassifier {
         
         case 'touch':
           if ($data['platform'] == 'blackberry') {
-            $this->pagetype = 'compliant'; // Storm and Storm 2
+            $this->pagetype = 'compliant'; // Storm, Storm 2
+            
+          } else if ($data['platform'] == 'windowsphone7') {
+            $this->pagetype = 'compliant'; // Windows Phone 7
+            
           } else {
             $this->pagetype = 'touch';
           }

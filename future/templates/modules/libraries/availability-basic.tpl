@@ -26,7 +26,7 @@
   {/capture}
   {$listItem['label'] = $label}
   {capture name="subtitle" assign="subtitle"}
-    {if $item['callNumber']}{$item['callNumber']}{if $item['description']}, {/if}{/if}
+    {if $item['callNumber']}{$item['callNumber']|replace:' ':' &shy;'}{if $item['description']}, {/if}{/if}
     {if $item['description']}{$item['description']}{/if}
   {/capture}
   {$listItem['subtitle'] = $subtitle}
