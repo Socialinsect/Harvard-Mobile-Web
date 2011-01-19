@@ -517,7 +517,7 @@ class LibrariesModule extends Module {
 
         //error_log(print_r($location, true));
         
-        $this->assign('infoURL',  $this->locationAndHoursURL($type, $id, $name/*, false, true*/));
+        $this->assign('infoURL',  $this->locationAndHoursURL($type, $id, $name));
         $this->assign('location', $location);
         $this->assign('title',    $this->formatDetail($itemData, 'title', 'Unknown title'));
         break;
@@ -574,7 +574,7 @@ class LibrariesModule extends Module {
                   'name'            => $name,
                   'primaryname'     => $this->formatDetail($libData, 'primaryname'),
                   'hours'           => $this->formatDetail($libData, 'hrsOpenToday'),
-                  'infoUrl'         => $this->locationAndHoursURL($type, $id, $name/*, false, true*/),
+                  'infoUrl'         => $this->locationAndHoursURL($type, $id, $name),
                   
                   'title'           => $this->formatDetail($itemData, 'title', 'Unknown title'),
                   'collectionName'  => $collection['name'],

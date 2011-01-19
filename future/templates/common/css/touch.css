@@ -614,11 +614,10 @@ ul.focal li:first-child {
 
 .label {
     display: block;
-    width: 4.5em;
+    width: 6em;
+    font-size: 85%;
     position: relative;
-    font-size: 100%;
     line-height: 1.3em;
-    height: 1.3em;  /* this assumes that if label is multiline, so is value */
     font-weight: bold;
     text-align: right;
     vertical-align: top;
@@ -626,8 +625,8 @@ ul.focal li:first-child {
 
 .value {
     display: block;
-    margin-top: -1.3em;
-    margin-left: 5em;
+    margin-top: -1.2em;
+    margin-left: 5.5em;
     font-size: 100%;
     min-height: 1.3em;
     line-height: 1.3em;

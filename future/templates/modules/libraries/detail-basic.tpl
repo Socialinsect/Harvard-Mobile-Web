@@ -17,19 +17,14 @@
 {/block}
 
 {block name="itemDetailHeader"}
-  <h2>{$item['title']}</h2>
-  <p class="smallprint">
-    {$itemDetails}
-  </p>
-  <img src="/common/images/bookmark-{if $item['bookmarked']}on{else}off{/if}.gif" alt="" />
-  <a id="bookmark" href="{$bookmarkURL}">
-    {if $item['bookmarked']}Remove bookmark{else}Bookmark this item{/if}
-  </a>
-  <br/>
+  <span class="smallprint">{$itemDetails}</span><br/>
 {/block}
 
-{block name="locationHeader"}
+{block name="locationTitle"}
   <a href="{$location['url']}"><strong>{$location['name']}</strong></a><br/>
+{/block}
+
+{block name="locationURL"}
 {/block}
 
 {block name="item"}
@@ -38,5 +33,9 @@
 
 {block name="fulllist"}
   <h2>{$item['title']}</h2>
+  <img src="/common/images/bookmark-{if $item['bookmarked']}on{else}off{/if}.gif" alt="" />
+  <a id="bookmark" href="{$bookmarkURL}">
+    {if $item['bookmarked']}Remove bookmark{else}Bookmark this item{/if}
+  </a>
   {$smarty.block.parent}
 {/block}

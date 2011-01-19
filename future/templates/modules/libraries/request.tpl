@@ -24,7 +24,7 @@
   <h3>{$info['collectionName']}</h3>
   {if $info['holdingStatus'] != 'collection' || $info['callNumber']}
     <p class="smallprint">
-      {if $info['callNumber']}{$info['callNumber']}{/if}
+      {if $info['callNumber']}{$info['callNumber']|replace:' ':' &shy;'}{/if}
       {if $info['holdingStatus'] != 'collection'}
         {if $info['callNumber']}<br/>{/if}
         {$info['holdingStatus']}

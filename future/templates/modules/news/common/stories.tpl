@@ -1,7 +1,7 @@
 <ul class="results">
-  {if $previousUrl}
-    <li class="non-story">
-      <a href="{$previousUrl}">Previous stories</a>
+  {if $previousURL}
+    <li class="pagerlink">
+      <a href="{$previousURL}">Previous 10 stories...</a>
     </li>
   {/if}
 
@@ -22,9 +22,9 @@
     </li>
   {/foreach}
 
-  {if $nextUrl}
-    <li class="non-story">
-      <a href="{$nextUrl}">More stories</a>
+  {if $nextURL}
+    <li class="pagerlink">
+      <a href="{$nextURL}">Next 10 stories...</a>
     </li>
   {/if}
 </ul>

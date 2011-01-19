@@ -157,7 +157,8 @@ h2 {
 	background-position: -160px 0;
 }
 
-#loadingimage {
+#loadingimage,
+#loadingimage2 {
 	position: absolute;
 	z-index: 100;
 	top: 50%;

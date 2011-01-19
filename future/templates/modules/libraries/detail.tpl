@@ -53,7 +53,7 @@
 {foreach $locations as $location}
   {$results[$i] = array()}
   {capture name="title" assign="title"}
-    {block name="locationHeader"}
+    {block name="locationTitle"}
       <strong>{$location['name']}</strong><br/>
       <div class="distance" id="location_{$location['id']}"></div>
     {/block}
@@ -81,7 +81,9 @@
     {/foreach}
   {/capture}
   {$results[$i]['title'] = $title}
-  {$results[$i]['url'] = $location['url']}
+  {block name="locationURL"}
+    {$results[$i]['url'] = $location['url']}
+  {/block}
   {$i = $i + 1} 
 {/foreach}
 
