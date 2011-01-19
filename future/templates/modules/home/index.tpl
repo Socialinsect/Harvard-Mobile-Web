@@ -8,7 +8,7 @@
     {$bannerImg['height'] = 45}
   {/block}
 
-  <h1{if isset($topItem)} class="roomfornew"{/if}>
+  <h1 id="homelogo"{if isset($topItem)} class="roomfornew"{/if}>
     <img src="{$bannerImg['src']}" width="{$bannerImg['width']}" height="{$bannerImg['height']}" alt="{$SITE_NAME}" />
   </h1>
   {block name="topItem"} 
