@@ -22,7 +22,7 @@
 {/block}
 {block name="extraItemInfo"}
   {capture name="label" assign="label"}
-    <img src="/modules/{$moduleID}/images/{$class}.gif" alt="" />
+    <img src="/modules/{$moduleID}/images/{$class}.gif" alt="" />&nbsp;
   {/capture}
   {$listItem['label'] = $label}
   {capture name="subtitle" assign="subtitle"}
