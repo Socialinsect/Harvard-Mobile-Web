@@ -27,18 +27,12 @@ h2 {
 	overflow: hidden;
 }
 
-#mapimage {
-	width: 292px;
-	height: 292px;
-	border: 1px solid #999;
-	background-color: #fff;
-}
-
 #mapscrollers {
 	position: absolute;
 	top: 0px;
 	left: 0px;
 	width: 100%;
+	height: 100%;
 	z-index: 10;
 }
 

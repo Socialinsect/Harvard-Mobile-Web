@@ -54,7 +54,14 @@ switch (apiGetArg('command')) {
           'loc' => $loc,
           'str' => $searchTerms,
         ));
-        $content = file_get_contents($url);
+        $json = file_get_contents($url);
+        $jsonObj = json_decode($json, true);
+        if (isset($jsonObj['items'])) {
+            $jsonObj['results'] = $jsonObj['items'];
+            unset($jsonObj['items']);
+        }
+        $content = json_encode($jsonObj);
+        //$content = file_get_contents($url);
     
       } else {
         if ($category) {

@@ -24,7 +24,8 @@ function searchCampusMap($query) {
     $rawContent = file_get_contents($url);
     $content = json_decode($rawContent);
     
-    foreach ($content->results as $result) {
+    $results = isset($content->results) ? $content->results : $content->items;
+    foreach ($results as $result) {
         if (strlen($result->bld_num) && !in_array($result->bld_num, $bldgIds))
             $bldgIds[] = $result->bld_num;
     }
@@ -56,7 +57,8 @@ function searchCampusMapForCourseLoc($query) {
     $rawContent = file_get_contents($url);
     $content = json_decode($rawContent);
 
-    foreach ($content->results as $resultObj) {
+    $results = isset($content->results) ? $content->results : $content->items;
+    foreach ($results as $resultObj) {
         if (!in_array($resultObj->bld_num, $bldgIds))
             $bldgIds[] = $resultObj->bld_num;
     }

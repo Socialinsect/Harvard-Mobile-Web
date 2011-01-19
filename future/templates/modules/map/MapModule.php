@@ -245,6 +245,17 @@ JS;
 
     $this->addInlineJavascript($script);
     $this->addInlineJavascriptFooter($footerScript);
+    
+    $css = <<<CSS
+    #mapimage {
+	    width: 292px;
+	    height: 292px;
+	    border: 1px solid #999;
+	    background-color: #fff;
+	}
+CSS;
+
+    $this->addInlineCSS($css);
 
     $this->addOnLoad("loadImage(getMapURL(mapBaseURL),'mapimage');");
     
@@ -370,6 +381,19 @@ JS;
 JS;
 
     $this->addInlineJavascript($script);
+    
+    $css = <<<CSS
+    #mapimage {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: 0;
+    }
+CSS;
+    
+    $this->addInlineCSS($css);
     
     $resizeScript = "scrollTo(0,1); rotateScreen(); setTimeout('rotateMap()',500)";
     
