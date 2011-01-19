@@ -62,7 +62,7 @@
 <div id="fullmap">
   <img width="" height="" alt="" id="mapimage" onload="hide('loadingimage')" />
 </div>
-<div id="options"><!--shows up when the eye icon is tapped-->
+<div id="options">
   <form action="#" method="get" id="mapform" name="mapform">
     <h2>Labels for Fullscreen Map</h2>
     {foreach $labels as $label}

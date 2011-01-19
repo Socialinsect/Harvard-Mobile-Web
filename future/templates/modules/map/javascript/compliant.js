@@ -75,14 +75,12 @@ function getMapURL(strBaseURL, includeSelect) {
     // Returns a full URL for a map page or map image, using strBaseURL as the base
     var layerCount = mapLayers.split(",").length;
     if (layerCount > 0) {
-		var mapStyles = "default";
-		for (i = 1; i < layerCount; i++) {
-	    	mapStyles = mapStyles + ",default";
-		}
+	var mapStyles = "default";
+	for (i = 1; i < layerCount; i++) {
+	    mapStyles = mapStyles + ",default";
+	}
     }
 
-    updateMapDimensions();    
-    
     var newURL = strBaseURL + "&width=" + mapW + "&height=" + mapH + "&bbox=" + mapBoxW + "," + mapBoxS + "," + mapBoxE + "," + mapBoxN + "&layers=" + mapLayers + "&styles=" + mapStyles + mapOptions;
 
     // Add parameters for the original bounding box, so Image can be recentered
@@ -92,19 +90,6 @@ function getMapURL(strBaseURL, includeSelect) {
     return(newURL);
 }
 
-function updateMapDimensions() {
-    if (window.innerHeight !== undefined) {
-        mapH = window.innerHeight;
-    } else {
-        mapH = document.documentElement.clientHeight; // ie7
-    }
-
-    if (window.innerWidth !== undefined) {
-        mapW = window.innerWidth;
-    } else {
-        mapW = document.documentElement.clientWidth; // ie7
-    }
-}
 
 function scroll(dir) {
 // Scrolls the map image in the cardinal direction given by dir; amount of scrolling is scaled to zoom level and the pixel dimensions of the map image
@@ -232,7 +217,8 @@ function rotateMap() {
 	var objScrollers = document.getElementById("mapscrollers");
 	if(objMap) {
 		show("loadingimage");
-		updateMapDimensions();
+		mapW = window.innerWidth;
+		mapH = window.innerHeight;
 		var bboxW = mapBoxE - mapBoxW;
 		var bboxH = mapBoxN - mapBoxS;
 		if (mapH / mapW != bboxH / bboxW) { // need taller image
@@ -271,7 +257,8 @@ function rotateMapAlternate() {
 	var objMap = document.getElementById("mapimage");
 	if(objMap) {
 		show("loadingimage");
-		updateMapDimensions();
+		mapW = window.innerWidth;
+		mapH = window.innerHeight;
 		loadImage(getMapURL(mapBaseURL),'mapimage'); 
 	}
 }
