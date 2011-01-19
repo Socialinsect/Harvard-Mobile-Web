@@ -111,8 +111,15 @@ form {
 .header button {
     display: inline;
 }
-.non-story a {
-    background-image: none;
+
+.pagerlink {
+	padding: 9px;
+}
+.pagerlink a {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
 }
 
 .newsinput  {
