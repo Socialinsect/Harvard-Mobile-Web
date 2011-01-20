@@ -24,7 +24,6 @@ a single RPM as we've done in the past.
 %setup
 
 %pre
-%pre
 if [ "$1" = "2" ]; then # user is upgrading
    cp $RPM_INSTALL_PREFIX0/harvardmobile/config/config.ini /tmp/harvardmobile-config.ini
 fi
