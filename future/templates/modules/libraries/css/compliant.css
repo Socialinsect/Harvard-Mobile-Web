@@ -81,7 +81,7 @@
   background-repeat: no-repeat;
   background-size: 16px;
   -webkit-background-size: 16px;
-  line-height: 17px;
+  line-height: 1.214em;
 }
 .listItems .book {
   background-image: url(/modules/libraries/images/book.png);
