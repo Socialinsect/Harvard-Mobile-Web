@@ -25,29 +25,23 @@ clipWithEllipsis(function () {
     return elems;
 });
 
-function submitenter(myfield, e)
-{
+function submitenter(myfield, e) {
     var keycode;
-    if (window.event) 
-    {
-        keycode = window.event.keyCode;        
-    }
-    else if (e) 
-    {
+    if (window.event) {
+        keycode = window.event.keyCode;
+        
+    } else if (e) {
         keycode = e.keyCode;        
-    }
-    else 
-    {
-        return true;        
+        
+    } else {
+        return true;
     }
 
-    if (keycode == 13)
-    {
+    if (keycode == 13) {
        myfield.form.submit();
        return false;
-    }
-    else
-    {
+       
+    } else {
         return true;        
     }
 }

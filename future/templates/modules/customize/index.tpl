@@ -11,7 +11,6 @@
     <table cellpadding="2" cellspacing="0" border="0" width="100%" id="homepageList">
       {foreach $modules as $id => $info}
         <tr>
-          <td></td>
           <td>
             {if $info['disableable']}
               <a href="{$info['toggleDisabledURL']}">

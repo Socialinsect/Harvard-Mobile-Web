@@ -13,7 +13,7 @@
         {/if}
         <span class="nolinkbuttons"> 
           <a href="#" onclick="moveUp(this); return false;" class="moveup"><img src="/modules/{$moduleID}/images/button-up.png" border="0" alt="Up"></a>
-			<a href="#" onclick="moveDown(this); return false;" class="movedown"><img src="/modules/{$moduleID}/images/button-down.png" border="0" alt="Down"></a> 
+          <a href="#" onclick="moveDown(this); return false;" class="movedown"><img src="/modules/{$moduleID}/images/button-down.png" border="0" alt="Down"></a> 
         </span> 
         <span class="nolink" style="background-image: url(/modules/{$moduleID}/images/{$id}-tiny.png)">
           {$info['title']}

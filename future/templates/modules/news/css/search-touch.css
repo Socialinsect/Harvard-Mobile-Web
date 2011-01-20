@@ -1,3 +1,7 @@
+#searchformcontainer {
+  margin-top: 0.5em;
+}
+
 li.story {
     height: 70pt;
 	margin: 0;
@@ -14,8 +18,6 @@ li.story {
 }
 .results li.story a .ellipsis {
     overflow: hidden;
-    top: 0;
-    left: 0;
     margin: 0;
     padding: 3px 25px 3px 0;
     font-size: 82.35%;

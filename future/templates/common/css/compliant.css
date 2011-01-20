@@ -223,7 +223,6 @@ a.formbutton {
 	background-position: right;
 	margin: 0 5px;
 	height: 36px;
-	overflow: hidden;
 	text-decoration: none;
 }
 
@@ -232,7 +231,7 @@ a.formbutton div {
 	color: #fff;
 	font-weight: bold;
 	font-size: 94.12%;
-	line-height: 1.625em;
+	line-height: 26px;  /* height minus padding */
 	text-decoration: none;
 	padding: 5px 5px 5px 12px;
 	background-image: url(/common/images/button-sd-l.png);
@@ -247,13 +246,12 @@ input.formbutton {
 	color: #fff;
 	font-weight: bold;
 	font-size: 94.12%;
-	line-height: 1.625em;
+	line-height: 26px;  /* height minus padding */
 	text-decoration: none;
-	padding: 5px 5px 5px 14px;
+	padding: 5px 5px 5px 12px;
 	margin-right: 0;
   border: none;
 	height: 36px;
-	overflow: hidden;  
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-l.png);
 	background-repeat: no-repeat;
@@ -618,7 +616,7 @@ ul.focal li:first-child {
 }
 
 .results li div.smallprint {
-  padding-top: 2px;
+  padding-top: .25em;
 }
 
 .results li ul li {
@@ -795,7 +793,7 @@ ul.focal li:first-child {
 
 .label {
     display: block;
-    width: 5.5em;
+    width: 6em;
     position: relative;
     font-size: 76.471%;
     line-height: 1.3em;
@@ -806,7 +804,7 @@ ul.focal li:first-child {
 .value {
     display: block;
     margin-top: -1.2em;
-    margin-left: 4.75em;
+    margin-left: 5em;
     font-size: 100%;
     min-height: 1.3em;
     line-height: 1.3em;

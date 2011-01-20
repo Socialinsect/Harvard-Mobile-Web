@@ -59,13 +59,11 @@ class NewsModule extends Module {
     }
   }
   
-  public function getFeeds()
-  {
+  public function getFeeds() {
     return $this->feeds;
   }
   
-  public function getFeed($index)
-  {
+  public function getFeed($index) {
     if (isset($this->feeds[$index])) {
         $feedData = $this->feeds[$index];
         $controller = RSSDataController::factory($feedData);
