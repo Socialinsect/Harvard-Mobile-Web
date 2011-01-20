@@ -60,8 +60,8 @@ if [ "$1" = "2" ]; then # user is upgrading
    cp /tmp/harvardmobile-config.ini $RPM_INSTALL_PREFIX0/harvardmobile/config/config.ini
  
    cp /home/huds/upload/menu.csv $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/data/menu.csv
-   chown apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/menu.csv
-   chgrp apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/menu.csv
+   chown apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/data/menu.csv
+   chgrp apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/data/menu.csv
 fi
 
 %preun
