@@ -795,7 +795,7 @@ ul.focal li:first-child {
 
 .label {
     display: block;
-    width: 5.5em;
+    width: 6em;
     position: relative;
     font-size: 76.471%;
     line-height: 1.3em;
@@ -806,7 +806,7 @@ ul.focal li:first-child {
 .value {
     display: block;
     margin-top: -1.2em;
-    margin-left: 4.75em;
+    margin-left: 5em;
     font-size: 100%;
     min-height: 1.3em;
     line-height: 1.3em;
