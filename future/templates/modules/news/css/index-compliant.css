@@ -1,6 +1,6 @@
 li.story {
     height: 70pt;
-	margin: 0;
+	  margin: 0;
     padding: 1px;
     overflow: hidden;
     position: relative;
@@ -14,14 +14,10 @@ li.story {
 }
 .results li.story a .ellipsis {
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
     margin: 0;
-    padding: 3px 25px 3px 0;
+    padding: .3em 25px .3em 0;
     font-size: 82.35%;
     line-height: 1.36em;
-    padding-bottom: .25em;
     height: 62pt;
 }
 
@@ -105,7 +101,7 @@ form {
 #search-form .toggle-search-button {
 }
 .header {
-    padding: 0;
+    padding: 5px 0;
 }
 
 .header button {
