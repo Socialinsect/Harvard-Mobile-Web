@@ -62,8 +62,7 @@
         <p>
             We recognize that this is just the starting point for providing a better
             Harvard mobile experience for students, faculty, staff, alumni, and
-            visitors. We will continue to roll out new features, including fully
-            integrated shuttle tracking in October 2010.
+            visitors. We will continue to improve the app and roll out new features.
         </p>
         
         <div class="feedback">
@@ -84,7 +83,7 @@
     	<table cellpadding="0" cellspacing="0" id="features">
           <tr>
             <td>
-              <img src="/modules/info/images/icons/people.png" alt="People Directory" />
+              <img src="images/icons/people.png" alt="People Directory" />
             </td>
             <td>
             <h2>People Directory</h2>
@@ -95,43 +94,19 @@
           </tr>
           <tr>
             <td>
-              <img src="/modules/info/images/icons/map.png" alt="Campus Map" />
+              <img src="images/icons/map.png" alt="Campus Map" />
             </td>
             <td>
             <h2>Campus Map</h2>
             <p> 
-            Navigate around Harvard’s campus by searching for classroom buildings, houses, and offices. The map will display the location, and you can zoom in, zoom out or scroll in any direction. You can also browse locations by type, such as libraries or museums.
+            Navigate around Harvard's campus by searching for classroom buildings, houses, and offices. The map will display the location, and you can zoom in, zoom out or scroll in any direction. You can also browse locations by type, such as libraries or museums.
             </p>
             </td>
           </tr>
 
           <tr>
             <td>
-              <img src="/modules/info/images/icons/calendar.png" alt="Events" />
-            </td>
-            <td>
-            <h2>Events</h2>
-            <p>
-            Find out what&#8217;s going on today at Harvard or coming up soon. Events from the Harvard Gazette calendar are available by category with the date and time, and location. Where available, you can click on the event’s location to see it on the map.
-            </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td>
-              <img src="/modules/info/images/icons/stellar.png" alt="Courses" />
-            </td>
-            <td>
-            <h2>Courses</h2>
-            <p>
-            The complete course catalog is searchable across all of Harvard’s schools or individually within each school. You can type in a keyword or subject to access general information about the course including the course description, meeting times, location, and instructor name where provided. 
-            </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td>
-              <img src="/modules/info/images/icons/news.png" alt="News" />
+              <img src="images/icons/news.png" alt="News" />
             </td>
             <td>
             <h2>News</h2>
@@ -143,7 +118,31 @@
 
           <tr>
             <td>
-              <img src="/modules/info/images/icons/dining.png" alt="Student Dining" />
+              <img src="images/icons/calendar.png" alt="Events" />
+            </td>
+            <td>
+            <h2>Events</h2>
+            <p>
+            Find out what&#8217;s going on today at Harvard or coming up soon. Events from the Harvard Gazette calendar are available by category with the date and time, and location. Where available, you can click on the event's location to see it on the map.
+            </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <img src="images/icons/stellar.png" alt="Courses" />
+            </td>
+            <td>
+            <h2>Courses</h2>
+            <p>
+            The complete course catalog is searchable across all of Harvard's schools or individually within each school. You can type in a keyword or subject to access general information about the course including the course description, meeting times, location, and instructor name where provided. 
+            </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <img src="images/icons/dining.png" alt="Student Dining" />
             </td>
             <td>
             <h2>Student Dining</h2>
@@ -152,9 +151,37 @@
             </p>
             </td>
           </tr>
+
           <tr>
             <td>
-              <img src="/modules/info/images/icons/search.png" alt="Search" />
+              <img src="images/icons/shuttleschedule.png" alt="Shuttle" />
+            </td>
+            <td>
+            <h2>Shuttle Tracker</h2>
+            <p>
+            Make your way around campus by viewing real-time maps of shuttles and
+routes, getting up-to-date announcements of changes in service, and viewing
+bus schedules and calendars. Also available are phone listings for shuttle
+service, parking, and commuter offices.
+            </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <img src="images/icons/library.png" alt="Library" />
+            </td>
+            <td>
+            <h2>Library</h2>
+            <p>
+            Check out books and more by searching all the records in all of Harvard's libraries. Find where a book is located and its availability right now. Refine your search by author, title, or subject. Find locations and hours of Harvard libraries and archives, and see how to get there by viewing the location on the map.  
+            </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <img src="images/icons/search.png" alt="Search" />
             </td>
             <td>
             <h2>Search</h2>
