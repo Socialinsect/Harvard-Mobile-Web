@@ -14,8 +14,6 @@ li.story {
 }
 .results li.story a .ellipsis {
     overflow: hidden;
-    top: 0;
-    left: 0;
     margin: 0;
     padding: 3px 25px 3px 0;
     font-size: 82.35%;
@@ -70,12 +68,15 @@ form {
     display: inline;
 }
 
-.results li.non-story {
+.results li.pagerlink {
 	padding: 9px;
 }
 
-.results li.non-story a {
-    background-image: none;
+.results li.pagerlink a {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
 }
 
 .newsinput  {

@@ -1,13 +1,20 @@
 // Set initial values for drawing the map image
 var mapW, mapH;	// integers: width and height of map image
 var zoom = 0; // integer: zoom level -- should always default to 0
-var mapBoxW = initMapBoxW;	// integer: western bound of map image (per IMS map API) 
-var mapBoxN = initMapBoxN;	// integer: northern bound of map image (per IMS map API)
-var mapBoxS = initMapBoxS;	// integer: southern bound of map image (per IMS map API)
-var mapBoxE = initMapBoxE;	// integer: eastern bound of map image (per IMS map API)
+var mapBoxW = 0;	// integer: western bound of map image (per IMS map API) 
+var mapBoxN = 0;	// integer: northern bound of map image (per IMS map API)
+var mapBoxS = 0;	// integer: southern bound of map image (per IMS map API)
+var mapBoxE = 0;	// integer: eastern bound of map image (per IMS map API)
 var hasMoved = false;	// boolean: has the map been scrolled or zoomed?
 var maxZoom = 2;	// integer: max zoom-in level
 var minZoom = -8;	// integer: max zoom-out level
+
+if (typeof initMapBoxW != 'undefined') {
+  mapBoxW = initMapBoxW;	// integer: western bound of map image (per IMS map API) 
+  mapBoxN = initMapBoxN;	// integer: northern bound of map image (per IMS map API)
+  mapBoxS = initMapBoxS;	// integer: southern bound of map image (per IMS map API)
+  mapBoxE = initMapBoxE;	// integer: eastern bound of map image (per IMS map API)
+}
 
 var loadedImages = {};
 

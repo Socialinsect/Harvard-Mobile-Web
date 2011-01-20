@@ -99,6 +99,13 @@
   background-image: url(/modules/libraries/images/video.gif);
 }
 
+.listItems .pagerlink {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
+}
+
 table.search {
   border: none;
 }

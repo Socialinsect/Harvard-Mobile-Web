@@ -1,3 +1,7 @@
+#searchformcontainer {
+  margin-top: 1em;
+}
+
 li.story {
     height: 70pt;
 	margin: 0;
@@ -112,8 +116,11 @@ form {
 .header button {
     display: inline;
 }
-.non-story a {
-    background-image: none;
+.pagerlink a {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
 }
 
 .newsinput  {

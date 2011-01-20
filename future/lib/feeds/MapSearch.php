@@ -22,11 +22,12 @@ function searchCampusMap($query) {
     
     $url = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_URL').'?'.http_build_query($params);
     $rawContent = file_get_contents($url);
-    $content = json_decode($rawContent);
+    $content = json_decode($rawContent, true);
     
-    foreach ($content->results as $result) {
-        if (strlen($result->bld_num) && !in_array($result->bld_num, $bldgIds))
-            $bldgIds[] = $result->bld_num;
+    $results = isset($content['results']) ? $content['results'] : $content['items'];
+    foreach ($results as $result) {
+        if (strlen($result['bld_num']) && !in_array($result['bld_num'], $bldgIds))
+            $bldgIds[] = $result['bld_num'];
     }
 
     if ($bldgIds) {
@@ -54,11 +55,12 @@ function searchCampusMapForCourseLoc($query) {
 
     $url = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_URL').'?'.http_build_query($params);
     $rawContent = file_get_contents($url);
-    $content = json_decode($rawContent);
+    $content = json_decode($rawContent, true);
 
-    foreach ($content->results as $resultObj) {
-        if (!in_array($resultObj->bld_num, $bldgIds))
-            $bldgIds[] = $resultObj->bld_num;
+    $results = isset($content['results']) ? $content['results'] : $content['items'];
+    foreach ($results as $result) {
+        if (!in_array($result['bld_num'], $bldgIds))
+            $bldgIds[] = $result['bld_num'];
     }
 
     if ($bldgIds) {
@@ -69,7 +71,6 @@ function searchCampusMapForCourseLoc($query) {
             }
         }
     }
-
     return $resultObj;
 }
 

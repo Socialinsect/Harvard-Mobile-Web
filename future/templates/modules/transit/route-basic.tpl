@@ -9,7 +9,7 @@
       <tr>
         <td valign="middle">
           {if $routeConfig['serviceLink'] && !$routeConfig['serviceName']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}" />
+            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}.gif" />
           {if $routeConfig['serviceLink'] && !$routeConfig['serviceName']}</a>{/if}
         </td>
         {if $routeConfig['serviceName']}

@@ -1,6 +1,6 @@
 <div id="share">
   <a onclick="showShare()"><img src="/common/images/share.png"/></a>
-  <div id="sharesheet">
+  <div id="sharesheet" style="display:none">
     <div id="shareback"> </div>
     <div id="sharedialog">
       <h1>Share this story</h1>
