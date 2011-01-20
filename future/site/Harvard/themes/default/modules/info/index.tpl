@@ -83,7 +83,7 @@
     	<table cellpadding="0" cellspacing="0" id="features">
           <tr>
             <td>
-              <img src="images/icons/people.png" alt="People Directory" />
+              <img src="/modules/info/images/icons/people.png" alt="People Directory" />
             </td>
             <td>
             <h2>People Directory</h2>
@@ -94,7 +94,7 @@
           </tr>
           <tr>
             <td>
-              <img src="images/icons/map.png" alt="Campus Map" />
+              <img src="/modules/info/images/icons/map.png" alt="Campus Map" />
             </td>
             <td>
             <h2>Campus Map</h2>
@@ -106,7 +106,7 @@
 
           <tr>
             <td>
-              <img src="images/icons/news.png" alt="News" />
+              <img src="/modules/info/images/icons/news.png" alt="News" />
             </td>
             <td>
             <h2>News</h2>
@@ -118,7 +118,7 @@
 
           <tr>
             <td>
-              <img src="images/icons/calendar.png" alt="Events" />
+              <img src="/modules/info/images/icons/calendar.png" alt="Events" />
             </td>
             <td>
             <h2>Events</h2>
@@ -130,7 +130,7 @@
 
           <tr>
             <td>
-              <img src="images/icons/stellar.png" alt="Courses" />
+              <img src="/modules/info/images/icons/stellar.png" alt="Courses" />
             </td>
             <td>
             <h2>Courses</h2>
@@ -142,7 +142,7 @@
 
           <tr>
             <td>
-              <img src="images/icons/dining.png" alt="Student Dining" />
+              <img src="/modules/info/images/icons/dining.png" alt="Student Dining" />
             </td>
             <td>
             <h2>Student Dining</h2>
@@ -154,7 +154,7 @@
 
           <tr>
             <td>
-              <img src="images/icons/shuttleschedule.png" alt="Shuttle" />
+              <img src="/modules/info/images/icons/shuttleschedule.png" alt="Shuttle" />
             </td>
             <td>
             <h2>Shuttle Tracker</h2>
@@ -169,7 +169,7 @@ service, parking, and commuter offices.
 
           <tr>
             <td>
-              <img src="images/icons/library.png" alt="Library" />
+              <img src="/modules/info/images/icons/library.png" alt="Library" />
             </td>
             <td>
             <h2>Library</h2>
@@ -181,7 +181,7 @@ service, parking, and commuter offices.
 
           <tr>
             <td>
-              <img src="images/icons/search.png" alt="Search" />
+              <img src="/modules/info/images/icons/search.png" alt="Search" />
             </td>
             <td>
             <h2>Search</h2>
