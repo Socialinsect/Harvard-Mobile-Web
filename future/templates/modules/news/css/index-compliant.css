@@ -33,7 +33,7 @@ li.story {
     width: 5.5em;
     height: 5.5em;
     background: transparent url('/common/images/news-placeholder.png') no-repeat top left;
-    background-size: 70pt;
+    background-size: 5.5em;
 }
 #category-switcher table {
     padding-top: 2px;
