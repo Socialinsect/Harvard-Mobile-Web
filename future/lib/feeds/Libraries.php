@@ -736,7 +736,7 @@ class Libraries {
       'title'    => 'ex-Everything-1.0',
       'author'   => 'author',
       'language' => 'language-id',
-      'pubDate'  => 'ex-Everything-6.0',
+      'pubDate'  => 'ex-Everything-7.0',
     );
     $getParamMapping = array(
       'format'   => 'fmt', 
