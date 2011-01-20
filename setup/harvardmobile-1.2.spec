@@ -24,6 +24,10 @@ a single RPM as we've done in the past.
 %setup
 
 %pre
+%pre
+if [ "$1" = "2" ]; then # user is upgrading
+   cp $RPM_INSTALL_PREFIX0/harvardmobile/config/config.ini /tmp/harvardmobile-config.ini
+fi
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -51,6 +55,14 @@ if [ "$1" = "1" ]; then # user is installing
    # TODO: the following apache/php settings are required
    # in directory, AllowOverride All (/etc/httpd/conf/httpd.conf)
    # make sure short_open_tag is enabled (/etc/php.ini)
+fi
+
+if [ "$1" = "2" ]; then # user is upgrading
+   cp /tmp/harvardmobile-config.ini $RPM_INSTALL_PREFIX0/harvardmobile/config/config.ini
+ 
+   cp /home/huds/upload/menu.csv $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/menu.csv
+   chown apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/menu.csv
+   chgrp apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/menu.csv
 fi
 
 %preun
