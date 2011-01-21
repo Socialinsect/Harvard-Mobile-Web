@@ -1330,3 +1330,14 @@ h2.icon {
 	margin-right: 6px;
 	border: none;
 }
+
+/* firefox adds these a tags when you edit the dom */
+.ellipsis a[xmlns] {
+	display: inline !important;
+	padding: 0 !important;
+	margin: 0 !important;	 
+	background: none !important; 
+	line-height: inherit !important;
+	text-decoration: none !important;
+	font-size: inherit !important;
+}
