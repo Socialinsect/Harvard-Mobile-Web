@@ -161,7 +161,7 @@ abstract class Module {
     $args = $this->args;
     foreach ($this->fontsizes as $fontsize) {
       $args['font'] = $fontsize;
-      $urls[$fontsize] = $this->buildBreadcrumbURL($this->page, $this->args, false);
+      $urls[$fontsize] = self::buildURL($this->page, $args);
     }
     return $urls;
   }
