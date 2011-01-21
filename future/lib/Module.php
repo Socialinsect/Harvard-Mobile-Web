@@ -155,14 +155,15 @@ abstract class Module {
     }
   }
    
-  private function getFontSizeURL() {
-    unset($this->args['font']);
-    $argString = http_build_query($this->args);
-    if (strlen($argString)) {
-      return "/{$this->id}/{$this->page}.php?$argString&font=";
-    } else {
-      return "/{$this->id}/{$this->page}.php?font=";
+  private function getFontSizeURLs() {
+    $urls = array();
+    
+    $args = $this->args;
+    foreach ($this->fontsizes as $fontsize) {
+      $args['font'] = $fontsize;
+      $urls[$fontsize] = $this->buildBreadcrumbURL($this->page, $this->args, false);
     }
+    return $urls;
   }
 
   //
@@ -240,6 +241,12 @@ abstract class Module {
     
     return "$page.php".(strlen($argString) ? "?$argString" : "");
   }
+
+  public static function buildURLForModule($id, $page, $args=array()) {
+    $path = self::getPathSegmentForModuleID($id);
+  
+    return URL_BASE."$path/".self::buildURL($page, $args);
+  }
   
   protected function buildMailToLink($to, $subject, $body) {
     $to = trim($to);
@@ -257,8 +264,10 @@ abstract class Module {
     return $url;
   }
 
-  protected function redirectToModule($id, $args=array()) {
-    $url = URL_BASE."{$id}/?". http_build_query($args);
+  public function redirectToModule($id, $args=array()) {
+    $path = self::getPathSegmentForModuleID($id);
+  
+    $url = URL_BASE."{$path}/?". http_build_query($args);
     error_log('Redirecting to: '.$url);
     
     header("Location: $url");
@@ -268,24 +277,51 @@ abstract class Module {
   protected function redirectTo($page, $args=null, $preserveBreadcrumbs=false) {
     if (!isset($args)) { $args = $this->args; }
     
-    $url = URL_PREFIX."{$this->id}/";
-    
+    $url = '';
     if ($preserveBreadcrumbs) {
-      $url .= $this->buildBreadcrumbURL($page, $args, false);
+      $url = $this->buildBreadcrumbURL($page, $args, false);
     } else {
-      $url .= self::buildURL($page, $args);
+      $url = self::buildURL($page, $args);
     }
     
     error_log('Redirecting to: '.$url);
     header("Location: $url");
     exit;
   }
+    
+  //
+  // Modules can have a path name which overrides the url path their pages reside at. 
+  //
+  public static function getModuleIDForPathSegment($path) {
+    $GLOBALS['siteConfig']->loadWebAppFile('modules');
+    
+    $modulesConfig = $GLOBALS['siteConfig']->getWebAppVar('modules');
+    foreach ($modulesConfig as $moduleID => $moduleConfig) {
+      if (isset($moduleConfig['path']) && $moduleConfig['path'] == $path) {
+        return $moduleID;
+      }
+    }
+    return $path;
+  }
+  
+  public static function getPathSegmentForModuleID($id) {
+    $GLOBALS['siteConfig']->loadWebAppFile('modules');
+    
+    $modulesConfig = $GLOBALS['siteConfig']->getWebAppVar('modules');
+    if (isset($modulesConfig[$id], $modulesConfig[$id]['path'])) {
+      return $modulesConfig[$id]['path'];
+    }
+    return $id;
+  }
   
   //
   // Factory function
   // instantiates objects for the different modules
   //
-  public static function factory($id, $page='index', $args=array()) {
+  public static function factory($path, $page='index', $args=array()) {
+    // Is there a path alias for this module?
+    $id = self::getModuleIDForPathSegment($path);
+    
     $className = ucfirst($id).'Module';
     
     $modulePaths = array(
@@ -303,8 +339,7 @@ abstract class Module {
     throw new PageNotFound("Module '$id' not found while handling '{$_SERVER['REQUEST_URI']}'");
   }
   
-  protected function initSession()
-  {
+  protected function initSession() {
     if (!$this->session) {
         $authorityClass = $GLOBALS['siteConfig']->getVar('AUTHENTICATION_AUTHORITY');
         $authorityArgs = $GLOBALS['siteConfig']->getSection('authentication');
@@ -325,9 +360,11 @@ abstract class Module {
       $this->pagetype      = $GLOBALS['deviceClassifier']->getPagetype();
       $this->args = $args;
       return;
+      
     } else if (isset($modules[$this->id])) {
       $this->moduleName = $modules[$this->id]['title'];
       $moduleData = $modules[$this->id];
+    
     } else {
       throw new Exception("Module data for $this->id not found");
     }
@@ -341,7 +378,7 @@ abstract class Module {
     if ($secure && (!isset($_SERVER['HTTPS']) || ($_SERVER['HTTPS'] !='on'))) { 
         // redirect to https (at this time, we are assuming it's on the same host)
          $redirect= "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-         header("Location:$redirect");    
+         header("Location: $redirect");    
          exit();
     }
     
@@ -352,8 +389,12 @@ abstract class Module {
         $protected = self::argVal($moduleData, 'protected', false);
         if ($protected) {
             if (!$this->session->isLoggedIn()) {
-                $this->redirectToModule('error', array('code'=>'protected', 'url'=>URL_BASE . 'login/?' .
-                    http_build_query(array('url'=>$_SERVER['REQUEST_URI']))));
+                $this->redirectToModule('error', array(
+                  'code' => 'protected', 
+                  'url'  => self::buildURLForModule('login', array(
+                    'url' => $_SERVER['REQUEST_URI']
+                  ))
+                ));
             }
         }
     }
@@ -411,6 +452,9 @@ abstract class Module {
     foreach ($modules as $id => $info) {
       if (!$info['homescreen']) {
         unset($modules[$id]);
+        
+      } else if (!isset($info['url'])) {
+        $modules[$id]['url'] = '/'.self::argVal($info, 'path', $id).'/';
       }
     }
     
@@ -706,10 +750,10 @@ abstract class Module {
     $this->assign('isModuleHome', $this->page == 'index');
     
     // Font size for template
-    $this->assign('fontsizes',   $this->fontsizes);
-    $this->assign('fontsize',    $this->fontsize);
-    $this->assign('fontsizeCSS', $this->getFontSizeCSS());
-    $this->assign('fontSizeURL', $this->getFontSizeURL());
+    $this->assign('fontsizes',    $this->fontsizes);
+    $this->assign('fontsize',     $this->fontsize);
+    $this->assign('fontsizeCSS',  $this->getFontSizeCSS());
+    $this->assign('fontSizeURLs', $this->getFontSizeURLs());
 
     // Minify URLs
     $this->assign('minify', $this->getMinifyUrls());
@@ -750,7 +794,7 @@ abstract class Module {
       $helpConfig = $this->getTemplateVars('help');
       $this->assign('hasHelp', isset($helpConfig[$this->id]));
       
-      $template = 'modules/'.$this->id.'/'.$this->page;
+      $template = "modules/{$this->id}/{$this->page}";
     }
     
     // Pager support
@@ -797,7 +841,7 @@ abstract class Module {
   }
   
   protected function urlForFederatedSearch($searchTerms) {
-    return $this->buildBreadcrumbURL("/{$this->id}/search", array(
+    return $this->buildBreadcrumbURL('search', array(
       'filter' => $searchTerms,
     ), false);
   }

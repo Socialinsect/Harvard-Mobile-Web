@@ -91,24 +91,24 @@ class CustomizeModule extends Module {
       case 'touch':
       case 'basic':
         foreach ($moduleIDs as $index => $id) {
-          $modules[$id]['toggleDisabledURL'] = 'index.php?'.http_build_query(array(
+          $modules[$id]['toggleDisabledURL'] = $this->buildBreadcrumbURL('index', array(
             'action' => $modules[$id]['disabled'] ? 'on' : 'off',
             'module' => $id,
-          ));
+          ), false);
           
           if ($index > 0) {
-            $modules[$id]['swapUpURL'] = 'index.php?'.http_build_query(array(
+            $modules[$id]['swapUpURL'] = $this->buildBreadcrumbURL('index', array(
               'action'    => 'swap',
               'module1'   => $id,
               'module2'   => $moduleIDs[$index-1],
-            ));
+            ), false);
           }
           if ($index < (count($moduleIDs)-1)) {
-            $modules[$id]['swapDownURL'] = 'index.php?'.http_build_query(array(
+            $modules[$id]['swapDownURL'] = $this->buildBreadcrumbURL('index', array(
               'action'    => 'swap',
               'module1'   => $id,
               'module2'   => $moduleIDs[$index+1],
-            ));
+            ), false);
           }
         }
         break;

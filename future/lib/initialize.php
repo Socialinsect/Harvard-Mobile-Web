@@ -137,7 +137,7 @@ function Initialize(&$path=null) {
   
   // Check for device classification in url and strip it if present
   if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG') && 
-      preg_match(';^device/([^/]+)(/.*)$;', $path, $matches)) {
+      preg_match(';^device/([^/]+)/(.*)$;', $path, $matches)) {
     $device = $matches[1];  // layout forced by url
     $path = $matches[2];
     $urlPrefix .= "device/$device/";

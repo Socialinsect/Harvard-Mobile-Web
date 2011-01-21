@@ -148,11 +148,15 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
   }
   
   if (!strlen($path) || $path == '/') {
+    $redirectID = 'home';
+    
     if ($GLOBALS['deviceClassifier']->isComputer() || $GLOBALS['deviceClassifier']->isSpider()) {
-      header("Location: ./info/");
-    } else {
-      header("Location: ./home/");
+      $redirectID = 'info';
     }
+    $redirectPath = Module::getPathSegmentForModuleID($redirectID);
+    
+    header("Location: ./$redirectPath/");
+    
   } else {  
     $parts = explode('/', ltrim($path, '/'), 2);
 

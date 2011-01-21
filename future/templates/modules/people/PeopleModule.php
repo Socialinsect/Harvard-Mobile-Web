@@ -52,7 +52,7 @@ class PeopleModule extends Module {
         $lines = explode('$', $value);
         $count = count($lines);
         $linkAddress = ($count > 1) ? $lines[$count - 2] : $value;
-        $detail['url'] = '/map/search.php?'.http_build_query(array(
+        $detail['url'] = self::buildURLForModule('map', 'search', array(
           'filter' => $linkAddress
         ));
         $detail['class'] = 'map';

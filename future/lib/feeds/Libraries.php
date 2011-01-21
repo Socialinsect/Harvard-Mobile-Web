@@ -97,8 +97,10 @@ class Libraries {
       $value = HTML2TEXT(preg_replace(';<br\s*/>\s*\n?;', " \n", trim($value))); // not a url
       
     } else if (strpos($value, '<a ') !== FALSE && strpos($value, 'href=') !== FALSE) {
-      error_log("Warning: skipped HTML with links in field '$field'".
-        (isset($GLOBALS['librariesDebugEntryName']) ? " in {$GLOBALS['librariesDebugEntryName']}" : ''));
+      if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG')) {
+        error_log("Warning: skipped HTML with links in field '$field'".
+          (isset($GLOBALS['librariesDebugEntryName']) ? " in {$GLOBALS['librariesDebugEntryName']}" : ''));
+      }
       $value = '';  // skip fields which have html links 
     } 
     
