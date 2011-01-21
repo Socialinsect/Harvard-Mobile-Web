@@ -65,16 +65,16 @@ if [ "$1" = "2" ]; then # user is upgrading
    chgrp apache $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/data/menu.csv
 
    db_user=`grep DB_USER /tmp/harvardmobile-site-config.ini`
-   db_user=${db_user%\');}
-   db_user=${db_user##*\'}
+   db_user=${db_user%\");}
+   db_user=${db_user##*\"}
 
    db_pass=`grep DB_PASS /tmp/harvardmobile-site-config.ini`
-   db_pass=${db_pass%\');}
-   db_pass=${db_pass##*\'}
+   db_pass=${db_pass%\");}
+   db_pass=${db_pass##*\"}
 
    db_dbname=`grep DB_DBNAME /tmp/harvardmobile-site-config.ini`
-   db_dbname=${db_dbname%\');}
-   db_dbname=${db_dbname##*\'}
+   db_dbname=${db_dbname%\");}
+   db_dbname=${db_dbname##*\"}
 
    sed -i 's/db_user/'${db_user}'/g' $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/config/config.ini
    sed -i 's/db_pass/'${db_pass}'/g' $RPM_INSTALL_PREFIX0/harvardmobile/site/Harvard/config/config.ini
