@@ -12,6 +12,13 @@ class TranslocTransitDataParser extends TransitDataParser {
     return true;
   }
   
+  protected function getMapIconUrlForRouteStop($routeID) {
+    return $GLOBALS['siteConfig']->getVar('TRANSLOC_MARKERS_URL').http_build_query(array(
+      'm' => 'stop',
+      'c' => $this->getRouteColor($routeID),
+    ));
+  }
+ 
   protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
     return $GLOBALS['siteConfig']->getVar('TRANSLOC_MARKERS_URL').http_build_query(array(
       'm' => 'bus',

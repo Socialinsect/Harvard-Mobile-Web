@@ -785,7 +785,7 @@ abstract class TransitDataParser {
  
   protected function getMapIconUrlForStopPin($stopID) {
     if($_SERVER['SERVER_NAME'] != 'localhost') {
-      $iconURL = "http://".SERVER_HOST."/modules/transit/images/shuttle_stop_pin.png";
+      return "http://".SERVER_HOST."/modules/transit/images/shuttle_stop_pin.png";
     } else {
       return $GLOBALS['siteConfig']->getVar('GOOGLE_CHART_API_URL').http_build_query(array(
         'chst' => 'd_map_pin_icon',
