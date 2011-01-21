@@ -20,7 +20,7 @@
         <table border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td class="formlabel">Section:</td>
-            <td class="inputfield"><div>{$categorySelect}</div></td>
+            <td class="inputfield"><div id="news-category-select">{$categorySelect}</div></td>
             <td class="togglefield">
               {block name="categoryButton"}
                 <input src="/common/images/search_button.png" type="image" class="toggle-search-button"  onclick="return toggleSearch();" />
