@@ -59,8 +59,14 @@ class Libraries {
       
     } else {
       $url = $GLOBALS['siteConfig']->getVar($urlPrefix).$urlSuffix;
-    
-      $contents = file_get_contents($url);
+
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $url);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['siteConfig']->getVar('URL_LIBRARIES_USERAGENT'));
+      $contents = curl_exec($ch);
+      curl_close($ch);
+      
       error_log("LIBRARIES DEBUG: " . $url);
       if ($contents == "") {
         error_log("Failed to read contents from $url, reading expired cache");
