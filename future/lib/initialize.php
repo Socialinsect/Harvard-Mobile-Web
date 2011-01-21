@@ -55,8 +55,12 @@ function Initialize(&$path=null) {
   //
   // Set up host define for server name and port
   //
+  
   $host = $_SERVER['SERVER_NAME'];
-  if ($_SERVER['SERVER_PORT']) {
+  if (isset($_SERVER['HTTP_HOST']) && strlen($_SERVER['HTTP_HOST'])) {
+    $host = $_SERVER['HTTP_HOST'];
+    
+  } else if (isset($_SERVER['SERVER_PORT'])) {
     $host .= ":{$_SERVER['SERVER_PORT']}";
   }
   define('SERVER_HOST', $host);
