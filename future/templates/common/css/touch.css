@@ -179,7 +179,6 @@ a.formbutton {
 	background-position: right;
 	margin: 0 5px;
 	height: 36px;
-	overflow: hidden;
 	text-decoration: none;
 }
 
@@ -204,11 +203,10 @@ input.formbutton {
 	font-size: 100%;
 	line-height: 1.67em;
 	text-decoration: none;
-	padding: 5px 5px 5px 14px;
+	padding: 5px 5px 5px 12px;
 	margin-right: 0;
   border: none;
-	height: 36px;
-	overflow: hidden;  
+	height: 36px; 
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-l.gif);
 	background-repeat: no-repeat;
@@ -612,23 +610,26 @@ ul.focal li:first-child {
 	line-height: 1.167em;
 }
 
-.label {	
-	display: inline;
-	font-size: 100%;
-	line-height: 1.1em;
-	font-weight: bold;
+.label {
+    display: block;
+    width: 6em;
+    font-size: 85%;
+    position: relative;
+    line-height: 1.3em;
+    font-weight: bold;
+    text-align: right;
+    vertical-align: top;
 }
 
 .value {
-	display: inline;
-	line-height: 1.357em;
-	min-height: 21px;
-	padding-right: 20px;
-}
-
-
-.value a {
-	background-position: 8px right;
+    display: block;
+    margin-top: -1.2em;
+    margin-left: 5.5em;
+    font-size: 100%;
+    min-height: 1.3em;
+    line-height: 1.3em;
+    word-wrap: break-word;
+    vertical-align: top;
 }
 
 .longlabel {
@@ -640,10 +641,11 @@ ul.focal li:first-child {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: auto;
 }
+
 .longlabel + .value {
   margin-left: 0px;
+  margin-top: 0px;
 }
 
 .more {

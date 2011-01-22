@@ -4,7 +4,9 @@
   {block name="header"}
     <h2>
       <a id="infoLink" href="{$infoURL}">
+	  {block name="infobutton"}
         <img class="infoLink" src="/common/images/info_button@2x.png" alt="get info" width="44" height="38" />
+	  {/block}
       </a>
       {$location['name']}
       {if $location['primaryname'] != $location['name']}<br/>({$location['primaryname']}){/if}
@@ -22,7 +24,7 @@
 {foreach $location['collections'] as $collection}
   <div class="nonfocal itemInfo">
     <h3>{$collection['name']}</h3>
-    {if $collection['callNumber']}<span class="smallprint">{$collection['callNumber']}</span><br/>{/if}
+    {if $collection['callNumber']}<span class="smallprint">{$collection['callNumber']|replace:' ':' &shy;'}</span><br/>{/if}
   {foreach $collection['categories'] as $category}
     {if !$category@first}<div class="nonfocal itemInfo">{/if}
       {if $category['holdingStatus'] != 'collection'}<span class="smallprint">{$category['holdingStatus']}</span>{/if}
@@ -45,7 +47,7 @@
             {if $item['secondaryStatus']}({$item['secondaryStatus']}){/if}
           </span>
           <span class="itemType"><span class="smallprint">
-            {if $item['callNumber']}{$item['callNumber']}{if $item['description']}<br/>{/if}{/if}
+            {if $item['callNumber']}{$item['callNumber']|replace:' ':' &shy;'}{if $item['description']}<br/>{/if}{/if}
             {if $item['description']}{$item['description']}{/if}
           </span></span>
         {/block}

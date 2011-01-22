@@ -6,7 +6,7 @@
   font-size: 100%;
   line-height: 1.176em;
   overflow: hidden;
-  max-height: 41px;
+  max-height: 2.36em;
 }
 #bookmark {
 	display: block;
@@ -81,7 +81,7 @@
   background-repeat: no-repeat;
   background-size: 16px;
   -webkit-background-size: 16px;
-  line-height: 17px;
+  line-height: 1.214em;
 }
 .listItems .book {
   background-image: url(/modules/libraries/images/book.png);
@@ -116,6 +116,13 @@
   min-height: 16px;
 }
 
+.listItems .pagerlink {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
+}
+
 table.search {
   border: none;
 }
@@ -141,8 +148,11 @@ table.search input[type=text], table.search select {
   font-size: 88.889%;
 }
 
-.value {
-  margin-left: 86px;
+.label {
+  width: 6em;
+}
+.label + .value {
+  margin-left: 5.25em;
 }
 
 .thumbnail {

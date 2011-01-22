@@ -340,8 +340,8 @@ class CalendarModule extends Module {
         $this->assign('current', $current);
         $this->assign('next',    $next);
         $this->assign('prev',    $prev);
-        $this->assign('nextUrl', $this->categoryDayURL($next, $catid, $name, false));
-        $this->assign('prevUrl', $this->categoryDayURL($prev, $catid, $name, false));
+        $this->assign('nextURL', $this->categoryDayURL($next, $catid, $name, false));
+        $this->assign('prevURL', $this->categoryDayURL($prev, $catid, $name, false));
         $this->assign('isToday', $dayRange->contains(new TimeRange($current)));
 
         $events = array();
@@ -412,8 +412,8 @@ class CalendarModule extends Module {
         $this->assign('current', $current);
         $this->assign('next',    $next);
         $this->assign('prev',    $prev);
-        $this->assign('nextUrl', $this->dayURL($next, $type, false));
-        $this->assign('prevUrl', $this->dayURL($prev, $type, false));
+        $this->assign('nextURL', $this->dayURL($next, $type, false));
+        $this->assign('prevURL', $this->dayURL($prev, $type, false));
         $this->assign('events',  $events);        
         break;
         
@@ -574,17 +574,17 @@ class CalendarModule extends Module {
           );
         }
 
-        $current =  $year   .'-'.($year+1);
-        $next    = ($year+1).'-'.($year+2);
-        $prev    = ($year-1).'-'. $year;
+        $current =  $year   .'&nbsp;-&nbsp;'.($year+1);
+        $next    = ($year+1).'&nbsp;-&nbsp;'.($year+2);
+        $prev    = ($year-1).'&nbsp;-&nbsp;'. $year;
 
         if ((date('Y')+1) > $year) {
           $this->assign('next',    $next);
-          $this->assign('nextUrl', $this->academicURL($year+1, false));
+          $this->assign('nextURL', $this->academicURL($year+1, false));
         }
         if ($year > intval(date('Y'))) {
           $this->assign('prev',    $prev);
-          $this->assign('prevUrl', $this->academicURL($year-1, false));
+          $this->assign('prevURL', $this->academicURL($year-1, false));
         }
 
         $this->assign('current', $current);

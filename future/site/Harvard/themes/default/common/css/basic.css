@@ -2,11 +2,12 @@
 
 body {
 	background: #ded8c9 url(../images/background-tile.jpg);
+	font-size: 14px/1.28em;
 }
 
 body, th, td, li, option, select, input {
 	/* Primary font */
-	font: 14px/1.28em Helvetica, Arial, sans-serif;
+	font-family: Helvetica, Arial, sans-serif;
 	color: #222;
 }
 

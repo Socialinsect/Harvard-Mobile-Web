@@ -6,8 +6,10 @@
 
 .springboard div {
 	/* Overall size of one cell in the springboard */
-	width: 80px;
-	height: 106px;
+	width: 5.1em;
+	height: 6.6em;
+	max-width: 115px;
+	max-height: 120px;
 }
 
 .springboard div a {	
@@ -23,8 +25,10 @@
 
 .springboard div.utility {
 	/* Overall size of one cell in the springboard's fixed utility-type items */
-	width: 76px;
-	height: 106px;
+	width: 5.1em;
+	height: 6.6em;
+	max-width: 115px;
+	max-height: 120px;
 }
 
 .springboard div.utility a {

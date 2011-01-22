@@ -6,7 +6,7 @@
   font-size: 100%;
   line-height: 1.176em;
   overflow: hidden;
-  max-height: 41px;
+  max-height: 2.352em;
 }
 #bookmark {
 	display: block;
@@ -99,6 +99,13 @@
   background-image: url(/modules/libraries/images/video.gif);
 }
 
+.listItems .pagerlink {
+  background-image: none;
+  color: #1A1611;
+  font-weight: bold;
+  font-size: 90%;
+}
+
 table.search {
   border: none;
 }
@@ -124,8 +131,11 @@ table.search input[type=text], table.search select {
   font-size: 88.889%;
 }
 
-.value {
-  margin-left: 86px;
+.label {
+  width: 6.5em;
+}
+.label + .value {
+  margin-left: 7em;
 }
 
 .thumbnail {

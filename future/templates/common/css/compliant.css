@@ -223,7 +223,6 @@ a.formbutton {
 	background-position: right;
 	margin: 0 5px;
 	height: 36px;
-	overflow: hidden;
 	text-decoration: none;
 }
 
@@ -232,7 +231,7 @@ a.formbutton div {
 	color: #fff;
 	font-weight: bold;
 	font-size: 94.12%;
-	line-height: 1.625em;
+	line-height: 26px;  /* height minus padding */
 	text-decoration: none;
 	padding: 5px 5px 5px 12px;
 	background-image: url(/common/images/button-sd-l.png);
@@ -247,13 +246,12 @@ input.formbutton {
 	color: #fff;
 	font-weight: bold;
 	font-size: 94.12%;
-	line-height: 1.625em;
+	line-height: 26px;  /* height minus padding */
 	text-decoration: none;
-	padding: 5px 5px 5px 14px;
+	padding: 5px 5px 5px 12px;
 	margin-right: 0;
   border: none;
 	height: 36px;
-	overflow: hidden;  
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-l.png);
 	background-repeat: no-repeat;
@@ -618,7 +616,7 @@ ul.focal li:first-child {
 }
 
 .results li div.smallprint {
-  padding-top: 2px;
+  padding-top: .25em;
 }
 
 .results li ul li {
@@ -793,47 +791,40 @@ ul.focal li:first-child {
 	line-height: 1.1167em;
 }
 
-.label {	
-	display: block;
-	position: absolute;
-	left: 0;
-	top: 15px;
-	width: 7em;
-	font-size: 76.471%;
-	line-height: 1.1em;
-	font-weight: bold;
-	text-align: right;
-	word-wrap: normal;
+.label {
+    display: block;
+    width: 6em;
+    position: relative;
+    font-size: 76.471%;
+    line-height: 1.3em;
+    font-weight: bold;
+    text-align: right;
 }
 
 .value {
-	display: block;
-	margin-left: 5.2em;
-	font-size: 100%;
-	min-height: 21px;
-	line-height: 1.177em;
-	padding-right: 20px;
-	word-wrap: break-word;
-}
-
-
-.value a {
-	background-position: 8px right;
+    display: block;
+    margin-top: -1.2em;
+    margin-left: 5em;
+    font-size: 100%;
+    min-height: 1.3em;
+    line-height: 1.3em;
+    word-wrap: break-word;
 }
 
 .longlabel {
 	display: block;
-	font-size: 76.47%;
-	line-height: 1.15em;
+	font-size: 76.471%;
+	line-height: 1.154em;
 	font-weight: bold;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: auto;
 }
+
 .longlabel + .value {
   margin-left: 0px;
+  margin-top: 0px;
 }
 
 .more {
@@ -1218,7 +1209,7 @@ h2.icon {
 	bottom: 0px;
 }
 
-/'
+/*
 #scrim {
 	position: absolute;
 	top: 0px;
@@ -1229,7 +1220,7 @@ h2.icon {
 	opacity: 0.65;
 	background-color: #212b34
 }
-'/
+*/
 #message {
 	position: absolute;
 	z-index: 100001;
@@ -1282,7 +1273,6 @@ h2.icon {
 	margin: -12px 0 0 8px;
 }
 #sharesheet {
-	visibility: hidden;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -1310,7 +1300,8 @@ h2.icon {
 	margin-left: -130px;
 	-webkit-border-radius: 10px;
 	padding: 10px 20px;
-	background: #ddd; /* Non-CSS3 browsers */
+	background: #eee; /* Non-CSS3 browsers */
+	/* This doesn't work with the Palm Pre: 
 	background: -webkit-gradient(linear, left top, left bottom, from(#f9f9f9), to(#d0d0d0)); /* Webkit browsers */
 	background: -moz-linear-gradient(top,  #f9f9f9,  #d0d0d0); /* Firefox 3.6+ */
 	-moz-box-shadow: 0px 3px 7px #333;
@@ -1338,4 +1329,15 @@ h2.icon {
 	float: left;
 	margin-right: 6px;
 	border: none;
+}
+
+/* firefox adds these a tags when you edit the dom */
+.ellipsis a[xmlns] {
+	display: inline !important;
+	padding: 0 !important;
+	margin: 0 !important;	 
+	background: none !important; 
+	line-height: inherit !important;
+	text-decoration: none !important;
+	font-size: inherit !important;
 }

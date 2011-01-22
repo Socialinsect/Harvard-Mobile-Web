@@ -300,6 +300,11 @@ class MapModule extends Module {
           // they will return lists of categories instead of lists of features
           
           $features = $layer->getFeatureList();
+
+          $categoryTitle = $layer->getName();
+          $this->setBreadcrumbTitle($categoryTitle);
+          $this->setBreadcrumbLongTitle($categoryTitle);
+
           $places = array();
           foreach ($features as $feature) {
             $title = $feature->getTitle();
@@ -308,7 +313,6 @@ class MapModule extends Module {
               'url'   => $this->detailURL($feature->getIndex(), $category),
             );
           }
-
           $this->assign('title',      $layer->getTitle());
           $this->assign('places',     $places);          
           $this->assign('categories', $categories);
@@ -328,7 +332,6 @@ class MapModule extends Module {
 
         $hasMap = true;
         $this->assign('hasMap', $hasMap);
-
         if (!$this->feeds)
             $this->feeds = $this->loadFeedData();
 

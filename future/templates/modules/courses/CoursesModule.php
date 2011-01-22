@@ -150,13 +150,13 @@ class CoursesModule extends Module {
   }
   
   private function personURL($person) {
-    return '../people/search.php?'.http_build_query(array(
+    return self::buildURLForModule('people', 'search', array(
       'filter' => str_replace('.', '', preg_replace('/\s+/', ' ', $person)),
     ));
   }
   
   private function mapURLForClassTime($location) {
-    return '../map/search.php?'.http_build_query(array(
+    return self::buildURLForModule('map', 'search', array(
       'loc'    => 'courses',
       'filter' => $location,
     ));

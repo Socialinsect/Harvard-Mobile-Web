@@ -21,7 +21,7 @@ class HomeModule extends Module {
           if (!$info['disabled']) {
             $module = array(
               'title' => $info['title'],
-              'url'   => self::argVal($info, 'url', "/$id/"),
+              'url'   => $info['url'],
               'img'   => self::argVal($info, 'img', "/modules/{$this->id}/images/$id").$this->imageExt,
             );
             if ($id == 'about' && $whatsNewCount > 0) {

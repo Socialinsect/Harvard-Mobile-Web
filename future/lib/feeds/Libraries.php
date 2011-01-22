@@ -59,8 +59,14 @@ class Libraries {
       
     } else {
       $url = $GLOBALS['siteConfig']->getVar($urlPrefix).$urlSuffix;
-    
-      $contents = file_get_contents($url);
+
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $url);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_USERAGENT, $GLOBALS['siteConfig']->getVar('URL_LIBRARIES_USERAGENT'));
+      $contents = curl_exec($ch);
+      curl_close($ch);
+      
       error_log("LIBRARIES DEBUG: " . $url);
       if ($contents == "") {
         error_log("Failed to read contents from $url, reading expired cache");
@@ -97,8 +103,10 @@ class Libraries {
       $value = HTML2TEXT(preg_replace(';<br\s*/>\s*\n?;', " \n", trim($value))); // not a url
       
     } else if (strpos($value, '<a ') !== FALSE && strpos($value, 'href=') !== FALSE) {
-      error_log("Warning: skipped HTML with links in field '$field'".
-        (isset($GLOBALS['librariesDebugEntryName']) ? " in {$GLOBALS['librariesDebugEntryName']}" : ''));
+      if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG')) {
+        error_log("Warning: skipped HTML with links in field '$field'".
+          (isset($GLOBALS['librariesDebugEntryName']) ? " in {$GLOBALS['librariesDebugEntryName']}" : ''));
+      }
       $value = '';  // skip fields which have html links 
     } 
     
@@ -736,7 +744,7 @@ class Libraries {
       'title'    => 'ex-Everything-1.0',
       'author'   => 'author',
       'language' => 'language-id',
-      'pubDate'  => 'ex-Everything-6.0',
+      'pubDate'  => 'ex-Everything-7.0',
     );
     $getParamMapping = array(
       'format'   => 'fmt', 

@@ -11,6 +11,20 @@
 
 define('ROOT_DIR', dirname(__FILE__).'/..'); // change if this file is moved
 
+function CacheHeaders($file)
+{
+    $mtime = gmdate('D, d M Y H:i:s', filemtime($file)) . ' GMT';
+    if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
+        if ($_SERVER['HTTP_IF_MODIFIED_SINCE'] == $mtime) {
+            header('HTTP/1.1 304 Not Modified');
+            exit();
+        }
+    }
+    
+    header("Last-Modified: $mtime");
+    return;
+}
+
 function Initialize(&$path=null) {
   //
   // Constants which cannot be set by config file
@@ -41,8 +55,12 @@ function Initialize(&$path=null) {
   //
   // Set up host define for server name and port
   //
+  
   $host = $_SERVER['SERVER_NAME'];
-  if ($_SERVER['SERVER_PORT']) {
+  if (isset($_SERVER['HTTP_HOST']) && strlen($_SERVER['HTTP_HOST'])) {
+    $host = $_SERVER['HTTP_HOST'];
+    
+  } else if (isset($_SERVER['SERVER_PORT'])) {
     $host .= ":{$_SERVER['SERVER_PORT']}";
   }
   define('SERVER_HOST', $host);
@@ -123,7 +141,7 @@ function Initialize(&$path=null) {
   
   // Check for device classification in url and strip it if present
   if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG') && 
-      preg_match(';^device/([^/]+)(/.*)$;', $path, $matches)) {
+      preg_match(';^device/([^/]+)/(.*)$;', $path, $matches)) {
     $device = $matches[1];  // layout forced by url
     $path = $matches[2];
     $urlPrefix .= "device/$device/";

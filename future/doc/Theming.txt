@@ -140,7 +140,7 @@ The following reserved variables are used by the header and footer templates:
   $fontsizes                    - An array of possible font sizes
   $fontsize                     - The current font size
   $fontsizeCSS                  - An inline CSS block to set the current font
-  $fontSizeURL                  - A url to set the font (the font name can be appended to it)
+  $fontSizeURLs                 - A list of urls to set the font (indexed by the font size)
   $minify                       - An array of urls to load the CSS and Javascript for the page and device
   $hasHelp                      - Whether or not the module has help text
       

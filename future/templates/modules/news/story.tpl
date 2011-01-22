@@ -20,17 +20,19 @@
     {/if}        
   </div><!--storysubhead-->
   
-  <div id="storybody">
+  <div id="story">
     {if $pager['pageNumber'] == 0}
         {if isset($image)}
           <div id="image">
-            <img class="thumbnail" src="{$image['src']}">
+            <img class="thumbnail" src="{$image['src']}" />
           </div>
         {/if}
     {/if}
     
-    {include file="findInclude:common/pager.tpl"}
-  </div><!--storybody-->
+    <span id="storybody">
+      {include file="findInclude:common/pager.tpl"}
+    </span>
+  </div><!--story-->
 </div>
 
 {include file="findInclude:common/footer.tpl"}

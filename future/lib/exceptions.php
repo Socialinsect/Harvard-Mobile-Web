@@ -39,7 +39,7 @@ function getErrorURL($exception, $devError = false) {
     $args['error'] = $devError;
   }
   
-  return URL_PREFIX.'error/?'.http_build_query($args);
+  return Module::buildURLForModule('error', 'index', $args);
 }
 
 //
