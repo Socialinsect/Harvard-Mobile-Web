@@ -43,14 +43,14 @@ class ArcGISDataController extends MapLayerDataController
         return $this->parser->getFeatureList();
     }
     
-    private function initializeParser() {
+    protected function initializeParser() {
         if (!$this->parser->isPopulated()) {
             $data = $this->getData();
             $this->parseData($data);
         }
     }
     
-    private function initializeFeatures() {
+    protected function initializeFeatures() {
         if (!$this->parser->selectedLayerIsPopulated()) {
             $oldBaseURL = $this->baseURL;
             $this->parser->setBaseURL($oldBaseURL);
@@ -64,7 +64,7 @@ class ArcGISDataController extends MapLayerDataController
         }
     }
     
-    private function initializeLayers() {
+    protected function initializeLayers() {
         if (!$this->parser->selectedLayerIsInitialized()) {
             // set this directly so we don't interfere with cache
             $oldBaseURL = $this->baseURL;

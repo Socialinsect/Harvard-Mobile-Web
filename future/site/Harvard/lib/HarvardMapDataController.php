@@ -3,6 +3,7 @@
 class HarvardMapDataController extends ArcGISDataController
 {
     protected $returnsGeometry = true;
+    protected $isSearchLayer = false;
 
     protected function init($args)
     {
@@ -21,24 +22,38 @@ class HarvardMapDataController extends ArcGISDataController
     public function getItem($name)
     {
         $theItem = null;
-        $items = $this->getFeatureList();
-        if (isset($items[$name])) {
-            $theItem = $items[$name];
-            if (!$this->returnsGeometry || $theItem->getGeometry() == null) {
-                $featureInfo = $this->queryFeatureServer($theItem);
-                $theItem->setGeometryType($featureInfo['geometryType']);
-                $theItem->readGeometry($featureInfo['geometry']);
+        
+        if ($this->searchable) {
+            $this->initializeParser();
+            $this->initializeLayers();
+            $featureInfo = self::getBldgDataByNumber($name);
+            if ($featureInfo) {
+                $theItem = $this->parser->featureFromJSON($featureInfo);
+                // cheating here as i'm not sure when fields get
+                // returned as column ids or aliases
+                $theItem->setTitleField("Building Name");
             }
 
-            if ($theItem->getField('Photo') === null) {
-                if (!isset($featureInfo))
+        } else {
+            $items = $this->getFeatureList();
+            if (isset($items[$name])) {
+                $theItem = $items[$name];
+                if (!$this->returnsGeometry || $theItem->getGeometry() == null) {
                     $featureInfo = $this->queryFeatureServer($theItem);
+                    $theItem->setGeometryType($featureInfo['geometryType']);
+                    $theItem->readGeometry($featureInfo['geometry']);
+                }
 
-                $photoFields = array('PHOTO_FILE', 'Photo', 'Photo File');
-                foreach ($photoFields as $field) {
-                    if (isset($featureInfo['attributes'][$field])) {
-                        $theItem->setField('Photo', $featureInfo['attributes'][$field]);
-                        break;
+                if ($theItem->getField('Photo') === null) {
+                    if (!isset($featureInfo))
+                        $featureInfo = $this->queryFeatureServer($theItem);
+
+                    $photoFields = array('PHOTO_FILE', 'Photo', 'Photo File');
+                    foreach ($photoFields as $field) {
+                        if (isset($featureInfo['attributes'][$field])) {
+                            $theItem->setField('Photo', $featureInfo['attributes'][$field]);
+                            break;
+                        }
                     }
                 }
             }
@@ -70,7 +85,6 @@ class HarvardMapDataController extends ArcGISDataController
                 error_log("could not find building $bldgId", 0);
             }
         }
-
         $result = $featureCache->read($bldgId);
         return $result;
     }
@@ -103,12 +117,17 @@ class HarvardMapDataController extends ArcGISDataController
                 break;
             }
         }
+        var_dump($bldgId);
         return self::getSupplementaryFeatureData($bldgId, $searchField, $queryBase);
     }
     
-    public static function getBldgByNumber($bldgId) {
+    public static function getBldgDataByNumber($bldgId) {
         $queryBase = $GLOBALS['siteConfig']->getVar('ARCGIS_FEATURE_SERVER');
-        return ArcGISDataController::getSupplementaryFeatureData($bldgId, 'Building Number', $queryBase);
+        return self::getSupplementaryFeatureData($bldgId, 'Building Number', $queryBase);
+    }
+    
+    public function setIsSearchLayer($isSearchLayer) {
+        $this->isSearchLayer = $isSearchlayer;
     }
 
 }

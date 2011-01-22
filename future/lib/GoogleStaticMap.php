@@ -1,6 +1,6 @@
 <?php
 
-require_once 'encodePolylineFromArray.php';
+require_once 'Polyline.php';
 
 // http://code.google.com/apis/maps/documentation/staticmaps
 class GoogleStaticMap extends StaticMapImageController {
@@ -121,7 +121,7 @@ class GoogleStaticMap extends StaticMapImageController {
 
     public function addPath($points, $style=null)
     {
-        $polyline = encodePolylineFromArray($points);
+        $polyline = Polyline::encodeFromArray($points);
 
         if ($style === null) {
             // color can be 0xRRGGBB or

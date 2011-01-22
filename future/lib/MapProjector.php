@@ -40,6 +40,7 @@ class MapProjector {
                 'f' => 'json',
                 );
             $query = $this->baseURL.'?'.http_build_query($params);
+            var_dump($query);
             $response = file_get_contents($query);
             $json = json_decode($response, true);
             if ($json && isset($json['geometries']) && is_array($json['geometries'])) {

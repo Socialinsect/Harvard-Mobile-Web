@@ -84,7 +84,7 @@ class ArcGISFeature implements MapFeature
     
     // if we want to turn off display for certain fields
     // TODO put this in a more accessible place
-    private $blackList;
+    private $blackList = array();
     
     public function __construct($attributes, $geometry=null)
     {
@@ -403,7 +403,13 @@ class ArcGISLayer {
             $this->spatialRef = $data['extent']['spatialReference']['wkid'];
 
             foreach ($data['fields'] as $fieldInfo) {
-                $this->fieldNames[$fieldInfo['name']] = $fieldInfo['alias'];
+                // often the field names will be full paths to SQL tables,
+                // as in database.table or server.scheme.database.table
+                //$nameRefParts = explode('.', $fieldInfo['name']);
+                //var_dump($fieldInfo);
+                //$name = end($nameRefParts);
+                $name = $fieldInfo['name'];
+                $this->fieldNames[$name] = $fieldInfo['alias'];
             }
     
             $this->isInitialized = true;
@@ -428,7 +434,9 @@ class ArcGISLayer {
         $displayAttribs = array();
         // use human-readable field alias to construct feature details
         foreach ($attribs as $name => $value) {
-            $displayAttribs[$this->fieldNames[$name]] = $value;
+            if (isset($this->fieldNames[$name]))
+                $name = $this->fieldNames[$name];
+            $displayAttribs[$name] = $value;
         }
         $geometry = $this->geometryType ? $featureInfo['geometry'] : null;
         $feature = new ArcGISFeature($displayAttribs, $geometry);

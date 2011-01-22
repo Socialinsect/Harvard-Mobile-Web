@@ -84,7 +84,8 @@ class MapLayerDataController extends DataController
                 }
             }
             if (count($validTokens)) {
-                foreach ($this->items() as $item) {
+                $id = 0;
+                foreach ($this->items() as $id => $item) {
                     $matched = true;
                     $title = $item->getTitle();
                     foreach ($validTokens as $token) {
@@ -93,7 +94,7 @@ class MapLayerDataController extends DataController
                         }
                     }
                     if ($matched) {
-                        $results[] = $item;
+                        $results[$id] = $item;
                     }
                 }
             }

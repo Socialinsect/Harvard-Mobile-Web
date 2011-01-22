@@ -1,5 +1,13 @@
 <?php
 
+// TODO for this module:
+// - terminology is bad:
+//   * "category" and "layer" are used interchangeably when we
+//      mean the thing that contains the image controller
+//   * "selectvalues" is MIT legacy and we really mean a place identifier
+// - need to write map image controllers in such a way that other modules
+//   can incorporate map images without redoing work
+
 require_once realpath(LIB_DIR.'/Module.php');
 require_once realpath(LIB_DIR.'/MapLayerDataController.php');
 require_once realpath(LIB_DIR.'/StaticMapImageController.php');
@@ -144,12 +152,7 @@ class MapModule extends Module {
     ), $addBreadcrumb);
   }
   
-  // TODO ensure that map search results always return objects
-  // that implement MapFeature, then use getTitle and getSubtitle
-  private function getTitleForSearchResult($result) {
-    return $result->getTitle();
-  }
-  
+  /*
   // TODO this only works on ArcGISFeature
   // and Building Number only works on harvard CampusMap service
   private function detailURLArgsForResult($result) {
@@ -157,17 +160,21 @@ class MapModule extends Module {
       'selectvalues' => $result->getField('Building Number'),
     );
   }
-  
+  */
   private function detailURLForFederatedSearchResult($result, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', $this->detailURLArgsForResult($result), $addBreadcrumb);
   }
   
-  private function detailURLForResult($id, $category, $addBreadcrumb=true) {
+  private function detailURLForResult(/*$id, $category*/$urlArgs, $addBreadcrumb=true) {
+    return $this->buildBreadcrumbURL('detail', $urlArgs, $addBreadcrumb);
+
+    /*  
     return $this->buildBreadcrumbURL('detail', 
       array(
         'selectvalues' => $id,
         'category'     => $category,
         ), $addBreadcrumb);
+        */
   }
   
   private function detailUrlForPan($direction, $mapController) {
@@ -200,14 +207,20 @@ class MapModule extends Module {
   }
 
   public function federatedSearch($searchTerms, $maxCount, &$results) {
-    $searchResults = array_values(searchCampusMap($searchTerms));
+    $mapSearchClass = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_CLASS');
+    $mapSearch = new $mapSearchClass();
+    if (!$this->feeds)
+        $this->feeds = $this->loadFeedData();
+    $mapSearch->setFeedData($this->feeds);
+    $searchResults = array_values($mapSearch->searchCampusMap($searchTerms));
     
     $limit = min($maxCount, count($searchResults));
     for ($i = 0; $i < $limit; $i++) {
       $result = array(
-        'title' => $this->getTitleForSearchResult($searchResults[$i]),
-        'url'   => $this->buildBreadcrumbURL("/{$this->id}/detail", 
-          $this->detailURLArgsForResult($searchResults[$i]), false),
+        'title' => $mapSearch->getTitleForSearchResult($searchResults[$i]),
+        'url'   => $this->buildBreadcrumbURL("/{$this->id}/detail",
+            $mapSearch->getURLArgsForSearchResult($searchResults[$i]), false),
+         // $this->detailURLArgsForResult($searchResults[$i]), false),
       );
       $results[] = $result;
     }
@@ -235,8 +248,7 @@ class MapModule extends Module {
 
         $categories = array();
         foreach ($this->feeds as $id => $feed) {
-            // TODO need better way to create search results controller
-            if ($feed['TITLE'] == 'Search Results') continue;
+            if (isset($feed['HIDDEN']) && $feed['HIDDEN']) continue;
         
             $categories[] = array(
                 'title' => $feed['TITLE'],
@@ -254,24 +266,32 @@ class MapModule extends Module {
             $searchTerms = $this->args['filter'];
 
             // need more standardized var name for this config
-            $federatedSearch = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_URL');
-            if ($federatedSearch) {
-                $searchResults = searchCampusMap($searchTerms); // defined in lib/MapSearch.php
+            //$externalSearch = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_URL');
+            $mapSearchClass = $GLOBALS['siteConfig']->getVar('MAP_SEARCH_CLASS');
+            $mapSearch = new $mapSearchClass();
+            if (!$this->feeds)
+                $this->feeds = $this->loadFeedData();
+            $mapSearch->setFeedData($this->feeds);
+            
+            //if ($externalSearch) {
+                $searchResults = $mapSearch->searchCampusMap($searchTerms);
 
                 if (count($searchResults) == 1) {
-                    $this->redirectTo('detail', $this->detailURLArgsForResult($searchResults[0]));
+                    $this->redirectTo('detail', $mapSearch->getURLArgsForSearchResult($searchResults[0]));
+                    //$this->redirectTo('detail', $this->detailURLArgsForResult($searchResults[0]));
                 } else {
                     $places = array();
                     foreach ($searchResults as $result) {
-                        $title = $this->getTitleForSearchResult($result);
+                        $title = $mapSearch->getTitleForSearchResult($result);
                         $place = array(
                             'title' => $title,
-                            'url' => $this->detailURLForFederatedSearchResult($result),
+                            'url' => $this->detailURLForResult($mapSearch->getURLArgsForSearchResult($result)),
+                            //'url' => $this->detailURLForFederatedSearchResult($result),
                         );
                         $places[] = $place;
                     }
                 }
-                
+                /*
             } else { // perform search on each layer
                 if (!$this->feeds)
                     $this->feeds = $this->loadFeedData();
@@ -291,14 +311,14 @@ class MapModule extends Module {
                 }
 
                 if ($numResults == 1) {
-                    $title = $this->getTitleForSearchResult($searchResults[$lastSearchedLayer][0]);
+                    $title = $mapSearch::getTitleForSearchResult($searchResults[$lastSearchedLayer][0]);
                     $this->redirectTo('detail',
                         array('selectvalues' => $title, 'category' => $lastSearchedLayer));
                 } else {
                     $places = array();
                     foreach ($searchResults as $category => $results) {
                         foreach ($results as $result) {
-                            $title = $this->getTitleForSearchResult($result);
+                            $title = $mapSearch::getTitleForSearchResult($result);
                             $place = array(
                                 'title' => $title,
                                 'url' => $this->detailURLForResult($result->getIndex(), $category),
@@ -308,7 +328,7 @@ class MapModule extends Module {
                     }
                 }
             }
-            
+            */
             $this->assign('searchTerms', $searchTerms);
             $this->assign('places',      $places);
           
@@ -371,15 +391,8 @@ class MapModule extends Module {
             $this->feeds = $this->loadFeedData();
 
         $index = $this->args['selectvalues'];
-        if (isset($this->args['category'])) {
-            $layer = $this->getLayer($this->args['category']);
-            $feature = $layer->getFeature($index);
-        } else {
-            // for external search results.
-            // TODO get rid of hard coding
-            $layer = $this->getLayer(8);
-            $feature = $layer->getFeatureByField('Building Number', $index);
-        }
+        $layer = $this->getLayer($this->args['category']);
+        $feature = $layer->getFeature($index);
         $this->initializeMap($layer, $feature);
 
         $this->assign('name', $feature->getTitle());
@@ -387,8 +400,9 @@ class MapModule extends Module {
 
         // Photo Tab
         $photoServer = $GLOBALS['siteConfig']->getVar('MAP_PHOTO_SERVER');
-        // TODO this method of getting photo url is harvard-specific and
+        // this method of getting photo url is harvard-specific and
         // further only works on data for ArcGIS features.
+        // TODO allow map controllers to determine what to put in the tabs
         if ($photoServer) {
             $photoFile = $feature->getField('Photo');
             if (isset($photoFile) && $photoFile != 'Null') {
@@ -402,8 +416,7 @@ class MapModule extends Module {
         
         // Details Tab
         $tabKeys[] = 'detail';
-        $detailConfig = $this->loadWebAppConfigFile('map-detail', 'detailConfig');
-        if (get_class($layer) == 'ArcGISDataController') {
+        if (is_subclass_of($layer, 'ArcGISDataController')) {
             $feature->setBlackList($detailConfig['details']['suppress']);
         }
         
