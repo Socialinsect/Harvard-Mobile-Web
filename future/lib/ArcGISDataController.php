@@ -33,7 +33,7 @@ class ArcGISDataController extends MapLayerDataController
 
     public function getTitle() {
         $this->initializeParser();
-        return $this->parser->getMapName();
+        return $this->parser->getTitle();
     }
     
     public function items() {

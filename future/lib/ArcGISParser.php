@@ -265,7 +265,7 @@ class ArcGISParser extends DataParser
         return $this->isPopulated;
     }
 
-    public function getMapName() {
+    public function getTitle() {
         return $this->mapName;
     }
     

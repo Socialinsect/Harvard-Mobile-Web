@@ -301,10 +301,6 @@ class MapModule extends Module {
           
           $features = $layer->getFeatureList();
 
-          $categoryTitle = $layer->getName();
-          $this->setBreadcrumbTitle($categoryTitle);
-          $this->setBreadcrumbLongTitle($categoryTitle);
-
           $places = array();
           foreach ($features as $feature) {
             $title = $feature->getTitle();
