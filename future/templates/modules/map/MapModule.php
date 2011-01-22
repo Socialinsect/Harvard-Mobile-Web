@@ -152,29 +152,12 @@ class MapModule extends Module {
     ), $addBreadcrumb);
   }
   
-  /*
-  // TODO this only works on ArcGISFeature
-  // and Building Number only works on harvard CampusMap service
-  private function detailURLArgsForResult($result) {
-    return array(
-      'selectvalues' => $result->getField('Building Number'),
-    );
-  }
-  */
   private function detailURLForFederatedSearchResult($result, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', $this->detailURLArgsForResult($result), $addBreadcrumb);
   }
   
   private function detailURLForResult(/*$id, $category*/$urlArgs, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', $urlArgs, $addBreadcrumb);
-
-    /*  
-    return $this->buildBreadcrumbURL('detail', 
-      array(
-        'selectvalues' => $id,
-        'category'     => $category,
-        ), $addBreadcrumb);
-        */
   }
   
   private function detailUrlForPan($direction, $mapController) {
@@ -220,7 +203,6 @@ class MapModule extends Module {
         'title' => $mapSearch->getTitleForSearchResult($searchResults[$i]),
         'url'   => $this->buildBreadcrumbURL("/{$this->id}/detail",
             $mapSearch->getURLArgsForSearchResult($searchResults[$i]), false),
-         // $this->detailURLArgsForResult($searchResults[$i]), false),
       );
       $results[] = $result;
     }
@@ -273,62 +255,22 @@ class MapModule extends Module {
                 $this->feeds = $this->loadFeedData();
             $mapSearch->setFeedData($this->feeds);
             
-            //if ($externalSearch) {
-                $searchResults = $mapSearch->searchCampusMap($searchTerms);
+            $searchResults = $mapSearch->searchCampusMap($searchTerms);
 
-                if (count($searchResults) == 1) {
-                    $this->redirectTo('detail', $mapSearch->getURLArgsForSearchResult($searchResults[0]));
-                    //$this->redirectTo('detail', $this->detailURLArgsForResult($searchResults[0]));
-                } else {
-                    $places = array();
-                    foreach ($searchResults as $result) {
-                        $title = $mapSearch->getTitleForSearchResult($result);
-                        $place = array(
-                            'title' => $title,
-                            'url' => $this->detailURLForResult($mapSearch->getURLArgsForSearchResult($result)),
-                            //'url' => $this->detailURLForFederatedSearchResult($result),
-                        );
-                        $places[] = $place;
-                    }
-                }
-                /*
-            } else { // perform search on each layer
-                if (!$this->feeds)
-                    $this->feeds = $this->loadFeedData();
-
-                $searchResults = array();
-                $numResults = 0;
-                foreach ($this->feeds as $id => $feed) {
-                    $layer = $this->getLayer($id);
-                    if ($layer->canSearch()) {
-                      $results = $layer->search($searchTerms);
-                      if (count($results)) {
-                          $searchResults[$id] = $layer->search($searchTerms);
-                          $numResults += count($searchResults[$id]);
-                          $lastSearchedLayer = $id;
-                      }
-                    }
-                }
-
-                if ($numResults == 1) {
-                    $title = $mapSearch::getTitleForSearchResult($searchResults[$lastSearchedLayer][0]);
-                    $this->redirectTo('detail',
-                        array('selectvalues' => $title, 'category' => $lastSearchedLayer));
-                } else {
-                    $places = array();
-                    foreach ($searchResults as $category => $results) {
-                        foreach ($results as $result) {
-                            $title = $mapSearch::getTitleForSearchResult($result);
-                            $place = array(
-                                'title' => $title,
-                                'url' => $this->detailURLForResult($result->getIndex(), $category),
-                            );
-                            $places[] = $place;
-                        }
-                    }
+            if (count($searchResults) == 1) {
+                $this->redirectTo('detail', $mapSearch->getURLArgsForSearchResult($searchResults[0]));
+            } else {
+                $places = array();
+                foreach ($searchResults as $result) {
+                    $title = $mapSearch->getTitleForSearchResult($result);
+                    $place = array(
+                        'title' => $title,
+                        'url' => $this->detailURLForResult($mapSearch->getURLArgsForSearchResult($result)),
+                    );
+                    $places[] = $place;
                 }
             }
-            */
+
             $this->assign('searchTerms', $searchTerms);
             $this->assign('places',      $places);
           
