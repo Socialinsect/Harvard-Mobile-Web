@@ -391,7 +391,7 @@ abstract class Module {
             if (!$this->session->isLoggedIn()) {
                 $this->redirectToModule('error', array(
                   'code' => 'protected', 
-                  'url'  => self::buildURLForModule('login', array(
+                  'url'  => self::buildURLForModule('login', 'index', array(
                     'url' => $_SERVER['REQUEST_URI']
                   ))
                 ));
