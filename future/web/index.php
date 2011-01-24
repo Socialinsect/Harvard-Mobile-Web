@@ -171,7 +171,11 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
     }
   }
 
-  PageViews::increment($id, $GLOBALS['deviceClassifier']->getPlatform());
+  // Module::getModuleIDForPathSegment($id) gets called in Module::factory
+  // so we could just set $id = Module::getModuleIDForPathSegment($id) here
+  // and not in Module::factory, unless Module::factory gets called elsewhere
+  $moduleID = Module::getModuleIDForPathSegment($id);
+  PageViews::increment($moduleID, $GLOBALS['deviceClassifier']->getPlatform());
 
   $module = Module::factory($id, $page, $args);
   $module->displayPage();
