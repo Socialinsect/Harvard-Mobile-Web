@@ -40,7 +40,7 @@ class MapProjector {
                 'f' => 'json',
                 );
             $query = $this->baseURL.'?'.http_build_query($params);
-            var_dump($query);
+//var_dump($query);
             $response = file_get_contents($query);
             $json = json_decode($response, true);
             if ($json && isset($json['geometries']) && is_array($json['geometries'])) {
@@ -74,7 +74,7 @@ class MapProjector {
     public function setSrcProj($proj) {
         if ($proj != $this->srcProj) {
             if ($this->baseURL === NULL) {
-            var_dump('setting src '.$proj);
+//var_dump('setting src '.$proj);
                 $projspecs = self::getProjSpecs($proj);
                 if ($projspecs) {
                     $this->srcProjSpec = trim($projspecs);
@@ -90,7 +90,7 @@ class MapProjector {
     public function setDstProj($proj) {
         if ($proj != $this->dstProj) {
             if ($this->baseURL === NULL) {
-            var_dump('setting dst '.$proj);
+//var_dump('setting dst '.$proj);
                 $projspecs = self::getProjSpecs($proj);
                 if ($projspecs) {
                     $this->dstProjSpec = trim($projspecs);

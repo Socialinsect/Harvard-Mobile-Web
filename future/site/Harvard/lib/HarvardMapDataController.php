@@ -117,7 +117,6 @@ class HarvardMapDataController extends ArcGISDataController
                 break;
             }
         }
-        var_dump($bldgId);
         return self::getSupplementaryFeatureData($bldgId, $searchField, $queryBase);
     }
     
