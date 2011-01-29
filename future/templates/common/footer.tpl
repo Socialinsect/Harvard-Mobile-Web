@@ -46,6 +46,11 @@
       </script>
     {/foreach}
   {/block}
-</div>
+{block name="containerEnd"}
+  </div>
+{/block}
+
+{block name="belowContent"}
+{/block}
 </body>
 </html>

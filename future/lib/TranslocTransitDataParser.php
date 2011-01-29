@@ -50,7 +50,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   public function getNews() {
     $news = array();
     
-    $newsInfo = self::getData($this->translocHostname, 'announcements');
+    $newsInfo = $this->getData($this->translocHostname, 'announcements');
     foreach ($newsInfo['agencies'] as $agencyNews) {
       foreach ($agencyNews['announcements'] as $routeNews) {
         $news[$routeNews['id']] = array(
@@ -67,7 +67,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   }
   
   public function getRouteVehicles($routeID) {
-    $updateInfo = self::getData($this->translocHostname, 'update');
+    $updateInfo = $this->getData($this->translocHostname, 'update');
     
     $vehicles = array();
     foreach ($updateInfo['vehicles'] as $vehicleInfo) {
@@ -100,7 +100,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   protected function loadData() {
     $this->translocHostname = $this->args['hostname'];
   
-    $setupInfo = self::getData($this->translocHostname, 'setup');
+    $setupInfo = $this->getData($this->translocHostname, 'setup');
         
     $segments = array();
     foreach ($setupInfo['segments'] as $segmentInfo) {
@@ -155,7 +155,7 @@ class TranslocTransitDataParser extends TransitDataParser {
       }
     }
 
-    $stopsInfo = self::getData($this->translocHostname, 'stops');
+    $stopsInfo = self::getData($this->translocHostname, 'stops', $this->daemonMode);
     foreach ($stopsInfo['stops'] as $stopInfo) {
       $this->addStop(new TransitStop(
         $stopInfo['id'], 
@@ -177,7 +177,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     }
   }
   
-  private static function getCacheForCommand($action) {
+  private static function getCacheForCommand($action, $daemonMode) {
     $cacheKey = $action;
     
     if (!isset(self::$caches[$cacheKey])) {
@@ -199,6 +199,12 @@ class TranslocTransitDataParser extends TransitDataParser {
           break;          
      }
   
+      // daemons should load cached files aggressively to beat user page loads
+      if ($daemonMode) {
+        $cacheTimeout -= 300;
+        if ($cacheTimeout < 0) { $cacheTimeout = 0; }
+      }
+      
       self::$caches[$cacheKey] = new DiskCache(
         $GLOBALS['siteConfig']->getVar('TRANSLOC_CACHE_DIR'), $cacheTimeout, TRUE);
       self::$caches[$cacheKey]->preserveFormat();
@@ -208,8 +214,8 @@ class TranslocTransitDataParser extends TransitDataParser {
     return self::$caches[$cacheKey];
   }
   
-  private static function getData($hostname, $action) {
-    $cache = self::getCacheForCommand($action);
+  private function getData($hostname, $action) {
+    $cache = self::getCacheForCommand($action, $this->daemonMode);
     $cacheName = $hostname;
 
 
@@ -251,7 +257,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   
   public function getRouteInfo($routeID, $time=null) {
     $routeInfo = parent::getRouteInfo($routeID, $time);
-    $updateInfo = self::getData($this->translocHostname, 'update');
+    $updateInfo = $this->getData($this->translocHostname, 'update');
 
     $runningStops = array();
     foreach ($updateInfo['vehicles'] as $vehicleInfo) {
@@ -268,7 +274,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   }
 
   public static function translocRouteIsRunning($hostname, $routeID) {
-    $updateInfo = self::getData($hostname, 'update');
+    $updateInfo = $this->getData($hostname, 'update');
     
     return in_array($routeID, $updateInfo['active_routes']);
   }

@@ -6,7 +6,7 @@
 
 {if count($results)}
   {if $bookmarkType == 'item'}
-    {include file="findInclude:modules/{$moduleID}/itemlist.tpl" items=$results}
+    {include file="findInclude:modules/{$moduleID}/common/itemlist.tpl" items=$results}
   {else}
     {include file="findInclude:common/results.tpl" results=$results accessKey=false}
   {/if}

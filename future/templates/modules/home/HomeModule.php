@@ -12,36 +12,11 @@ class HomeModule extends Module {
         
       case 'index':
         $this->loadWebAppConfigFile('home-index', 'home');
-      
-        $whatsNewCount = 0;
-        $modules = array();
-        $secondaryModules = array();
-                
-        foreach ($this->getHomeScreenModules() as $id => $info) {
-          if (!$info['disabled']) {
-            $module = array(
-              'title' => $info['title'],
-              'url'   => $info['url'],
-              'img'   => self::argVal($info, 'img', "/modules/{$this->id}/images/$id").$this->imageExt,
-            );
-            if ($id == 'about' && $whatsNewCount > 0) {
-              $module['badge'] = $whatsNewCount;
-            }
-            if ($info['primary']) {
-              $modules[] = $module;
-            } else {
-              $module['class'] = 'utility';
-              $secondaryModules[] = $module;
-            }
-          }
-        }
         
-        if (count($modules) && count($secondaryModules)) {
-          $modules[] = array('separator' => true);
-        }
-        $modules = array_merge($modules, $secondaryModules);
-        
-        $this->assign('modules', $modules);
+        $this->addOnLoad('rotateScreen();');
+        $this->addOnOrientationChange('rotateScreen();');
+
+        $this->assign('modules', $this->getModuleNavList());
         $this->assign('topItem', null);
         break;
         
