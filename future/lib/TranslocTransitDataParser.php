@@ -4,10 +4,16 @@ require_once realpath(LIB_DIR.'/TransitDataParser.php');
 require_once realpath(LIB_DIR.'/DiskCache.php');
 
 class TranslocTransitDataParser extends TransitDataParser {
+  private static $daemonCacheMode = false;
   private static $caches = array();
   private $routeColors = array();
   private $translocHostname = '';
   
+  function __construct($args, $overrides, $whitelist, $daemonMode=false) {
+    parent::__construct($args, $overrides, $whitelist, $daemonMode);
+    self::$daemonCacheMode = $daemonMode;
+  }
+
   protected function isLive() {
     return true;
   }
@@ -50,7 +56,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   public function getNews() {
     $news = array();
     
-    $newsInfo = $this->getData($this->translocHostname, 'announcements');
+    $newsInfo = self::getData($this->translocHostname, 'announcements');
     foreach ($newsInfo['agencies'] as $agencyNews) {
       foreach ($agencyNews['announcements'] as $routeNews) {
         $news[$routeNews['id']] = array(
@@ -67,7 +73,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   }
   
   public function getRouteVehicles($routeID) {
-    $updateInfo = $this->getData($this->translocHostname, 'update');
+    $updateInfo = self::getData($this->translocHostname, 'update');
     
     $vehicles = array();
     foreach ($updateInfo['vehicles'] as $vehicleInfo) {
@@ -100,7 +106,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   protected function loadData() {
     $this->translocHostname = $this->args['hostname'];
   
-    $setupInfo = $this->getData($this->translocHostname, 'setup');
+    $setupInfo = self::getData($this->translocHostname, 'setup');
         
     $segments = array();
     foreach ($setupInfo['segments'] as $segmentInfo) {
@@ -155,7 +161,7 @@ class TranslocTransitDataParser extends TransitDataParser {
       }
     }
 
-    $stopsInfo = self::getData($this->translocHostname, 'stops', $this->daemonMode);
+    $stopsInfo = self::getData($this->translocHostname, 'stops');
     foreach ($stopsInfo['stops'] as $stopInfo) {
       $this->addStop(new TransitStop(
         $stopInfo['id'], 
@@ -177,7 +183,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     }
   }
   
-  private static function getCacheForCommand($action, $daemonMode) {
+  private static function getCacheForCommand($action) {
     $cacheKey = $action;
     
     if (!isset(self::$caches[$cacheKey])) {
@@ -200,7 +206,7 @@ class TranslocTransitDataParser extends TransitDataParser {
      }
   
       // daemons should load cached files aggressively to beat user page loads
-      if ($daemonMode) {
+      if (self::$daemonCacheMode) {
         $cacheTimeout -= 300;
         if ($cacheTimeout < 0) { $cacheTimeout = 0; }
       }
@@ -214,8 +220,8 @@ class TranslocTransitDataParser extends TransitDataParser {
     return self::$caches[$cacheKey];
   }
   
-  private function getData($hostname, $action) {
-    $cache = self::getCacheForCommand($action, $this->daemonMode);
+  private static function getData($hostname, $action) {
+    $cache = self::getCacheForCommand($action);
     $cacheName = $hostname;
 
 
@@ -257,7 +263,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   
   public function getRouteInfo($routeID, $time=null) {
     $routeInfo = parent::getRouteInfo($routeID, $time);
-    $updateInfo = $this->getData($this->translocHostname, 'update');
+    $updateInfo = self::getData($this->translocHostname, 'update');
 
     $runningStops = array();
     foreach ($updateInfo['vehicles'] as $vehicleInfo) {
@@ -274,7 +280,7 @@ class TranslocTransitDataParser extends TransitDataParser {
   }
 
   public static function translocRouteIsRunning($hostname, $routeID) {
-    $updateInfo = $this->getData($hostname, 'update');
+    $updateInfo = self::getData($hostname, 'update');
     
     return in_array($routeID, $updateInfo['active_routes']);
   }
