@@ -167,17 +167,26 @@ class ArcGISFeature implements MapFeature
         $this->geometry = $json;
     }
     
+    public function getDescriptionType()
+    {
+    	return MapFeature::DESCRIPTION_LIST;
+    }
+    
     public function getDescription()
     {
-        $description = '<ul>';
+    	$details = array();
         foreach ($this->attributes as $name => $value) {
             if (!in_array($name, $this->blackList)) {
-            //$name != 'Shape' && $name != 'geometry' && $name != $this->titleField) {
-                $description .= '<li><b>'.$name.':</b> '.$value.'</li>';
+                $aDetail = array('label' => $name, 'title' => $value);
+                // There is a bug in some versions of filter_var where it can't handle hyphens in hostnames
+                if (filter_var(strtr($value, '-', '_'), FILTER_VALIDATE_URL)) {
+                    $aDetail['url'] = $value;
+                    $aDetail['class'] = 'external';
+                }
+            	$details[] = $aDetail;
             }
         }
-        $description .= '</ul>';
-        return $description;
+        return $details;
     }
 
     public function getStyleAttribs()

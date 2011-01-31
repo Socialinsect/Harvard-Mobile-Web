@@ -361,9 +361,9 @@ class MapModule extends Module {
             $feature->setBlackList($detailConfig['details']['suppress']);
         }
         
+        $displayDetailsAsList = $feature->getDescriptionType() == MapFeature::DESCRIPTION_LIST;
+        $this->assign('displayDetailsAsList', $displayDetailsAsList);
         $this->assign('details', $feature->getDescription());
-        // for ArcGIS data, which comes back in key/value pairs, 
-        // construct a list or table in the $details html
 
         $this->enableTabs($tabKeys, null, $tabJavascripts);
         break;

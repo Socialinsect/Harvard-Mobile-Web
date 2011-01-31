@@ -3,7 +3,6 @@
 {$tabBodies = array()}
 
 {capture name="mapPane" assign="mapPane"}
-  {strip}
     <p class="image">
       <a name="map"> </a>
       <img src="{$imageUrl}" width="{$imageWidth}" height="{$imageHeight}" alt="Map" />
@@ -21,7 +20,6 @@
       </p>
     {/if}
     <div id="mapimage" style="display:none"></div>
-  {strip}
 {/capture}
 {$tabBodies['map'] = $mapPane}
 
@@ -36,7 +34,11 @@
 
 {capture name="detailPane" assign="detailPane"}
   {block name="detailPane"}
-    {$details}
+    {if $displayDetailsAsList}
+      {include file="findInclude:common/navlist.tpl" navlistItems=$details boldLabels=true accessKey=false}
+    {else}
+      {$details}
+    {/if}
   {/block}
 {/capture}
 {$tabBodies['detail'] = $detailPane}

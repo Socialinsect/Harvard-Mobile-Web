@@ -8,10 +8,14 @@
 
 interface MapFeature
 {
+	const DESCRIPTION_TEXT = 0;
+	const DESCRIPTION_LIST = 1;
+
     public function getTitle();
     public function getSubtitle();
     public function getGeometry();
     public function getDescription();
+    public function getDescriptionType();
     public function getStyleAttribs();
 }
 

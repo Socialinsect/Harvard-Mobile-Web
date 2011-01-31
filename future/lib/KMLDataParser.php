@@ -200,6 +200,10 @@ class KMLPlacemark extends XMLElement implements MapFeature
     public function getDescription() {
         return $this->description;
     }
+    
+    public function getDescriptionType() {
+    	return MapFeature::DESCRIPTION_TEXT;
+    }
 
     public function setStyle(KMLStyle $style) {
         $this->style = $style;
