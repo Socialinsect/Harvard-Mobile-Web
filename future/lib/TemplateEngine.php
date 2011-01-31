@@ -273,7 +273,15 @@ class TemplateEngine extends Smarty {
   // Display template for device and theme
   //
   
-  function displayForDevice($page, $cacheID = null, $compileID = null, $parent = null) {
-    $this->display(self::getIncludeFile($page), $cacheID, $compileID, $parent);
+  function displayForDevice($page, $cacheID = null, $compileID = null) {
+    $this->display(self::getIncludeFile($page), $cacheID, $compileID);
+  }
+  
+  //
+  // Fetch template contents for device and theme
+  //
+  
+  function fetchForDevice($page, $cacheID = null, $compileID = null) {
+    return $this->fetch(self::getIncludeFile($page), $cacheID, $compileID);
   }
 }

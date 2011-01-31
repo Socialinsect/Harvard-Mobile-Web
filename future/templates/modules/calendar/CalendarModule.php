@@ -222,6 +222,13 @@ class CalendarModule extends Module {
     )), $addBreadcrumb);
   }
   
+  private function detailURLForModule($event, $options=array()) {
+    return $this->buildURLForModule('detail', array_merge($options, array(
+      'id'   => $event->get_uid(),
+      'time' => $event->get_start()
+    )));
+  }
+  
   public function federatedSearch($searchTerms, $maxCount, &$results) {
     $searchOption = $this->searchOptions[0]; // default timeframe
     $type = 'events';
@@ -243,10 +250,7 @@ class CalendarModule extends Module {
       }
   
       $results[] = array(
-        'url'      => $this->buildBreadcrumbURL("/{$this->id}/detail", array(
-            'id'   => $iCalEvents[$i]->get_uid(),
-            'time' => $iCalEvents[$i]->get_start()
-          ), false),
+        'url'      => $this->detailURLForModule($iCalEvents[$i]),
         'title'    => $iCalEvents[$i]->get_summary(),
         'subtitle' => $subtitle,
       );
@@ -294,7 +298,36 @@ class CalendarModule extends Module {
     switch ($this->page) {
       case 'help':
         break;
+      
+      case 'pane':
+        $start = new DateTime(date('Y-m-d H:i:s', time()), $this->timezone);
+        $start->setTime(0,0,0);
+        $end = clone $start;
+        $end->setTime(23,59,59);
         
+        $feed = $this->getFeed('events'); 
+        $feed->setStartDate($start);
+        $feed->setEndDate($end);
+        $iCalEvents = $feed->items();
+                
+        $events = array();
+        foreach($iCalEvents as $iCalEvent) {
+          $subtitle = $this->timeText($iCalEvent);
+          $briefLocation = $iCalEvent->get_location();
+          if (isset($briefLocation)) {
+            $subtitle .= " | $briefLocation";
+          }
+        
+          $events[] = array(
+            'url'      => $this->detailURLForModule($iCalEvent),
+            'title'    => $iCalEvent->get_summary(),
+            'subtitle' => $subtitle,
+          );
+        }
+        
+        $this->assign('events',  $events);        
+        break;
+
       case 'index':
         $this->loadWebAppConfigFile('calendar-index','calendarPages');
         $today = mktime(12,0,0);
@@ -375,7 +408,7 @@ class CalendarModule extends Module {
         
         $this->assign('events', $events);        
         break;
-      
+        
       case 'day':  
         $current = $this->getArg('time', time());
         $type = $this->getArg('type', 'events');

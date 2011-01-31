@@ -72,20 +72,72 @@ form {
 
 .blockborder {
   margin: 10px;
-  -webkit-border-radius: 10px;
-  border: solid 1px #333;
+  -webkit-border-radius: 8px;
+  border: solid 1px #6b717c;
   background-color: white;
   overflow: hidden;
 }
 .blockheader {
-  text-align: center;
+  display: block;
   margin: 1px;
-  padding: .25em;
-  background-color: gray;
-  -webkit-border-radius: 8px;
+  padding: 0;
+  padding-left: 52px;
+  background: transparent url(/modules/home/images/pane-header-bg.png) repeat-x top left;
+  color: white;
+  font-size: 130%;
+  text-align: left;
+  text-decoration: none;
+  -webkit-border-radius: 6px;
+  min-height: 41px;
+  line-height: 41px;
+  position: relative;
 }
-.blockcontent {
-  padding: .5em;
+.blockheader:visited {
+  color: white;
+}
+.blockheader .icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+  background-color: transparent;
+  background-position: top left;
+  background-repeat: none;
+  background-size: 36px;
+  -o-background-size: 36px;
+  -moz-background-size: 36px;
+  -khtml-background-size: 36px;
+  -webkit-background-size: 36px;
+}
+.news .blockheader .icon {
+  background-image: url(/common/images/pane-news.png);
+}
+.about .blockheader .icon {
+  background-image: url(/common/images/pane-about.png);
+}
+.calendar .blockheader .icon {
+  background-image: url(/common/images/pane-calendar.png);
+}
+.courses .blockheader .icon {
+  background-image: url(/common/images/pane-courses.png);
+}
+.transit .blockheader .icon {
+  background-image: url(/common/images/pane-transit.png);
+}
+.blockheader .nextlink {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  background: transparent url(/common/images/action-module.png) no-repeat top left;
+}
+
+.blockcontent .results {
+  margin: 0;
 }
 
 .portrait .large {
@@ -168,7 +220,7 @@ form {
   margin-left: 0;
 }
 
-.large {
+/*.large {
   background-color: red;
 }
 .medium1 {
@@ -182,5 +234,7 @@ form {
 }
 .small {
   background-color: purple;
-}
+}*/
+
+
 

@@ -23,7 +23,7 @@ function showTab(strID, objTrigger) {
 		if(objTriggerTab) {
 			objTriggerTab.className="active";
 		}
-	} 
+	}
 }
 
 function rotateScreen() {
@@ -52,7 +52,9 @@ function setOrientation(orientation) {
 }
 
 function scrollToTop() {
-	scrollTo(0,1); 
+  if (containerScroller) {
+  	containerScroller.scrollTo(0,0,0); 
+  }
 }
 
 
@@ -63,6 +65,7 @@ function showLoadingMsg(strID) {
 		objToStuff.style.height = objToStuff.offsetHeight + "px";
 		objToStuff.innerHTML = "<div class=\"loading\"><img src=\"../Webkit/images/loading.gif\" width=\"27\" height=\"21\" alt=\"\" align=\"absmiddle\" />Loading data...</div >";
 	}
+	containerChanged();
 }
 
 function hide(strID) {
@@ -71,6 +74,8 @@ function hide(strID) {
 	if(objToHide) {
 		objToHide.style.display = "none";
 	}
+	
+	containerChanged();
 }
 
 function show(strID) {
@@ -79,6 +84,8 @@ function show(strID) {
 	if(objToHide) {
 		objToHide.style.display = "block";
 	}
+	
+	containerChanged();
 }
 
 function showHideFull(objContainer) {
@@ -90,6 +97,8 @@ function showHideFull(objContainer) {
 	}
 	objContainer.className = strClass;
 	objContainer.blur();
+	
+	containerChanged();
 }
 
 function clearField(objField,strDefault) {
@@ -109,25 +118,34 @@ function androidPlaceholderFix(searchbox) {
     }
 }
 
-function clipWithEllipsis(getElements) {
-
-   function getCSSValue(elem, key) {
-        if (window.getComputedStyle) {
-            return document.defaultView.getComputedStyle(elem, null).getPropertyValue(key);
-        } else if (elem.currentStyle) {
-            return elem.currentStyle[key];
+function getCSSValue(elem, key) {
+    if (window.getComputedStyle) {
+        return document.defaultView.getComputedStyle(elem, null).getPropertyValue(key);
+        
+    } else if (elem.currentStyle) {
+        if (key == 'float') { 
+          key = 'styleFloat'; 
+        } else {
+          var re = /(\-([a-z]){1})/g; // hyphens to camel case
+          if (re.test(key)) {
+              key = key.replace(re, function () {
+                  return arguments[2].toUpperCase();
+              });
+          }
         }
-        return '';
+        return elem.currentStyle[key] ? elem.currentStyle[key] : null;
     }
+    return '';
+}
+
+function clipWithEllipsis(getElements) {
     
     function getCSSWidth(elem) {
         return elem.offsetWidth
-            - parseFloat(getCSSValue(elem, 'borderLeftWidth')) 
-            - parseFloat(getCSSValue(elem, 'borderRightWidth'))
-            - parseFloat(getCSSValue(elem, 'paddingRight'))
-            - parseFloat(getCSSValue(elem, 'paddingLeft'))
-            - parseFloat(getCSSValue(elem, 'marginRight'))
-            - parseFloat(getCSSValue(elem, 'marginLeft'));
+            - parseFloat(getCSSValue(elem, 'border-left-width')) 
+            - parseFloat(getCSSValue(elem, 'border-right-width'))
+            - parseFloat(getCSSValue(elem, 'padding-right'))
+            - parseFloat(getCSSValue(elem, 'padding-left'));
     }
     
     function clipIfNeeded (elem) { 
@@ -189,7 +207,7 @@ function clipWithEllipsis(getElements) {
                     upper = testLoc;
                 } else if (copy.offsetHeight < clipHeight) {
                     lower = testLoc;
-                } else if (upper - lower > 2) {
+                } else if (upper - lower > 1) {
                     lower = testLoc; // this works but try to fill out last line
                 } else {
                     upper = lower = testLoc; // found it!
@@ -212,6 +230,7 @@ function clipWithEllipsis(getElements) {
             
             clipWrapper(elems[i]);
         }
+        containerChanged();
     }
     
     var ellipsisInit = function () {
@@ -290,6 +309,12 @@ function doNotScroll( event ) {
 var containerScroller = null;
 var navScroller = null;
 
+function containerChanged() {
+  if (containerScroller) {
+    containerScroller.refresh();
+  }
+}
+
 // Update the nav slide indicators
 function updateNavSlider() {
   var current = Math.abs(navScroller.x);
@@ -322,18 +347,27 @@ function setContainerWrapperHeight() {
 	}
 }
 
+function handleWindowResize(e) { 
+  setContainerWrapperHeight();
+  
+  setTimeout(updateNavSlider, 0);
+  
+  if (typeof moduleHandleWindowResize != 'undefined') {
+    moduleHandleWindowResize(e);
+  }
+} 
+
 function tabletInit() {
   setContainerWrapperHeight();
   
   // Adjust wrapper height on orientation change or resize
   var resizeEvent = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-  window.addEventListener(resizeEvent, setContainerWrapperHeight, false);
-  window.addEventListener(resizeEvent, updateNavSlider, false);
+  window.addEventListener(resizeEvent, handleWindowResize, false);
 
   document.addEventListener('touchmove', function(e) { e.preventDefault(); });
   
   containerScroller = new iScroll('container', { 
-    checkDOMChanges: true, 
+    checkDOMChanges: false, 
     hScrollbar: false,
     desktopCompatibility: true,
     bounceLock: true

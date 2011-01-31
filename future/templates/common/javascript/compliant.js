@@ -106,25 +106,36 @@ function androidPlaceholderFix(searchbox) {
     }
 }
 
-function clipWithEllipsis(getElements) {
-
-   function getCSSValue(elem, key) {
-        if (window.getComputedStyle) {
-            return document.defaultView.getComputedStyle(elem, null).getPropertyValue(key);
-        } else if (elem.currentStyle) {
-            return elem.currentStyle[key];
+function getCSSValue(elem, key) {
+    if (window.getComputedStyle) {
+        return document.defaultView.getComputedStyle(elem, null).getPropertyValue(key);
+        
+    } else if (elem.currentStyle) {
+        if (key == 'float') { 
+          key = 'styleFloat'; 
+        } else {
+          var re = /(\-([a-z]){1})/g; // hyphens to camel case
+          if (re.test(key)) {
+              key = key.replace(re, function () {
+                  return arguments[2].toUpperCase();
+              });
+          }
         }
-        return '';
+        return elem.currentStyle[key] ? elem.currentStyle[key] : null;
     }
+    return '';
+}
+
+function clipWithEllipsis(getElements) {
     
     function getCSSWidth(elem) {
         return elem.offsetWidth
-            - parseFloat(getCSSValue(elem, 'borderLeftWidth')) 
-            - parseFloat(getCSSValue(elem, 'borderRightWidth'))
-            - parseFloat(getCSSValue(elem, 'paddingRight'))
-            - parseFloat(getCSSValue(elem, 'paddingLeft'))
-            - parseFloat(getCSSValue(elem, 'marginRight'))
-            - parseFloat(getCSSValue(elem, 'marginLeft'));
+            - parseFloat(getCSSValue(elem, 'border-left-width')) 
+            - parseFloat(getCSSValue(elem, 'border-right-width'))
+            - parseFloat(getCSSValue(elem, 'padding-right'))
+            - parseFloat(getCSSValue(elem, 'padding-left'))
+            - parseFloat(getCSSValue(elem, 'margin-right'))
+            - parseFloat(getCSSValue(elem, 'margin-left'));
     }
     
     function clipIfNeeded (elem) { 
@@ -186,7 +197,7 @@ function clipWithEllipsis(getElements) {
                     upper = testLoc;
                 } else if (copy.offsetHeight < clipHeight) {
                     lower = testLoc;
-                } else if (upper - lower > 2) {
+                } else if (upper - lower > 1) {
                     lower = testLoc; // this works but try to fill out last line
                 } else {
                     upper = lower = testLoc; // found it!

@@ -44,14 +44,20 @@ class NewsModule extends Module {
     ), $addBreadcrumb);
   }
 
-  private function storyURL($story, $addBreadcrumb=true) {
+  private function storyURL($story, $addBreadcrumb=true, $paneLink=false) {
     if ($storyID = $story->getGUID()) {
-        return $this->buildBreadcrumbURL('story', array(
+        $args = array(
           'storyID'   => $storyID,
           'section'   => $this->feedIndex,
           'start'     => self::argVal($this->args, 'start'),
           'filter'    => self::argVal($this->args, 'filter')
-        ), $addBreadcrumb);
+        );
+        
+        if ($paneLink) {
+          return $this->buildURLForModule($this->id, 'story', $args);
+        } else {
+          return $this->buildBreadcrumbURL('story', $args, $addBreadcrumb);
+        }
     } elseif ($link = $story->getProperty('link')) {
         return $link;
     } else {
@@ -203,7 +209,22 @@ class NewsModule extends Module {
           $this->redirectTo('index'); // search was blank
         }
         break;
-        
+      
+      case 'pane':
+        $items = $this->feed->items(0, $this->maxPerPage, $totalItems);
+        $stories = array();
+        foreach ($items as $story) {
+          $item = array(
+            'title'       => $story->getTitle(),
+            'description' => $story->getDescription(),
+            'url'         => $this->storyURL($story, false, true),
+            'image'       => $this->getImageForStory($story),
+          );
+          $stories[] = $item;
+        }
+        $this->assign('stories',        $stories);
+        break;
+      
       case 'index':
         $start = $this->getArg('start', 0);
         $totalItems = 0;
