@@ -1,0 +1,15 @@
+/* Nav bar at top of the home screen */
+#navbar {
+	height: 50px; 
+	background: url(/common/images/navback-home.png) repeat-x;
+}
+
+#navbar .pagetitle {
+  color: white;
+	font-size: 150%;
+}
+
+body {
+	background-image: url(/common/images/background-glow.png);
+	background-repeat: repeat-x;
+}

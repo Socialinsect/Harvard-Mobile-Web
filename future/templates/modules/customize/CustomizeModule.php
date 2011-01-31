@@ -61,7 +61,7 @@ class CustomizeModule extends Module {
     $newCount = 0;
 
     foreach ($this->getHomeScreenModules() as $moduleID => $info) {
-      if ($info['primary']) {
+      if ($info['primary'] && $info['movable'] && $info['disableable']) {
         $modules[$moduleID] = $info;
         
         $moduleIDs[] = $moduleID;
@@ -77,6 +77,7 @@ class CustomizeModule extends Module {
     
     switch($this->pagetype) {
       case 'compliant':
+      case 'tablet':
          $this->addInlineJavascript(
           'var modules = '.json_encode($moduleIDs).';'.
           'var disabledModules = '.json_encode($disabledModuleIDs).';'.

@@ -1,0 +1,271 @@
+/* Overall font and colors */
+
+body {
+	background-color: #ded8c9;
+	background: url(/common/images/background-tile.jpg) top right repeat-x, url(/common/images/background-tile-2.jpg) bottom left repeat;
+	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body, th, td, li, option, select, input {
+	/* Primary font */
+	color: #222;
+}
+
+.focal, .nav, .results {
+	/* Border color for many container elements */
+	border-color: #bbb;
+}
+
+.nav li, .results li, .secondary li, ul.focal li  {
+	/* Border color for list items */
+	border-color: #bbb;
+}
+
+
+a, a:visited {
+	color: #933;
+}
+
+h1 {
+	font-family: Georgia, serif;
+	font-size: 170.6%;
+	font-weight: normal;
+	color: #fff;
+}
+
+h2 {
+	font-family: Georgia, serif;
+	font-size: 123.5%;
+	font-weight: normal;
+	color: #000;
+}
+
+h3 {
+	font-size: 100%;
+	font-weight: bold;
+	color: #554c41;
+}
+
+h4 {
+	font-size: 100%;
+	font-weight: normal;
+	color: #554c41;
+}
+
+dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek, .fontsize {
+	/* Accent text color for several types of secondary text that appears on white backgrounds, e.g., label in label/value pairs, e.g., People Directory detail screen and for labels in certain calendar listing screens */
+	/* Often the same as the secondary text color defined in the next rule */
+	color: #554c41;
+}
+
+.foundat, .address, #footer, #footer a, .copyright, #footerlinks a, #footerlinks a:visited {
+	/* Secondary text color for several types of secondary text that typically appear on the colored background */
+	color: #554c41;
+}
+
+
+
+/* Major content blocks */
+
+.focal {   
+	/* Focal content div */
+	color: #222;
+	background-color: #fff;
+}
+
+.shaded {
+	/* Shaded subclass of focal content - e.g., background for tabbed focal div */
+	background-color: #f9f6ef;
+}
+
+
+
+/* Nav bar at top of all screens other than home screen */
+
+#navbar {
+	height: 48px; 
+	background: url(/common/images/navback.png) repeat-x;
+	font-size: 94.118%;
+}
+
+/* Uncomment this rule and comment out the previous one to use a background gradient rather than image
+#navbar {
+	height: 45px;
+	background: #800;	
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#d02023), to(#400006));
+	font-size: 94.118%;
+}
+*/
+
+.breadcrumbs, .breadcrumbs a, .breadcrumbs a:visited, .pagetitle {
+ 	/* All text and links in nav bar area */
+	color: #fff;
+}
+
+
+/* Footer */
+
+#footer {
+	font-size: 70.589%;
+	line-height: 1.2em;
+}
+
+#footer .copyright {
+	text-decoration: none;
+}
+
+#footerlinks {
+	color: white;
+}
+
+
+/* Text input fields, e.g., search fields */
+.forminput {
+	border-color: #666; 	/* Should match the border color of image /common/images/mobile/search_button.png */
+	-webkit-border-radius: 5px;
+}
+
+.inputcombo .forminput {
+	border: 1px 0 1px 1px solid #666; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */
+	-webkit-border-bottom-left-radius: 8px;	
+	-webkit-border-top-left-radius: 8px;	
+}
+
+.emphasized  .forminput {
+	border: 3px solid #666; 	/* Border color should match the border color of image /common/images/mobile/search_button.png */; border weight should be 2px greater than border weight of .inputcombo .forminput */	
+	-webkit-border-bottom-left-radius: 10px; 	/* Corner radius should be 2px greater than corner radius of .inputcombo .forminput */	
+	-webkit-border-top-left-radius: 10px;	
+}
+
+
+/* Springboards */
+
+.springboard div {
+	/* Overall size of one cell in the springboard */
+	width: 76px;
+	height: 94px;
+}
+
+.springboard div a {	
+	/* Color and size of text label below each springboard icon */
+	color: #3a342e;
+	font-size: 76.47%;
+	line-height: 1.1em;
+}
+
+.springboard a img {
+	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
+	width: 60px;
+	height: 60px;
+}
+
+.springboard div.utility {
+	/* Overall size of one cell in the springboard's fixed utility-type items */
+	width: 76px;
+	height: 86px;
+}
+
+.springboard div.utility a {
+	font-size: 70.589%;
+}
+
+.springboard div.utility a img {
+	/* Size of actual item icon in the springboard's fixed utility-type items - for best results make actual PNGs match this size */
+	width: 34px;
+	height: 34px;
+}
+
+.springboard .separator {
+	height: 20px;
+}
+
+/* Navigation and results lists */
+
+.nav, .results {
+	/* Main navigation lists and search-results lists */
+	background-color: #fff; 	
+}
+
+.secondary {
+	/* Secondary navigation or action lists; typically have slightly smaller font size and slightly darker/tinted backgrounds */
+	font-size: 95%;
+	background-color: #f9f6ef;
+}
+
+.nav, .results, .secondary, .nav a, .nav a:visited, .nav span.nolink, .results a, .results a:visited, .secondary, .secondary a, .secondary a:visited  {
+	color: #333;
+}
+
+.nav .badge {
+	/* Badge shown within a navigation list, e.g., unread count for messages */
+	color: #fff;
+	background-color: #c00;
+}
+
+.announcements {	   
+	background-color: #d8e3f2;
+}
+
+.announcements li {	
+	font-size: 83.353%;
+	line-height: 1.46em;
+	color: #202020;
+}
+
+
+/* Next/previous navigation - e.g., going from day to day in events calendar */
+
+.sidenav {
+	/* Divider between next/previous links */
+	color: #a0a09f;
+}
+
+.sidenav a {
+	/* Next/previous links */
+	color: #1a1611;
+}
+
+
+
+
+
+/* Tabs */
+
+#tabs li {
+	border: 1px solid #bbb;	/* Should match #tabbodies border-color */
+	background-color: #bbb;	/* Should match #tabbodies border-color */
+}
+
+#tabs li.active {
+	border-bottom: 1px solid #fff;	/* Should match #tabbodies background-color */
+	background-color: #fff;	/* Should match #tabbodies background-color */
+}
+
+#tabs li a {
+	/* Text label of unselected tab */
+	color: #404040;
+}
+
+#tabs li.active a {
+	/* Text label of currently selected tab */
+	color: #000;
+}
+
+#tabs li.greyedout {
+	/* Text label of disabled tab */
+  	color: #666;
+}
+
+#tabbodies {
+	border-color: #bbb;
+	background-color: #fff;
+}
+
+.tabbody .nested {
+	/* Navigation list inside a tab body needs a bit of background color to contrast from tab body background */
+	background-color: #f9f6ef;
+}
+
+
+
+

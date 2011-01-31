@@ -4,10 +4,16 @@ require_once realpath(LIB_DIR.'/TransitDataParser.php');
 require_once realpath(LIB_DIR.'/DiskCache.php');
 
 class TranslocTransitDataParser extends TransitDataParser {
+  private static $daemonCacheMode = false;
   private static $caches = array();
   private $routeColors = array();
   private $translocHostname = '';
   
+  function __construct($args, $overrides, $whitelist, $daemonMode=false) {
+    parent::__construct($args, $overrides, $whitelist, $daemonMode);
+    self::$daemonCacheMode = $daemonMode;
+  }
+
   protected function isLive() {
     return true;
   }
@@ -199,6 +205,12 @@ class TranslocTransitDataParser extends TransitDataParser {
           break;          
      }
   
+      // daemons should load cached files aggressively to beat user page loads
+      if (self::$daemonCacheMode) {
+        $cacheTimeout -= 300;
+        if ($cacheTimeout < 0) { $cacheTimeout = 0; }
+      }
+      
       self::$caches[$cacheKey] = new DiskCache(
         $GLOBALS['siteConfig']->getVar('TRANSLOC_CACHE_DIR'), $cacheTimeout, TRUE);
       self::$caches[$cacheKey]->preserveFormat();

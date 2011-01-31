@@ -73,21 +73,23 @@ function developmentErrorLog($exception){
   // alter your trace as you please, here
   $trace = $exception->getTrace();
   foreach ($trace as $key => $stackPoint) {
+    if (isset($trace[$key]['args'])) {
       // I'm converting arguments to their type
       // (prevents passwords from ever getting logged as anything other than 'string')
       $trace[$key]['args'] = array_map('gettype', $trace[$key]['args']);
+    }
   }
 
   // build your tracelines
   $result = array();
   foreach ($trace as $key => $stackPoint) {
       $result[] = sprintf(
-          $traceline,
-          $key,
-          $stackPoint['file'],
-          $stackPoint['line'],
-          $stackPoint['function'],
-          implode(', ', $stackPoint['args'])
+        $traceline,
+        $key,
+        $stackPoint['file'],
+        $stackPoint['line'],
+        $stackPoint['function'],
+        (isset($stackPoint['args']) ? implode(', ', $stackPoint['args']) : '')
       );
   }
   // trace always ends with {main}

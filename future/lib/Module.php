@@ -391,7 +391,7 @@ abstract class Module {
             if (!$this->session->isLoggedIn()) {
                 $this->redirectToModule('error', array(
                   'code' => 'protected', 
-                  'url'  => self::buildURLForModule('login', array(
+                  'url'  => self::buildURLForModule('login', 'index', array(
                     'url' => $_SERVER['REQUEST_URI']
                   ))
                 ));
@@ -450,7 +450,8 @@ abstract class Module {
     $modules = $this->getAllModules();
     
     foreach ($modules as $id => $info) {
-      if (!$info['homescreen']) {
+      if (!$info['homescreen'] && 
+          ($this->pagetype != 'tablet' || !isset($info['navigation']) || !$info['navigation'])) {
         unset($modules[$id]);
         
       } else if (!isset($info['url'])) {
@@ -467,9 +468,9 @@ abstract class Module {
         }
       }
     }
-
+    
     if (isset($_COOKIE[MODULE_ORDER_COOKIE])) {
-      $sortedModuleIDs = explode(",", $_COOKIE[MODULE_ORDER_COOKIE]);
+      $sortedModuleIDs = array_merge(array('home'), explode(",", $_COOKIE[MODULE_ORDER_COOKIE]));
       $unsortedModuleIDs = array_diff(array_keys($modules), $sortedModuleIDs);
             
       $sortedModules = array();
@@ -479,7 +480,7 @@ abstract class Module {
         }
       }
       $modules = $sortedModules;
-    }    
+    }
     //error_log('$modules(): '.print_r(array_keys($modules), true));
     return $modules;
   }
@@ -502,6 +503,60 @@ abstract class Module {
     //error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
 
+  //
+  // Module navigation list 
+  // (shared by tablet footer and home module)
+  //
+  private function imageForNavListModule($id, $module) {
+    if ($this->id == $id) {
+      return self::argVal($module, 'img', "/modules/home/images/$id-selected").$this->imageExt;
+    } else {
+      return self::argVal($module, 'img', "/modules/home/images/$id").$this->imageExt;
+    }
+  }
+  
+  protected function getModuleNavList() {
+    $whatsNewCount = 0;
+    $modules = array();
+    $secondaryModules = array();
+    
+    foreach ($this->getHomeScreenModules() as $id => $info) {
+      if (!$info['disabled']) {
+        $module = array(
+          'id'         => $id,
+          'title'      => $info['title'],
+          'shortTitle' => isset($info['shortTitle']) ? $info['shortTitle'] : $info['title'],
+          'url'        => $info['url'],
+          'img'        => $this->imageForNavListModule($id, $info),
+        );
+        if ($id == 'about' && $whatsNewCount > 0) {
+          $module['badge'] = $whatsNewCount;
+        }
+        if ($id == $this->id) {
+          $module['class'] = 'selected';
+        }
+        
+        if ($info['primary']) {
+          $modules[] = $module;
+          
+        } else {
+          if (isset($module['class'])) {
+            $module['class'] .= ' utility';
+          } else {
+            $module['class'] = 'utility';
+          }
+          
+          $secondaryModules[] = $module;
+        }
+      }
+    }
+    
+    if (count($modules) && count($secondaryModules)) {
+      $modules[] = array('separator' => true);
+    }
+    return array_merge($modules, $secondaryModules);
+  }
+  
   //
   // Functions to add inline blocks of text
   // Call these from initializeForPage()
@@ -765,6 +820,11 @@ abstract class Module {
     
     // Breadcrumbs
     $this->loadBreadcrumbs();
+    
+    // Tablet module nav list
+    if ($this->pagetype == 'tablet') {
+      $this->assign('moduleNavList', $this->getModuleNavList());
+    }
             
     // Set variables for each page
     $this->initializeForPage();
