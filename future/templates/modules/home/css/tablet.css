@@ -138,6 +138,7 @@ form {
 
 .blockcontent .results {
   margin: 0;
+  background: transparent;
 }
 
 .portrait .large {
