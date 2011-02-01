@@ -21,6 +21,12 @@ class MapModule extends Module {
     protected $id = 'map';
     protected $feeds;
     
+    private function pageSupportsDynamicMap() {
+        return $this->pagetype == 'compliant'
+            && $this->platform != 'blackberry'
+            && $this->platform != 'bbplus';
+    }
+    
     private function initializeMap(MapLayerDataController $layer, MapFeature $feature) {
         
         $style['title'] = $feature->getTitle(); // for annotations
@@ -61,7 +67,7 @@ class MapModule extends Module {
 
         $mapControllers = array();
         $mapControllers[] = $layer->getStaticMapController();
-        if ($this->pagetype == 'compliant' && $layer->supportsDynamicMap()) {
+        if ($this->pageSupportsDynamicMap() && $layer->supportsDynamicMap()) {
             $mapControllers[] = $layer->getDynamicMapController();
         }
 
@@ -230,9 +236,10 @@ class MapModule extends Module {
         $categories = array();
         foreach ($this->feeds as $id => $feed) {
             if (isset($feed['HIDDEN']) && $feed['HIDDEN']) continue;
-        
+            $subtitle = isset($feed['SUBTITLE']) ? $feed['SUBTITLE'] : null;
             $categories[] = array(
                 'title' => $feed['TITLE'],
+                'subtitle' => $subtitle,
                 'url' => $this->categoryURL($id),
                 );
         }

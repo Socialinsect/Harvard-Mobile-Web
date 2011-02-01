@@ -172,7 +172,7 @@ class KMLIconStyle extends XMLElement {
 class KMLPlacemark extends XMLElement implements MapFeature
 {
     protected $name = 'Placemark';
-    // placemarks have no unique identifiers,
+    // placemarks have no guaranteed unique identifiers (id is optional)
     // so we assign this based on its position in the feed
     protected $index;
     protected $description;
@@ -186,10 +186,18 @@ class KMLPlacemark extends XMLElement implements MapFeature
     }
 
     public function getTitle() {
+        if ($this->title === null) {
+            return $this->getAttrib('ID');
+        }
         return $this->title;
     }
     
     public function getSubtitle() {
+        $description = strip_tags($this->getDescription());
+        if ($description) {
+            $description = substr($description, 0, 80).'...';
+            return $description;
+        }
         return null;
     }
 
@@ -218,6 +226,10 @@ class KMLPlacemark extends XMLElement implements MapFeature
     }
 
     public function getStyleAttribs() {
+        if (!isset($this->style)) {
+            return null;
+        }
+        
         switch ($this->geometry->getType()) {
             case 'Point':
                 return $this->style->getPointStyle();
@@ -243,10 +255,10 @@ class KMLPlacemark extends XMLElement implements MapFeature
                 break;
             case 'POINT':
             case 'LINESTRING':
-                $this->geometry = $element;
-                break;
             case 'LINEARRING':
             case 'POLYGON':
+                $this->geometry = $element;
+                break;
             case 'MULTIGEOMETRY':
             case 'MODEL':
             case 'GX:TRACK':
@@ -286,9 +298,9 @@ class KMLPoint extends XMLElement implements MapGeometry
             case 'COORDINATES':
                 $xyz = explode(',', $value);
                 $this->coordinate = array(
-                    'lon' => $xyz[0],
-                    'lat' => $xyz[1],
-                    'altitude' => isset($xyz[2]) ? $xyz[2] : null,
+                    'lon' => trim($xyz[0]),
+                    'lat' => trim($xyz[1]),
+                    'altitude' => isset($xyz[2]) ? trim($xyz[2]) : null,
                     );
                 break;
             default:
@@ -335,13 +347,12 @@ class KMLLineString extends XMLElement implements MapGeometry
     {
         $name = $element->name();
         $value = $element->value();
-        
         switch ($name)
         {
             // more tags see
             // http://code.google.com/apis/kml/documentation/kmlreference.html#linestring
             case 'COORDINATES':
-                foreach (explode("\n", $value) as $line) {
+                foreach (preg_split('/\s/', trim($value)) as $line) {
                     $xyz = explode(',', trim($line));
                     if (count($xyz) >= 2) {
                         $this->coordinates[] = array(
@@ -351,6 +362,59 @@ class KMLLineString extends XMLElement implements MapGeometry
                             );
                     }
                 }
+                break;
+            default:
+                parent::addElement($element);
+                break;
+        }
+    }
+}
+
+// basically the same thing as LineString but forms a closed loop
+class KMLLinearRing extends KMLLineString {}
+
+class KMLPolygon extends XMLElement implements MapGeometry
+{
+    private $outerBoundary;
+    private $innerBoundaries;
+
+    public function getCenterCoordinate()
+    {
+    	return $this->outerBoundary->getCenterCoordinate();
+    }
+
+    public function getType()
+    {
+        return 'Polygon';
+    }
+
+    public function getRings()
+    {
+        $outerRing = $this->outerBoundary->getPoints();
+        if (isset($this->innerBoundaries) && count($this->innerBoundaries)) {
+            $result = array($outerRing);
+            foreach ($this->innerBoundaries as $boundary) {
+                $result[] = $boundary->getPoints();
+            }
+            return $result;
+        }
+        return $outerRing;
+    }
+
+    public function addElement(XMLElement $element)
+    {
+        $name = $element->name();
+        $value = $element->value();
+        
+        switch ($name)
+        {
+            // more tags see
+            // http://code.google.com/apis/kml/documentation/kmlreference.html#polygon
+            case 'OUTERBOUNDARYIS':
+                $this->outerBoundary = $element->getChildElement('LINEARRING');
+                break;
+            case 'INNERBOUNDARYIS':
+                $this->innerBoundaries = $element->getChildElement('LINEARRING');
                 break;
             default:
                 parent::addElement($element);
@@ -370,7 +434,7 @@ class KMLDataParser extends XMLDataParser
     protected $document;
 
     // whitelists
-    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING', 'ICONSTYLE');
+    protected static $startElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','POINT','LINESTRING', 'LINEARRING', 'POLYGON', 'ICONSTYLE');
     protected static $endElements=array('DOCUMENT','STYLE','STYLEMAP','PLACEMARK','STYLEURL');
 
     /*    
@@ -421,6 +485,12 @@ class KMLDataParser extends XMLDataParser
                 break;
             case 'LINESTRING':
                 $this->elementStack[] = new KMLLineString($name, $attribs);
+                break;
+            case 'LINEARRING':
+                $this->elementStack[] = new KMLLinearRing($name, $attribs);
+                break;
+            case 'POLYGON':
+                $this->elementStack[] = new KMLPolygon($name, $attribs);
                 break;
             case 'ICONSTYLE':
                 $this->elementStack[] = new KMLIconStyle($name, $attribs);

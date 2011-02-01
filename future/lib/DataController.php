@@ -106,6 +106,11 @@ abstract class DataController
         return $this->parser->parseData($data);
     }
     
+    protected function readDataFromURL($url)
+    {
+    	return file_get_contents($url);
+    }
+    
     public function getData()
     {
         if (!$url = $this->url()) {
@@ -128,7 +133,7 @@ abstract class DataController
                     error_log(sprintf("Retrieving %s", $url));
                 }
                 
-                $data = file_get_contents($url);
+                $data = $this->readDataFromURL($url);
                 $this->cache->write($data, $cacheFilename);
                 
                 if ($this->debugMode) {
@@ -136,7 +141,7 @@ abstract class DataController
                 }
             }
         } else {
-            $data = file_get_contents($url);
+            $data = $this->readDataFromURL($url);
         }
         
         return $data;
