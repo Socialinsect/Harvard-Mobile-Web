@@ -32,7 +32,7 @@ class HarvardMapSearch extends MapSearch {
         $rawContent = file_get_contents($url);
         $content = json_decode($rawContent, true);
     
-        foreach ($content['results'] as $result) {
+        foreach ($content['items'] as $result) {
             if (strlen($result['bld_num']) && !in_array($result['bld_num'], $bldgIds))
                 $bldgIds[] = $result['bld_num'];
         }
@@ -84,7 +84,7 @@ class HarvardMapSearch extends MapSearch {
         $rawContent = file_get_contents($url);
         $content = json_decode($rawContent, true);
 
-        foreach ($content['results'] as $resultObj) {
+        foreach ($content['items'] as $resultObj) {
             if (!in_array($resultObj['bld_num'], $bldgIds))
                 $bldgIds[] = $resultObj['bld_num'];
         }
