@@ -431,7 +431,7 @@ class ArcGISLayer {
                 $feature->setIndex(count($result));
                 $result[$feature->getIndex()] = $feature;
             }
-            uksort($result, 'addresscmp');
+            usort($result, array($this, 'compareFeatures'));
 
             $this->features = $result;
             $this->isPopulated = true;
@@ -484,6 +484,10 @@ class ArcGISLayer {
         );
         
         return $filters;
+    }
+    
+    private function compareFeatures($feature1, $feature2) {
+        return addresscmp($feature1->getTitle(), $feature2->getTitle());
     }
 }
 
