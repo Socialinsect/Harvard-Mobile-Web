@@ -44,6 +44,7 @@
 {$tabBodies['detail'] = $detailPane}
 
 {block name="tabView"}
+  <a name="scrolldown"> </a>		
 	<div class="focal shaded">
 
 		<h2>{$name}</h2>

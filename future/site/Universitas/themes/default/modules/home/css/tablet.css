@@ -9,7 +9,7 @@
 	font-size: 150%;
 }
 
-body {
-	background-image: url(/common/images/background-glow.png);
-	background-repeat: repeat-x;
+body,
+#container {
+  background-color: #b8c1d2;
 }

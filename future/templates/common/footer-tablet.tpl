@@ -6,6 +6,17 @@
   </div> <!--nonfooternav -->
 {/block}
 
+{block name="footer"}
+  {if $moduleID != 'home'}
+    <div id="footer">
+      {$footerHTML}
+    </div>
+  {/if}
+{/block}
+
+{block name="deviceDetection"}
+{/block}
+
 {block name="belowContent"}
   <div id="footernav">
     <div id="navsliderwrapper">

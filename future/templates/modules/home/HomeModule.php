@@ -4,19 +4,45 @@ require_once realpath(LIB_DIR.'/Module.php');
 
 class HomeModule extends Module {
   protected $id = 'home';
-     
+  
+  private function getTabletModulePanes($tabletConfig) {
+    $modulePanes = array();
+    
+    $modulesConfig = $this->getAllModules();
+    
+    foreach ($tabletConfig as $blockName => $moduleID) {
+      $module = self::factory($moduleID, 'pane', $this->args);
+      
+      $modulePanes[$blockName] = array(
+        'id' => $moduleID,
+        'url' => $this->buildURLForModule($moduleID, 'index'),
+        'title' => $modulesConfig[$moduleID]['title'],
+        'content' => $module->fetchPage(),
+      );
+    }
+    
+    return $modulePanes;
+  }
+  
   protected function initializeForPage() {
     switch ($this->page) {
       case 'help':
         break;
         
-      case 'index':
-        $this->loadWebAppConfigFile('home-index', 'home');
+      case 'pane':
+        break;
         
-        $this->addOnLoad('rotateScreen();');
+      case 'index':
+        $homeConfig = $this->loadWebAppConfigFile('home-index', 'home');
+        
+        $this->addOnLoad('rotateScreen(); moduleHandleWindowResize();');
         $this->addOnOrientationChange('rotateScreen();');
 
-        $this->assign('modules', $this->getModuleNavList());
+        if ($this->pagetype == 'tablet') {
+          $this->assign('modulePanes', $this->getTabletModulePanes($homeConfig['tabletPanes']));
+        } else {
+          $this->assign('modules', $this->getModuleNavList());
+        }
         $this->assign('topItem', null);
         break;
         

@@ -250,7 +250,7 @@ class TransitDataView {
     $cacheName = "stopInfoForRoute.$routeID.$stopID";
     $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName)) {
+    if ($cache->isFresh($cacheName) && !$this->daemonMode) {
       $stopInfo = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -293,7 +293,7 @@ class TransitDataView {
     $cacheName = "stopInfo.$stopID";
     $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName)) {
+    if ($cache->isFresh($cacheName) && !$this->daemonMode) {
       $stopInfo = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -398,7 +398,7 @@ class TransitDataView {
     $cacheName = "routeInfo.$routeID";
     $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName) && $time == null) {
+    if ($cache->isFresh($cacheName) && $time == null && !$this->daemonMode) {
       $routeInfo = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -572,7 +572,7 @@ class TransitDataView {
     $cacheName = 'allRoutes';
     $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName) && $time == null) {
+    if ($cache->isFresh($cacheName) && $time == null && !$this->daemonMode) {
       $allRoutes = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -1008,14 +1008,17 @@ abstract class TransitDataParser {
       $time = TransitTime::getCurrentTime();
     }
 
+    $inService = false;
+    $isRunning = $route->isRunning($time, $inService);
+    
     $routeInfo = array(
       'agency'         => $route->getAgencyID(),
       'name'           => $route->getName(),
       'description'    => $route->getDescription(),
       'color'          => $this->getRouteColor($routeID),
-      'live'           => $this->isLive(),
+      'live'           => $isRunning ? $this->isLive() : false,
       'frequency'      => $route->getServiceFrequency($time),
-      'running'        => $route->isRunning($time, $inService),
+      'running'        => $isRunning,
       'inService'      => $inService,
       'stopIconUrl'    => $this->getMapIconUrlForRouteStop($routeID),
       'vehicleIconUrl' => $this->getMapIconUrlForRouteVehicle($routeID),
@@ -1162,19 +1165,20 @@ abstract class TransitDataParser {
     foreach ($this->routes as $routeID => $route) {
       $this->updatePredictionData($routeID);
           
+      $inService = false; // Safety in case isRunning doesn't set this
+      $isRunning = $route->isRunning($time, $inService);
+
       $routes[$routeID] = array(
         'name'        => $route->getName(),
         'description' => $route->getDescription(),
         'color'       => $this->getRouteColor($routeID),
         'frequency'   => round($route->getServiceFrequency($time) / 60),
         'agency'      => $route->getAgencyID(),
-        'live'        => $this->isLive(),
+        'live'        => $isRunning ? $this->isLive() : false,
+        'inService'   => $inService,
+        'running'     => $isRunning,
       );
 
-      $inService = false; // Safety in case isRunning doesn't set this
-      $routes[$routeID]['running'] = $route->isRunning($time, $inService);
-      $routes[$routeID]['inService'] = $inService;
-      
       $this->applyRouteInfoOverrides($routeID, $routes[$routeID]);
     }
 
@@ -1253,6 +1257,12 @@ class TransitTime {
   public static function getLocalDatetimeFromTimestamp($timestamp) {
     $datetime = new DateTime('@'.$timestamp, self::getGMTTimezone());
     $datetime->setTimeZone(self::getLocalTimezone()); 
+    
+    $hours = intval($datetime->format('G'));
+    if ($hours < 5) {
+      $datetime->modify('-1 day'); // before 5am is for the previous day
+    }
+    
     return $datetime;
   }
 
@@ -1309,13 +1319,15 @@ class TransitTime {
     list($hours, $minutes, $seconds) = explode(':', $date->format('G:i:s'));
     $dateTT = self::createFromComponents($hours, $minutes, $seconds);
   
-    list($hours, $minutes, $seconds) = self::getComponents($tt);
+    list($ttHours, $ttMinutes, $ttSeconds) = self::getComponents($tt);
 
-    if ($hours > 23) {
-      $date->modify('+1 day'); // will be for the next day
+    // Note: getLocalDatetimeFromTimestamp subtracts a day if it is before 5am
+    // so it will end up being the same day if ttHours > 23
+    if ($ttHours > 23) {
+      $date->modify('+1 day');
     }
     
-    $date->setTime($hours, $minutes, $seconds);
+    $date->setTime($ttHours, $ttMinutes, $ttSeconds);
     
     return $date->format('U');
   }
@@ -1564,7 +1576,7 @@ class TransitRoute {
     return $isRunning;
   }
   
-  private function segmentsUseFrequencies() {
+  protected function segmentsUseFrequencies() {
     foreach ($this->directions as $direction) {
       foreach ($direction['segments'] as $segment) {
         return $segment->hasFrequencies();
@@ -1684,11 +1696,6 @@ class TransitService {
     if ($this->live) { return true; }
   
     $datetime = TransitTime::getLocalDatetimeFromTimestamp($time);
-    
-    $hour = intval($datetime->format('H'));
-    if ($hour < 5) {
-      $datetime->modify('-1 day'); // before 5am is part of the previous day
-    }
     
     $date = intval($datetime->format('Ymd'));
     $dayName = $datetime->format('l');

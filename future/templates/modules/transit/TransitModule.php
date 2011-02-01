@@ -9,8 +9,12 @@ class TransitModule extends Module {
   protected function initialize() {
   }
 
-  private function timesURL($routeID, $addBreadcrumb=true, $noBreadcrumb=false) {
-    if ($noBreadcrumb) {
+  private function timesURL($routeID, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
+    if ($paneLink) {
+      return $this->buildURLForModule('transit', 'route', array(
+        'id' => $routeID,      
+      ));
+    } else if ($noBreadcrumb) {
       return $this->buildURL('route', array(
         'id' => $routeID,      
       ));
@@ -42,6 +46,24 @@ class TransitModule extends Module {
     $view = new TransitDataView($transitConfig);
   
     switch ($this->page) {
+      case 'pane':
+        $routeConfigs = $view->getRoutes();
+        
+        $routes = array();
+        foreach ($routeConfigs as $routeID => $routeConfig) {
+          if ($routeConfig['running']) {
+            $routes[] = array(
+              'title' => $routeConfig['name'],
+              'subtitle' => $routeConfig['description'],
+              'url'   => $this->timesURL($routeID),
+            );
+          }
+        }
+        uasort($routes, array(get_class($this), 'routeSort'));
+        
+        $this->assign('routes', $routes);
+        break;
+      
       case 'index':
         $indexConfig = $this->loadWebAppConfigFile('transit-index', 'indexConfig');        
         

@@ -790,10 +790,7 @@ abstract class Module {
     return $this->templateEngine->getTemplateVars($key);
   }
   
-  //
-  // Display page
-  //
-  public function displayPage() {
+  private function setPageVariables() {
     $this->loadTemplateEngineIfNeeded();
         
     $this->loadPageConfig();
@@ -876,9 +873,28 @@ abstract class Module {
       }
     }
     $this->assign('accessKeyStart', $accessKeyStart);
-
+    
+    return $template;
+  }
+  
+  //
+  // Display page
+  //
+  public function displayPage() {
+    $template = $this->setPageVariables();
+    
     // Load template for page
     $this->templateEngine->displayForDevice($template);    
+  }
+  
+  //
+  // Fetch page
+  //
+  public function fetchPage() {
+    $template = $this->setPageVariables();
+    
+    // return template for page in variable
+    return $this->templateEngine->fetchForDevice($template);    
   }
   
   
@@ -891,7 +907,7 @@ abstract class Module {
   // Subclass this function to perform initialization just after __construct()
   //
   protected function initialize() {} 
-  
+    
   //
   // Subclass these functions for federated search support
   // Return 2 items and a link to get more
