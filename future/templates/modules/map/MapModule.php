@@ -21,6 +21,12 @@ class MapModule extends Module {
     protected $id = 'map';
     protected $feeds;
     
+    private function pageSupportsDynamicMap() {
+        return $this->pagetype == 'compliant'
+            && $this->platform != 'blackberry'
+            && $this->platform != 'bbplus';
+    }
+    
     private function initializeMap(MapLayerDataController $layer, MapFeature $feature) {
         
         $style['title'] = $feature->getTitle(); // for annotations
@@ -61,7 +67,7 @@ class MapModule extends Module {
 
         $mapControllers = array();
         $mapControllers[] = $layer->getStaticMapController();
-        if ($this->pagetype == 'compliant' && $layer->supportsDynamicMap()) {
+        if ($this->pageSupportsDynamicMap() && $layer->supportsDynamicMap()) {
             $mapControllers[] = $layer->getDynamicMapController();
         }
 
