@@ -99,7 +99,7 @@ var map;
 
 function loadMap() {
     var mapImage = document.getElementById("{$this->mapElement}");
-    mapImage.style.display = "block";
+    mapImage.style.display = "inline-block";
     mapImage.style.width = "{$this->imageWidth}px";
     mapImage.style.height = "{$this->imageHeight}px";
 
@@ -123,6 +123,7 @@ JS;
 
         $script = <<<JS
 
+hideMapTabChildren();
 loadMap();
 
 JS;

@@ -112,7 +112,6 @@ class MapModule extends Module {
                 $mapController->setMapElement('mapimage');
                 $this->addExternalJavascript($mapController->getIncludeScript());
                 $this->addInlineJavascript($mapController->getHeaderScript());
-                $this->addInlineJavascriptFooter('hideMapTabChildren();');
                 $this->addInlineJavascriptFooter($mapController->getFooterScript());
             }
         }

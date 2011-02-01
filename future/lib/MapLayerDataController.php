@@ -158,9 +158,20 @@ class MapLayerDataController extends DataController
     }
 
     public function getDynamicMapController() {
-        $controller = MapImageController::factory($this->dynamicMapClass, $this->dynamicMapBaseURL);
-        if ($this->dynamicMapClass == 'ArcGISJSMap' && $this->dynamicZoomLevel !== null) {
-            $controller->setPermanentZoomLevel($this->dynamicZoomLevel);
+        if (is_array($this->dynamicMapBaseURL)) {
+            $baseURL = $this->dynamicMapBaseURL[0];
+            $moreLayers = $this->dynamicMapBaseURL;
+            array_splice($moreLayers, 0, 1);
+        } else {
+            $baseURL = $this->dynamicMapBaseURL;
+            $moreLayers = array();
+        }
+        $controller = MapImageController::factory($this->dynamicMapClass, $baseURL);
+        if ($this->dynamicMapClass == 'ArcGISJSMap') {
+            $controller->addLayers($moreLayers);
+            if ($this->dynamicZoomLevel !== null) {
+                $controller->setPermanentZoomLevel($this->dynamicZoomLevel);
+            }
         }
         return $controller;
     }

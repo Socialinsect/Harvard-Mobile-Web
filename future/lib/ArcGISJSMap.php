@@ -19,6 +19,8 @@ class ArcGISJSMap extends JavascriptMapImageController {
     protected $markers = array();
     protected $paths = array();
     protected $polygons = array();
+
+	private $moreLayers = array();
     
     private $apiVersion = '2.1';
     private $themeName = 'claro'; // claro, tundra, soria, nihilo
@@ -50,6 +52,10 @@ class ArcGISJSMap extends JavascriptMapImageController {
     }
 
     ////////////// overlays ///////////////
+    
+    public function addLayers($moreLayers) {
+        $this->moreLayers = array_merge($this->moreLayers, $moreLayers);
+    }
     
     // TODO make the following two functions more concise
 
@@ -318,8 +324,16 @@ JS;
         // gets loaded before the included script
         
         $zoomLevel = $this->permanentZoomLevel ? $this->permanentZoomLevel : $this->zoomLevel;
+        $moreLayersJS = '';
+        foreach ($this->moreLayers as $anotherLayer) {
+            $moreLayersJS .= <<<JS
+    map.addLayer(new esri.layers.ArcGISDynamicMapServiceLayer("{$anotherLayer}", 1.0));
+JS;
+        }
 
         $script = <<<JS
+
+hideMapTabChildren();
 
 dojo.require("esri.map");
 dojo.addOnLoad(loadMap);
@@ -328,14 +342,16 @@ var map;
 
 function loadMap() {
     var mapImage = document.getElementById("mapimage");
-    mapImage.style.display = "block";
+    mapImage.style.display = "inline-block";
     mapImage.style.width = "{$this->imageWidth}px";
     mapImage.style.height = "{$this->imageHeight}px";
     
     map = new esri.Map("{$this->mapElement}");
     var basemapURL = "{$this->baseURL}";
     var basemap = new esri.layers.ArcGISTiledMapServiceLayer(basemapURL);
+
     map.addLayer(basemap);
+    {$moreLayersJS}
 
     dojo.connect(map, "onLoad", plotFeatures);
 }
