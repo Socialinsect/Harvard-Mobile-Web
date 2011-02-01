@@ -13,6 +13,9 @@ abstract class MapImageController
     const STYLE_POINT_SIZE = 'size';
     const STYLE_POINT_ICON = 'icon';
     
+    const STYLE_FILL_COLOR = 'fillColor';
+    const STYLE_FILL_ALPHA = 'fillAlpha';
+    
     protected $center = null; // array('lat' => 0.0, 'lon' => 0.0), or address
 
     protected $zoomLevel = 14;

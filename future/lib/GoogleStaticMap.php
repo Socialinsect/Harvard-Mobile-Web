@@ -11,6 +11,7 @@ class GoogleStaticMap extends StaticMapImageController {
     protected $canAddAnnotations = true;
     protected $canAddPaths = true;
     protected $canAddLayers = true;
+    //protected $canAddPolygons = true;
 
     protected $maxZoomLevel = 21;
     protected $minZoomLevel = 0;
@@ -135,6 +136,13 @@ class GoogleStaticMap extends StaticMapImageController {
 
         $this->paths[] = implode('|', $styleArgs).'|enc:'.$polyline;
     }
+    
+    /*
+    public function addPolygon($rings, $style=null)
+    {
+    	
+    }
+    */
 
     // google layers can be selectively displayed using geometry,
     // label, or both.  so we use this syntax for modified layers:

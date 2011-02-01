@@ -29,9 +29,9 @@ class MapModule extends Module {
     
     private function initializeMap(MapLayerDataController $layer, MapFeature $feature) {
         
+        $style = $feature->getStyleAttribs();
         $style['title'] = $feature->getTitle(); // for annotations
         $geometry = $feature->getGeometry();
-        $style = $feature->getStyleAttribs();
 
         // center
         if (isset($this->args['center'])) {
@@ -90,6 +90,7 @@ class MapModule extends Module {
                     if ($mapController->canAddPaths()) {
                         $mapController->addPath($geometry->getPoints(), $style);
                     }
+                    break;
                 case 'Polygon':
                     if ($mapController->canAddPolygons()) {
                         $mapController->addPolygon($geometry->getRings(), $style);
@@ -236,9 +237,10 @@ class MapModule extends Module {
         $categories = array();
         foreach ($this->feeds as $id => $feed) {
             if (isset($feed['HIDDEN']) && $feed['HIDDEN']) continue;
-        
+            $subtitle = isset($feed['SUBTITLE']) ? $feed['SUBTITLE'] : null;
             $categories[] = array(
                 'title' => $feed['TITLE'],
+                'subtitle' => $subtitle,
                 'url' => $this->categoryURL($id),
                 );
         }
@@ -270,6 +272,7 @@ class MapModule extends Module {
                     $title = $mapSearch->getTitleForSearchResult($result);
                     $place = array(
                         'title' => $title,
+                        'subtitle' => $feature->getSubtitle(),
                         'url' => $this->detailURLForResult($mapSearch->getURLArgsForSearchResult($result)),
                     );
                     $places[] = $place;

@@ -25,6 +25,29 @@ interface MapGeometry
     public function getType();
 }
 
+interface MapLineStyle
+{
+	public function getLineWeight();
+	public function getLineAlpha();
+	public function getLineColor();
+	public function getLineConsistency(); // dotted, dashed, etc
+}
+
+interface MapPinStyle
+{
+    public function getPointIcon();
+    public function getPointSize();
+    public function getPointColor();
+    public function getPointShape();
+}
+
+interface MapPolygonStyle
+{
+    public function getLineStyle();
+    public function getFillColor();
+    public function getFillAlpha();
+}
+
 define('GEOGRAPHIC_PROJECTION', 4326);
 
 class MapLayerDataController extends DataController

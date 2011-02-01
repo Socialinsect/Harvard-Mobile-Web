@@ -8,10 +8,12 @@ class GoogleJSMap extends JavascriptMapImageController {
 
     protected $canAddAnnotations = true;
     protected $canAddPaths = true;
+    protected $canAddPolygons = true;
     protected $canAddLayers = true;
 
     protected $markers = array();
     protected $paths = array();
+    protected $polygons = array();
 
     public function setLocatesUser($locatesUser) {
         $this->locatesUser = ($locatesUser == true);
@@ -53,6 +55,41 @@ class GoogleJSMap extends JavascriptMapImageController {
         $path['style'] = $pathStyle;
         
         $this->paths[] = $path;
+    }
+    
+    public function addPolygon($rings, $style=null)
+    {
+    	$polygon = array('rings' => $rings);
+
+        $pathStyle = array();
+        if (isset($style[MapImageController::STYLE_LINE_COLOR])) {
+            $color = $style[MapImageController::STYLE_LINE_COLOR];
+            $pathStyle['strokeColor'] = '"#'.substr($color, 0, 6).'"';
+            if (strlen($color) == 8) {
+                $alphaHex = substr($color, 6);
+                $alpha = hexdec($alphaHex) / 256;
+                $pathStyle['strokeOpacity'] = round($alpha, 2);
+            }
+        }
+        if (isset($style[MapImageController::STYLE_FILL_COLOR])) {
+            $color = $style[MapImageController::STYLE_FILL_COLOR];
+            $pathStyle['fillColor'] = '"#'.substr($color, 0, 6).'"';
+            if (strlen($color) == 8) {
+                $alphaHex = substr($color, 6);
+                $alpha = hexdec($alphaHex) / 256;
+                $pathStyle['fillOpacity'] = round($alpha, 2);
+            }
+        }
+        if (isset($style[MapImageController::STYLE_LINE_WEIGHT])) {
+            $pathStyle['strokeWeight'] = $style[MapImageController::STYLE_LINE_WEIGHT];
+        }
+        $polygon['style'] = $pathStyle;
+        
+    	$this->polygons[] = $polygon;
+    }
+    
+    private function getPolygonJS() {
+    	return '';
     }
 
     private function getPathJS() {
@@ -127,6 +164,10 @@ hideMapTabChildren();
 loadMap();
 
 JS;
+
+		if ($this->polygons) {
+            $script .= $this->getPolygonJS();
+		}
 
         if ($this->paths) {
             $script .= $this->getPathJS();
