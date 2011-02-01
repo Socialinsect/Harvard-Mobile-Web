@@ -303,11 +303,11 @@ class MapModule extends Module {
 
           $places = array();
           foreach ($features as $feature) {
-            $title = $feature->getTitle();
             $places[] = array(
-              'title' => $title,
+              'title' => $feature->getTitle(),
+              'subtitle' => $feature->getSubtitle(),
               'url'   => $this->detailURL($feature->getIndex(), $category),
-            );
+              );
           }
           $this->assign('title',      $layer->getTitle());
           $this->assign('places',     $places);          

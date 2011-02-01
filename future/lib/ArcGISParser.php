@@ -143,6 +143,7 @@ class ArcGISFeature implements MapFeature
     
     public function getSubtitle()
     {
+    	// TODO make this a config field
         return $this->getField('Address');
     }
     
