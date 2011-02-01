@@ -80,6 +80,13 @@ class XMLElement
             return $this->properties[strtoupper($var)]->value();
         }
     }
+    
+    public function getChildElement($var)
+    {
+        if (array_key_exists(strtoupper($var), $this->properties)) {
+            return $this->properties[strtoupper($var)];
+        }
+    }
  
     public function addElement(XMLElement $element)
     {
