@@ -74,7 +74,6 @@ class HarvardMapDataController extends ArcGISDataController
                 'returnGeometry' => 'true',
                 'f'              => 'json',
                 ));
-
             $json = file_get_contents($queryBase . '/find?' . $query);
             $jsonObj = json_decode($json, true);
         

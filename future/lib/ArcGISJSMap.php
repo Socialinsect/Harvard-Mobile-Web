@@ -79,26 +79,10 @@ class ArcGISJSMap extends JavascriptMapImageController {
             $shape = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::SHAPE)
                 or $shape = 'esri.symbol.Simple.STYLE_CIRCLE';
             $filteredStyles[] = 'style='.$shape;
-            /*
-            if (($color = $style->getLineColor()) == null) {
-                $color = 'FF0000';
-            }
-            $filteredStyles[] = 'color=#'.substr($color, 0, 6);
 
-            if (($size = $style->getPointWidth()) == null) {
-                $size = 12;
-            }
-            $filteredStyles[] = 'size='.strval($size);
-
-            // TODO there isn't yet a good way to get valid values for this from outside
-            if (($shape = $style->getPointShape()) == null) {
-                $shape = 'esri.symbol.Simple.STYLE_CIRCLE';
-            }
-            $filteredStyles[] = 'style='.$shape;
-            */
             // if they use an image
             // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi/picturemarkersymbol.htm
-            if (($icon = $style->getPointIcon()) == null) {
+            if (($icon = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::ICON)) !== null) {
                 $filteredStyles[] = 'icon='.$icon;
             }
         }
@@ -128,22 +112,6 @@ class ArcGISJSMap extends JavascriptMapImageController {
             $weight = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::WEIGHT)
                 or $weight = 4;
             $filteredStyles[] = 'width='.strval($width);
-            /*
-            if (($consistency = $style->getLineConsistency()) == null) {
-                $consistency = 'STYLE_SOLID';
-            }
-            $filteredStyles[] = 'style='.$consistency;
-
-            if (($color = $style->getLineColor()) == null) {
-                $color = 'FF0000';
-            }
-            $filteredStyles[] = 'color=#'.substr($color, 0, 6);
-
-            if (($weight = $style->getLineWeight()) == null) {
-                $weight = 4;
-            }
-            $filteredStyles[] = 'width='.strval($width);
-            */
         }
         $styleString = implode('|', $filteredStyles);
         

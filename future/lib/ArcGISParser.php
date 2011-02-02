@@ -429,12 +429,14 @@ class ArcGISLayer {
             $result = array();
             foreach ($data['features'] as $featureInfo) {
                 $feature = $this->featureFromJSON($featureInfo);
-                $feature->setIndex(count($result));
-                $result[$feature->getIndex()] = $feature;
+                $result[] = $feature;
             }
             usort($result, array($this, 'compareFeatures'));
+            foreach ($result as $feature) {
+                $feature->setIndex(count($this->features));
+                $this->features[$feature->getIndex()] = $feature;
+            }
 
-            $this->features = $result;
             $this->isPopulated = true;
         }
     }

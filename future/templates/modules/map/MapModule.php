@@ -308,7 +308,6 @@ class MapModule extends Module {
                 // for folder objects, getIndex returns the subcategory ID
                 $url = $this->categoryURL($category, $listItem->getIndex());
             }
-
             $places[] = array(
               'title'    => $listItem->getTitle(),
               'subtitle' => $listItem->getSubtitle(),
