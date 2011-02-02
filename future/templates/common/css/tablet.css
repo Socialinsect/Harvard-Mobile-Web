@@ -329,7 +329,7 @@ input.formbutton {
 	line-height: 44px;
 	vertical-align: top;
   margin-left: -4px; /* overlap by the width of the drillup art */
-  padding: 0 18px 0 2px; 
+  padding: 0 22px 0 2px; 
   background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
 	background-position: top right;
@@ -357,7 +357,7 @@ a.homelink {
 }
 
 a.module img {
-	padding: 8px 2px 8px 0px;
+	padding: 8px 2px 8px 4px;
 }
 
 .homepage .moduleicon {
@@ -371,33 +371,37 @@ a.module img {
 }
 
 .crumb1 {
-	max-width: 120px;
+	max-width: 250px;
 }
 
 .crumb2a  {
-	max-width: 45px;
+	max-width: 250px;
 }
 
 .crumb2b  {
-	max-width: 50px;
+	max-width: 250px;
 }
 
 .crumb3a {
-	max-width: 45px;
+	max-width: 200px;
 }
 
 .crumb3b {
-	max-width: 45px;
+	max-width: 200px;
 }
 
 .crumb3c {
-	max-width: 50px;
+	max-width: 250px;
+}
+.crumb3c + .crumb3c {
+	display: none;
 }
 
 .pagetitle {
 	display: inline-block;
 	font-weight: bold;
-	margin-left: -4px;	
+	margin-left: -4px;
+	padding-left: 2px;
 	vertical-align: top;
 	line-height: 44px;
 	height: 44px;
@@ -770,8 +774,6 @@ ul.focal li:first-child {
 }
 
 .nonfocal form {
-	margin-left: -4px;
-	margin-right: -4px;
 }
 
 .shaded {
