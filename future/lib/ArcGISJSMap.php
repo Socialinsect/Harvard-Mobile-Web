@@ -67,14 +67,17 @@ class ArcGISJSMap extends JavascriptMapImageController {
         if ($style !== null) {
             // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi/simplemarkersymbol.htm
             // either all four of (color, size, outline, style) are set or zero
-            ($color = $style->getLineColor()) or $color = 'FF0000';
+            $color = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::COLOR)
+                or $color = 'FF0000';
             $filteredStyles[] = 'color=#'.substr($color, 0, 6);
 
-            ($size = $style->getPointWidth()) or $size = 12;
+            $size = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::SIZE)
+                or $size = 12;
             $filteredStyles[] = 'size='.strval($size);
 
             // TODO there isn't yet a good way to get valid values for this from outside
-            ($shape = $style->getPointShape()) or $shape = 'esri.symbol.Simple.STYLE_CIRCLE';
+            $shape = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::SHAPE)
+                or $shape = 'esri.symbol.Simple.STYLE_CIRCLE';
             $filteredStyles[] = 'style='.$shape;
             /*
             if (($color = $style->getLineColor()) == null) {
@@ -114,13 +117,16 @@ class ArcGISJSMap extends JavascriptMapImageController {
             // either three or zero parameters are all set
 
             // TODO there isn't yet a good way to get valid values for this from outside
-            ($consistency = $style->getLineConsistency()) or $consistency = 'STYLE_SOLID';
+            $consistency = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::CONSISTENCY)
+                or $consistency = 'STYLE_SOLID';
             $filteredStyles[] = 'style='.$consistency;
 
-            ($color = $style->getLineColor()) or $color = 'FF0000';
+            $color = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::COLOR)
+                or $color = 'FF0000';
             $filteredStyles[] = 'color=#'.substr($color, 0, 6);
 
-            ($weight = $style->getLineWeight()) or $weight = 4;
+            $weight = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::WEIGHT)
+                or $weight = 4;
             $filteredStyles[] = 'width='.strval($width);
             /*
             if (($consistency = $style->getLineConsistency()) == null) {

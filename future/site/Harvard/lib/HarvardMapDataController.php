@@ -35,7 +35,7 @@ class HarvardMapDataController extends ArcGISDataController
             }
 
         } else {
-            $items = $this->getFeatureList();
+            $items = $this->items();
             if (isset($items[$name])) {
                 $theItem = $items[$name];
                 if (!$this->returnsGeometry || $theItem->getGeometry() == null) {
