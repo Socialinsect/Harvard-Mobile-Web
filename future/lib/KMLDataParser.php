@@ -477,6 +477,7 @@ class KMLFolder extends KMLDocument implements MapListElement
     protected $index;
 
     public function addItem(MapFeature $item) {
+        $item->setIndex(count($this->items));
         $this->items[] = $item;
     }
 
@@ -600,8 +601,8 @@ class KMLDataParser extends XMLDataParser
                 $this->document = $element;
                 break;
             case 'FOLDER':
-                $element->setIndex(count($this->folders));
-                $this->folders[] = $element;
+                $element->setIndex(count($this->items));
+                $this->items[] = $element;
                 break;
             case 'STYLE':
             case 'STYLEMAP':
@@ -609,9 +610,11 @@ class KMLDataParser extends XMLDataParser
                 break;
             case 'PLACEMARK':
                 $element->setIndex(count($this->items));
-                $this->items[] = $element;
                 if (get_class($parent) == 'KMLFolder') {
                     $parent->addItem($element);
+                } else {
+                    $element->setIndex(count($this->items));
+                    $this->items[] = $element;
                 }
                 break;
             case 'STYLEURL':

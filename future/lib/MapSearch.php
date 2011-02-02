@@ -26,14 +26,28 @@ class MapSearch {
             $controller->setDebugMode($GLOBALS['siteConfig']->getVar('DATA_DEBUG'));
             
             if ($controller->canSearch()) {
+                $isHierarchy = false;
                 $results = $controller->search($query);
                 $this->resultCount += count($results);
                 foreach ($results as $index => $aResult) {
-                    $this->searchResults[] = array(
-                        'title' => $aResult->getTitle(),
-                        'category' => $id,
-                        'index' => $index,
-                        );
+                    if (is_array($aResult)) {
+                        foreach ($aResult as $featureID => $feature) {
+                            $this->searchResults[] = array(
+                                'title' => $feature->getTitle(),
+                                'subtitle' => $feature->getSubtitle(),
+                                'category' => $id,
+                                'subcategory' => $index,
+                                'index' => $featureID,
+                            );
+                        }
+                    } else {
+                        $this->searchResults[] = array(
+                            'title' => $aResult->getTitle(),
+                            'subtitle' => $aResult->getSubtitle(),
+                            'category' => $id,
+                            'index' => $index,
+                            );
+                    }
                 }
             }
     	}
@@ -48,6 +62,7 @@ class MapSearch {
     public function getURLArgsForSearchResult($aResult) {
         return array(
             'selectvalues' => $aResult['index'],
+            'subcategory' => $aResult['subcategory'],
             'category' => $aResult['category'],
             );
     }

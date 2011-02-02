@@ -59,6 +59,8 @@ define('GEOGRAPHIC_PROJECTION', 4326);
 
 class MapLayerDataController extends DataController
 {
+    const SEARCH_RESULTS = -1;
+
     protected $parser = null;
     protected $DEFAULT_PARSER_CLASS = 'KMLDataParser';
     protected $DEFAULT_MAP_CLASS = 'GoogleStaticMap';
@@ -101,11 +103,22 @@ class MapLayerDataController extends DataController
         return $this->searchable;
     }
 
+    private static function featureMatchesTokens(MapFeature $feature, Array $tokens)
+    {
+        $matched = true;
+        $title = $feature->getTitle();
+        foreach ($tokens as $token) {
+            if (!preg_match($token, $title)) {
+                $matched = false;
+            }
+        }
+        return $matched;
+    }
+
     // default search implementation loops through all relevant features
     public function search($searchText)
     {
         $results = array();
-        
         if ($this->searchable) {
             $tokens = explode(' ', $searchText);
             $validTokens = array();
@@ -120,15 +133,20 @@ class MapLayerDataController extends DataController
             if (count($validTokens)) {
                 $id = 0;
                 foreach ($this->items() as $id => $item) {
-                    $matched = true;
-                    $title = $item->getTitle();
-                    foreach ($validTokens as $token) {
-                        if (!preg_match($token, $title)) {
-                            $matched = false;
+                    if ($item instanceof MapFeature) {
+                        if (self::featureMatchesTokens($item, $validTokens)) {
+                            $results[$id] = $item;
                         }
-                    }
-                    if ($matched) {
-                        $results[$id] = $item;
+                    } else {
+                        $subCategoryResults = array();
+                        foreach ($item->getItems() as $featureID => $feature) {
+                            if (self::featureMatchesTokens($feature, $validTokens)) {
+                                $subCategoryResults[$featureID] = $feature;
+                            }
+                            if (count($subCategoryResults)) {
+                                $results[$id] = $subCategoryResults;
+                            }
+                        }
                     }
                 }
             }
@@ -145,11 +163,14 @@ class MapLayerDataController extends DataController
         }
     }
 
-    //public function getFeatureList() {
-    //    return $this->items();
-    //}
-
-    public function getFeature($name) {
+    public function getFeature($name, $subCategory=null) {
+        if ($subCategory !== null) {
+            $folder = $this->getItem($subCategory);
+            $itemList = $folder->getItems();
+            if (isset($itemList[$name])) {
+                return $itemList[$name];
+            }
+        }
         return $this->getItem($name);
     }
     

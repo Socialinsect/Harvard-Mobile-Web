@@ -127,32 +127,19 @@ class MapModule extends Module {
     private function initializeFullscreenMap() {
       $selectvalue = $this->args['selectvalues'];
     }
-
-    // TODO reimplement this for MIT-style building number/name drilldown.
-    // otherwise this funciton is not being used
-  private function drillURL($drilldown, $name=NULL, $addBreadcrumb=true) {
-    $args = array(
-      'drilldown' => $drilldown,
-    );
-    if (isset($this->args['category'])) {
-      $args['category'] = $this->args['category'];
-    }
-    if (isset($name)) {
-      $args['desc'] = $name;
-    }
-    return $this->buildBreadcrumbURL('category', $args, $addBreadcrumb);
-  }
   
-  private function categoryURL($category=NULL, $addBreadcrumb=true) {
+  private function categoryURL($category=NULL, $subCategory=NULL, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('category', array(
-      'category' => isset($category) ? $category : $_REQUEST['category'],
+      'category' => $category,
+      'subcategory' => $subCategory,
     ), $addBreadcrumb);
   }
 
-  private function detailURL($name, $category, $info=null, $addBreadcrumb=true) {
+  private function detailURL($name, $category, $subCategory=null, $info=null, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', array(
       'selectvalues' => $name,
       'category'     => $category,
+      'subcategory'  => $subCategory,
       'info'         => $info,
     ), $addBreadcrumb);
   }
@@ -161,7 +148,7 @@ class MapModule extends Module {
     return $this->buildBreadcrumbURL('detail', $this->detailURLArgsForResult($result), $addBreadcrumb);
   }
   
-  private function detailURLForResult(/*$id, $category*/$urlArgs, $addBreadcrumb=true) {
+  private function detailURLForResult($urlArgs, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('detail', $urlArgs, $addBreadcrumb);
   }
   
@@ -271,7 +258,7 @@ class MapModule extends Module {
                     $title = $mapSearch->getTitleForSearchResult($result);
                     $place = array(
                         'title' => $title,
-                        'subtitle' => $feature->getSubtitle(),
+                        'subtitle' => isset($result['subtitle']) ? $result['subtitle'] : null,
                         'url' => $this->detailURLForResult($mapSearch->getURLArgsForSearchResult($result)),
                     );
                     $places[] = $place;
@@ -316,9 +303,10 @@ class MapModule extends Module {
           $places = array();
           foreach ($listItems as $listItem) {
             if ($listItem instanceof MapFeature) {
-                $url = $this->detailURL($listItem->getIndex(), $category);
+                $url = $this->detailURL($listItem->getIndex(), $category, $subCategory);
             } else {
-                $url = $this->categoryURL($listItem->getIndex(), $category);
+                // for folder objects, getIndex returns the subcategory ID
+                $url = $this->categoryURL($category, $listItem->getIndex());
             }
 
             $places[] = array(
@@ -350,7 +338,8 @@ class MapModule extends Module {
 
         $index = $this->args['selectvalues'];
         $layer = $this->getLayer($this->args['category']);
-        $feature = $layer->getFeature($index);
+        $subCategory = isset($this->args['subcategory']) ? $this->args['subcategory'] : null;
+        $feature = $layer->getFeature($index, $subCategory);
         $this->initializeMap($layer, $feature);
 
         $this->assign('name', $feature->getTitle());
