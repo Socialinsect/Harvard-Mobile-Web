@@ -103,11 +103,11 @@ class GoogleStaticMap extends StaticMapImageController {
             $styleArgs = array('color:red');
         } else {
             $styleArgs = array();
-            $color = $style->getPointColor();
+            $color = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::COLOR);
             if ($color) $styleArgs[] = 'color:'.$color;
-            $size = $style->getPointWidth();
+            $size = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::SIZE);
             if ($size) $styleArgs[] = 'size:'.$size;
-            $icon = $style->getPointIcon();
+            $icon = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::ICON);
             if ($icon) $styleArgs[] = 'icon:'.$icon;
             // also can use label, shadow
         }
@@ -128,9 +128,9 @@ class GoogleStaticMap extends StaticMapImageController {
             $styleArgs = array('color:red');
         } else {
             $styleArgs = array();
-            $color = $style->getLineColor();
+            $color = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::COLOR);
             if ($color) $styleArgs[] = 'color:0x'.$color;
-            $weight = $style->getLineWeight();
+            $weight = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::WEIGHT);
             if ($weight) $styleArgs[] = 'weight:'.$weight;
         }
 

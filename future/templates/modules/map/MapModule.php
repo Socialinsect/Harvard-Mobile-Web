@@ -288,11 +288,10 @@ class MapModule extends Module {
         
       case 'category':
         if (isset($this->args['category'])) {
-          $category = $this->args['category'];
-
           if (!$this->feeds)
               $this->feeds = $this->loadFeedData();
 
+          // populate drop-down list at the bottom
           $categories = array();
           foreach ($this->feeds as $id => $feed) {
               $categories[] = array(
@@ -300,25 +299,36 @@ class MapModule extends Module {
                   'title' => $feed['TITLE'],
                   );
           }
+          $this->assign('categories', $categories);
 
+          // build the drill-down list
+          $category = $this->args['category'];
           $layer = $this->getLayer($category);
-          
-          // TODO some categories have subcategories
-          // they will return lists of categories instead of lists of features
-          
-          $features = $layer->getFeatureList();
+
+          if (isset($this->args['subcategory'])) {
+            $subCategory = $this->args['subcategory'];
+          } else {
+            $subCategory = null;
+          }
+
+          $listItems = $layer->getListItems($subCategory);
 
           $places = array();
-          foreach ($features as $feature) {
+          foreach ($listItems as $listItem) {
+            if ($listItem instanceof MapFeature) {
+                $url = $this->detailURL($listItem->getIndex(), $category);
+            } else {
+                $url = $this->categoryURL($listItem->getIndex(), $category);
+            }
+
             $places[] = array(
-              'title' => $feature->getTitle(),
-              'subtitle' => $feature->getSubtitle(),
-              'url'   => $this->detailURL($feature->getIndex(), $category),
+              'title'    => $listItem->getTitle(),
+              'subtitle' => $listItem->getSubtitle(),
+              'url'      => $url,
               );
           }
           $this->assign('title',      $layer->getTitle());
           $this->assign('places',     $places);          
-          $this->assign('categories', $categories);
           
         } else {
           $this->redirectTo('index');

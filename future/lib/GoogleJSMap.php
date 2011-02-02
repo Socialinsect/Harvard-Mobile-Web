@@ -40,7 +40,7 @@ class GoogleJSMap extends JavascriptMapImageController {
         $path = array('coordinates' => $points);
         
         $pathStyle = array();
-        if (($color = $style->getLineColor()) !== null) {
+        if (($color = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::COLOR)) !== null) {
             $pathStyle['strokeColor'] = '"#'.substr($color, 0, 6).'"';
             if (strlen($color) == 8) {
                 $alphaHex = substr($color, 6);
@@ -48,7 +48,7 @@ class GoogleJSMap extends JavascriptMapImageController {
                 $pathStyle['strokeOpacity'] = round($alpha, 2);
             }
         }
-        if (($weight = $style->getLineWeight()) !== null) {
+        if (($weight = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::WEIGHT)) !== null) {
             $pathStyle['strokeWeight'] = $weight;
         }
 
@@ -62,7 +62,7 @@ class GoogleJSMap extends JavascriptMapImageController {
     	$polygon = array('rings' => $rings);
 
         $pathStyle = array();
-        if (($color = $style->getLineColor()) !== null) {
+        if (($color = $style->getStyleForTypeAndParam(MapStyle::POLYGON, MapStyle::COLOR)) !== null) {
             $pathStyle['strokeColor'] = '"#'.substr($color, 0, 6).'"';
             if (strlen($color) == 8) {
                 $alphaHex = substr($color, 6);
@@ -70,7 +70,7 @@ class GoogleJSMap extends JavascriptMapImageController {
                 $pathStyle['strokeOpacity'] = round($alpha, 2);
             }
         }
-        if (($color = $style->getFillColor()) !== null) {
+        if (($color = $style->getStyleForTypeAndParam(MapStyle::POLYGON, MapStyle::FILLCOLOR)) !== null) {
             $pathStyle['fillColor'] = '"#'.substr($color, 0, 6).'"';
             if (strlen($color) == 8) {
                 $alphaHex = substr($color, 6);
@@ -78,7 +78,7 @@ class GoogleJSMap extends JavascriptMapImageController {
                 $pathStyle['fillOpacity'] = round($alpha, 2);
             }
         }
-        if (($weight = $style->getLineWeight()) !== null) {
+        if (($weight = $style->getStyleForTypeAndParam(MapStyle::POLYGON, MapStyle::WEIGHT)) !== null) {
             $pathStyle['strokeWeight'] = $weight;
         }
         $polygon['style'] = $pathStyle;
@@ -104,16 +104,7 @@ class GoogleJSMap extends JavascriptMapImageController {
             }
             $multiPathString = implode(',', $polyString);
 
-            $properties = array('paths: polypaths'
-,
-    'strokeColor: "#FF0000"',
-    'strokeOpacity: 0.8',
-    'strokeWeight: 3',
-    'fillColor: "#FF0000"',
-    'fillOpacity: 0.35'
-
-
-);
+            $properties = array('paths: polypaths');
             foreach ($polygon['style'] as $attrib => $value) {
                 $properties[] = "$attrib: $value";
             }

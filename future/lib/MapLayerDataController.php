@@ -6,13 +6,18 @@
 // TODO move these interfaces to a separate file if
 // we create maps without using MapLayerDataController
 
-interface MapFeature
+interface MapListElement
 {
-	const DESCRIPTION_TEXT = 0;
-	const DESCRIPTION_LIST = 1;
+    const DESCRIPTION_TEXT = 0;
+    const DESCRIPTION_LIST = 1;
 
     public function getTitle();
     public function getSubtitle();
+    public function getIndex();
+}
+
+interface MapFeature extends MapListElement
+{
     public function getGeometry();
     public function getDescription();
     public function getDescriptionType();
@@ -27,22 +32,27 @@ interface MapGeometry
 
 interface MapStyle
 {
-    // point styles
-    public function getPointColor(); // RRGGBB(?AA)
-    public function getPointWidth();
-    public function getPointHeight();
-    public function getPointIcon();
-    public function getPointShape();
-    public function getPointScale();
+    const POINT = 0;
+    const LINE = 1;
+    const POLYGON = 2;
+    const CALLOUT = 3;
 
-    // line (and polygon stroke) styles
-    public function getLineColor(); // RRGGBB(?AA)
-    public function getLineWeight();
-	public function getLineConsistency(); // dotted, dashed, etc
+    // these just have to be unique within the enclosing style type
+    const COLOR = 'color';             // points
+    const FILLCOLOR = 'fillColor';     // polygons, callouts, list view
+    const STROKECOLOR = 'strokeColor'; // lines
+    const TEXTCOLOR = self::COLOR;     // callouts
+    const HEIGHT = 'height';           // points
+    const WIDTH = 'width';             // points and lines
+    const SIZE = self::WIDTH;          // points
+    const WEIGHT = self::WIDTH;        // lines
+    const ICON = 'icon';               // points, cell image in list view
+    const SCALE = 'scale';             // points, labels -- kml
+    const SHAPE = 'shape';             // points -- esri
+    const CONSISTENCY = 'consistency'; // lines -- dotted/dashed/etc
+    const SHOULD_OUTLINE = 'outline';  // polygons
 
-    // polygon styles
-    public function getFillColor();
-    public function shouldStrokePolygon();
+    public function getStyleForTypeAndParam($type, $param);
 }
 
 define('GEOGRAPHIC_PROJECTION', 4326);
@@ -126,9 +136,18 @@ class MapLayerDataController extends DataController
         return $results;
     }
 
-    public function getFeatureList() {
-        return $this->items();
+    public function getListItems($subCategory=null) {
+        if ($subCategory === null) {
+            return $this->items();
+        } else {
+            $folder = $this->getItem($subCategory);
+            return $folder->getItems();
+        }
     }
+
+    //public function getFeatureList() {
+    //    return $this->items();
+    //}
 
     public function getFeature($name) {
         return $this->getItem($name);
@@ -140,7 +159,7 @@ class MapLayerDataController extends DataController
 
     public function getItem($name)
     {
-        $items = $this->getFeatureList();
+        $items = $this->items();
         if (isset($items[$name]))
             return $items[$name];
 
