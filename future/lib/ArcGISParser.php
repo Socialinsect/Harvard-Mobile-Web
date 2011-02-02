@@ -190,7 +190,7 @@ class ArcGISFeature implements MapFeature
         return $details;
     }
 
-    public function getStyleAttribs()
+    public function getStyle()
     {
         return null;
     }

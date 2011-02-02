@@ -16,7 +16,7 @@ interface MapFeature
     public function getGeometry();
     public function getDescription();
     public function getDescriptionType();
-    public function getStyleAttribs();
+    public function getStyle();
 }
 
 interface MapGeometry
@@ -25,27 +25,24 @@ interface MapGeometry
     public function getType();
 }
 
-interface MapLineStyle
+interface MapStyle
 {
-	public function getLineWeight();
-	public function getLineAlpha();
-	public function getLineColor();
-	public function getLineConsistency(); // dotted, dashed, etc
-}
-
-interface MapPinStyle
-{
+    // point styles
+    public function getPointColor(); // RRGGBB(?AA)
+    public function getPointWidth();
+    public function getPointHeight();
     public function getPointIcon();
-    public function getPointSize();
-    public function getPointColor();
     public function getPointShape();
-}
+    public function getPointScale();
 
-interface MapPolygonStyle
-{
-    public function getLineStyle();
+    // line (and polygon stroke) styles
+    public function getLineColor(); // RRGGBB(?AA)
+    public function getLineWeight();
+	public function getLineConsistency(); // dotted, dashed, etc
+
+    // polygon styles
     public function getFillColor();
-    public function getFillAlpha();
+    public function shouldStrokePolygon();
 }
 
 define('GEOGRAPHIC_PROJECTION', 4326);

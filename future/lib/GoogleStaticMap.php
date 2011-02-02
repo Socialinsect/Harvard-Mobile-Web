@@ -97,22 +97,20 @@ class GoogleStaticMap extends StaticMapImageController {
     ////////////// overlays ///////////////
 
     // should expand to support addresses
-    public function addAnnotation($latitude, $longitude, $style=null)
+    public function addAnnotation($latitude, $longitude, $style=null, $title=null)
     {
         if ($style === null) {
-            $style = array('color' => 'red');
+            $styleArgs = array('color:red');
+        } else {
+            $styleArgs = array();
+            $color = $style->getPointColor();
+            if ($color) $styleArgs[] = 'color:'.$color;
+            $size = $style->getPointWidth();
+            if ($size) $styleArgs[] = 'size:'.$size;
+            $icon = $style->getPointIcon();
+            if ($icon) $styleArgs[] = 'icon:'.$icon;
+            // also can use label, shadow
         }
-
-        $styleArgs = array();
-        if (isset($style[MapImageController::STYLE_POINT_COLOR]))
-            $styleArgs[] = 'color:' .$style[MapImageController::STYLE_POINT_COLOR];
-        if (isset($style[MapImageController::STYLE_POINT_SIZE]))
-            $styleArgs[] = 'size:'  .$style[MapImageController::STYLE_POINT_SIZE];
-        if (isset($style[MapImageController::STYLE_POINT_ICON]))
-            $styleArgs[] = 'icon:'  .$style[MapImageController::STYLE_POINT_ICON];
-        if (isset($style['label']))  $styleArgs[] = 'label:' .$style['label'];
-        if (isset($style['shadow'])) $styleArgs[] = 'shadow:'.$style['shadow'];
-
         $styleString = implode('|', $styleArgs);
 
         if (!array_key_exists($styleString, $this->markers))
@@ -127,12 +125,14 @@ class GoogleStaticMap extends StaticMapImageController {
         if ($style === null) {
             // color can be 0xRRGGBB or
             // {black, brown, green, purple, yellow, blue, gray, orange, red, white}
-            $style = array('color' => 'red');
+            $styleArgs = array('color:red');
+        } else {
+            $styleArgs = array();
+            $color = $style->getLineColor();
+            if ($color) $styleArgs[] = 'color:0x'.$color;
+            $weight = $style->getLineWeight();
+            if ($weight) $styleArgs[] = 'weight:'.$weight;
         }
-
-        $styleArgs = array();
-        if (isset($style['color']))  $styleArgs[] = 'color:0x' .$style['color'];
-        if (isset($style['weight'])) $styleArgs[] = 'weight:'.$style['weight'];
 
         $this->paths[] = implode('|', $styleArgs).'|enc:'.$polyline;
     }
@@ -322,7 +322,6 @@ class GoogleStaticMap extends StaticMapImageController {
             );
 
         $query = http_build_query($params);
-
         // remove brackets
         $query = preg_replace('/%5B\d+%5D/', '', $query);
 

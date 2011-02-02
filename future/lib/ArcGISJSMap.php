@@ -59,37 +59,44 @@ class ArcGISJSMap extends JavascriptMapImageController {
     
     // TODO make the following two functions more concise
 
-    public function addAnnotation($latitude, $longitude, $style=null)
+    public function addAnnotation($latitude, $longitude, $style=null, $title=null)
     {
         $marker = array('lon' => $longitude, 'lat' => $latitude);
         
         $filteredStyles = array();
         if ($style !== null) {
             // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi/simplemarkersymbol.htm
-            // either all four of (color, size, outline, style) are set or zero are
-            if (isset($style[MapImageController::STYLE_POINT_COLOR])) {
-                $filteredStyles[] = 'color='.$style[MapImageController::STYLE_POINT_COLOR];
-            } else {
-                $filteredStyles[] = 'color=#FF0000';
-            }
-            
-            if (isset($style[MapImageController::STYLE_POINT_SIZE])) {
-                $filteredStyles[] = 'color='.$style[MapImageController::STYLE_POINT_SIZE];
-            } else {
-                $filteredStyles[] = 'size=12';
-            }
-            
-            if (isset($style['style'])) {
-                // TODO there isn't yet a good way to get valid values for this from outside
-                $filteredStyles[] = 'style='.$style['style'];
-            } else {
-                $filteredStyles[] = 'style=esri.symbol.SimplePSTYLE_CIRCLE';
-            }
+            // either all four of (color, size, outline, style) are set or zero
+            ($color = $style->getLineColor()) or $color = 'FF0000';
+            $filteredStyles[] = 'color=#'.substr($color, 0, 6);
 
+            ($size = $style->getPointWidth()) or $size = 12;
+            $filteredStyles[] = 'size='.strval($size);
+
+            // TODO there isn't yet a good way to get valid values for this from outside
+            ($shape = $style->getPointShape()) or $shape = 'esri.symbol.Simple.STYLE_CIRCLE';
+            $filteredStyles[] = 'style='.$shape;
+            /*
+            if (($color = $style->getLineColor()) == null) {
+                $color = 'FF0000';
+            }
+            $filteredStyles[] = 'color=#'.substr($color, 0, 6);
+
+            if (($size = $style->getPointWidth()) == null) {
+                $size = 12;
+            }
+            $filteredStyles[] = 'size='.strval($size);
+
+            // TODO there isn't yet a good way to get valid values for this from outside
+            if (($shape = $style->getPointShape()) == null) {
+                $shape = 'esri.symbol.Simple.STYLE_CIRCLE';
+            }
+            $filteredStyles[] = 'style='.$shape;
+            */
             // if they use an image
             // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi/picturemarkersymbol.htm
-            if (isset($style[MapImageController::STYLE_POINT_ICON])) {
-            	$filteredStyles[] = 'icon='.$style[MapImageController::STYLE_POINT_ICON];
+            if (($icon = $style->getPointIcon()) == null) {
+                $filteredStyles[] = 'icon='.$icon;
             }
         }
         $styleString = implode('|', $filteredStyles);
@@ -105,24 +112,32 @@ class ArcGISJSMap extends JavascriptMapImageController {
         $filteredStyles = array();
         if ($style !== null) {
             // either three or zero parameters are all set
-            if (isset($style[MapImageController::STYLE_LINE_CONSISTENCY])) {
-                // TODO there isn't yet a good way to get valid values for this from outside
-                $filteredStyles[] = 'style='.$style[MapImageController::STYLE_LINE_CONSISTENCY];
-            } else {
-                $filteredStyles[] = 'style=STYLE_SOLID';
-            }
 
-            if (isset($style[MapImageController::STYLE_LINE_COLOR])) {
-                $filteredStyles[] = 'color='.$style[MapImageController::STYLE_LINE_COLOR];
-            } else {
-                $filteredStyles[] = 'color=#FF0000'; // these needs to be converted to dojo
+            // TODO there isn't yet a good way to get valid values for this from outside
+            ($consistency = $style->getLineConsistency()) or $consistency = 'STYLE_SOLID';
+            $filteredStyles[] = 'style='.$consistency;
+
+            ($color = $style->getLineColor()) or $color = 'FF0000';
+            $filteredStyles[] = 'color=#'.substr($color, 0, 6);
+
+            ($weight = $style->getLineWeight()) or $weight = 4;
+            $filteredStyles[] = 'width='.strval($width);
+            /*
+            if (($consistency = $style->getLineConsistency()) == null) {
+                $consistency = 'STYLE_SOLID';
             }
-            
-            if (isset($style[MapImageController::STYLE_LINE_WEIGHT])) {
-                $filteredStyles[] = 'width='.$style[MapImageController::STYLE_LINE_WEIGHT];
-            } else {
-                $filteredStyles[] = 'width=4';
+            $filteredStyles[] = 'style='.$consistency;
+
+            if (($color = $style->getLineColor()) == null) {
+                $color = 'FF0000';
             }
+            $filteredStyles[] = 'color=#'.substr($color, 0, 6);
+
+            if (($weight = $style->getLineWeight()) == null) {
+                $weight = 4;
+            }
+            $filteredStyles[] = 'width='.strval($width);
+            */
         }
         $styleString = implode('|', $filteredStyles);
         

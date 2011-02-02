@@ -21,15 +21,15 @@ class GoogleJSMap extends JavascriptMapImageController {
 
     ////////////// overlays ///////////////
 
-    public function addAnnotation($latitude, $longitude, $style=null)
+    public function addAnnotation($latitude, $longitude, $style=null, $title=null)
     {
         $marker = array(
             'lat' => $latitude,
             'lon' => $longitude,
             );
 
-        if (isset($style['title'])) {
-            $marker['title'] = $style['title'];
+        if ($title) {
+            $marker['title'] = $title;
         }
 
         $this->markers[] = $marker;
@@ -40,8 +40,7 @@ class GoogleJSMap extends JavascriptMapImageController {
         $path = array('coordinates' => $points);
         
         $pathStyle = array();
-        if (isset($style[MapImageController::STYLE_LINE_COLOR])) {
-            $color = $style[MapImageController::STYLE_LINE_COLOR];
+        if (($color = $style->getLineColor()) !== null) {
             $pathStyle['strokeColor'] = '"#'.substr($color, 0, 6).'"';
             if (strlen($color) == 8) {
                 $alphaHex = substr($color, 6);
@@ -49,9 +48,10 @@ class GoogleJSMap extends JavascriptMapImageController {
                 $pathStyle['strokeOpacity'] = round($alpha, 2);
             }
         }
-        if (isset($style[MapImageController::STYLE_LINE_WEIGHT])) {
-            $pathStyle['strokeWeight'] = $style[MapImageController::STYLE_LINE_WEIGHT];
+        if (($weight = $style->getLineWeight()) !== null) {
+            $pathStyle['strokeWeight'] = $weight;
         }
+
         $path['style'] = $pathStyle;
         
         $this->paths[] = $path;
@@ -62,8 +62,7 @@ class GoogleJSMap extends JavascriptMapImageController {
     	$polygon = array('rings' => $rings);
 
         $pathStyle = array();
-        if (isset($style[MapImageController::STYLE_LINE_COLOR])) {
-            $color = $style[MapImageController::STYLE_LINE_COLOR];
+        if (($color = $style->getLineColor()) !== null) {
             $pathStyle['strokeColor'] = '"#'.substr($color, 0, 6).'"';
             if (strlen($color) == 8) {
                 $alphaHex = substr($color, 6);
@@ -71,8 +70,7 @@ class GoogleJSMap extends JavascriptMapImageController {
                 $pathStyle['strokeOpacity'] = round($alpha, 2);
             }
         }
-        if (isset($style[MapImageController::STYLE_FILL_COLOR])) {
-            $color = $style[MapImageController::STYLE_FILL_COLOR];
+        if (($color = $style->getFillColor()) !== null) {
             $pathStyle['fillColor'] = '"#'.substr($color, 0, 6).'"';
             if (strlen($color) == 8) {
                 $alphaHex = substr($color, 6);
@@ -80,29 +78,65 @@ class GoogleJSMap extends JavascriptMapImageController {
                 $pathStyle['fillOpacity'] = round($alpha, 2);
             }
         }
-        if (isset($style[MapImageController::STYLE_LINE_WEIGHT])) {
-            $pathStyle['strokeWeight'] = $style[MapImageController::STYLE_LINE_WEIGHT];
+        if (($weight = $style->getLineWeight()) !== null) {
+            $pathStyle['strokeWeight'] = $weight;
         }
         $polygon['style'] = $pathStyle;
         
     	$this->polygons[] = $polygon;
     }
+
+    private static function coordsToGoogleArray($coords) {
+        $gCoords = array();
+        foreach ($coords as $coord) {
+            $gCoords[] .= 'new google.maps.LatLng('.$coord[0].','.$coord[1].')';
+        }
+        return implode(',', $gCoords);
+    }
     
     private function getPolygonJS() {
-    	return '';
+        $js = "var polypaths;\nvar polygon;";
+
+        foreach ($this->polygons as $polygon) {
+            $polyStrings = array();
+            foreach ($polygon['rings'] as $ring) {
+                $polyString[] = '['.self::coordsToGoogleArray($ring).']';
+            }
+            $multiPathString = implode(',', $polyString);
+
+            $properties = array('paths: polypaths'
+,
+    'strokeColor: "#FF0000"',
+    'strokeOpacity: 0.8',
+    'strokeWeight: 3',
+    'fillColor: "#FF0000"',
+    'fillOpacity: 0.35'
+
+
+);
+            foreach ($polygon['style'] as $attrib => $value) {
+                $properties[] = "$attrib: $value";
+            }
+            $propString = implode(',', $properties);
+
+            $js .= <<<JS
+
+polypaths = [{$multiPathString}];
+polygon = new google.maps.Polygon({{$propString}});
+polygon.setMap(map);
+
+JS;
+        }
+
+        return $js;
     }
 
     private function getPathJS() {
         $js = "var coordinates;\nvar path;";
         foreach ($this->paths as $path) {
-            $coords = array();
-            foreach ($path['coordinates'] as $coord) {
-                $coords[] .= 'new google.maps.LatLng('.$coord[0].','.$coord[1].')';
-            }
-            $coordString = implode(',', $coords);
+            $coordString = self::coordsToGoogleArray($path['coordinates']);
 
-            $properties = array();
-            $properties[] = 'path: coordinates';
+            $properties = array('path: coordinates');
             foreach ($path['style'] as $attrib => $value) {
                 $properties[] = "$attrib: $value";
             }

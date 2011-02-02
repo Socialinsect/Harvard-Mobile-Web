@@ -29,8 +29,7 @@ class MapModule extends Module {
     
     private function initializeMap(MapLayerDataController $layer, MapFeature $feature) {
         
-        $style = $feature->getStyleAttribs();
-        $style['title'] = $feature->getTitle(); // for annotations
+        $style = $feature->getStyle();
         $geometry = $feature->getGeometry();
 
         // center
@@ -83,7 +82,7 @@ class MapModule extends Module {
             switch ($geometry->getType()) {
                 case 'Point':
                     if ($mapController->canAddAnnotations()) {
-                        $mapController->addAnnotation($center['lat'], $center['lon'], $style);
+                        $mapController->addAnnotation($center['lat'], $center['lon'], $style, $feature->getTitle());
                     }
                     break;
                 case 'Polyline':

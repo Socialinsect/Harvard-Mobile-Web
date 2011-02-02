@@ -40,44 +40,94 @@ class KMLDocument extends XMLElement
     }
 }
 
-class KMLStyle extends XMLElement
+class KMLStyle extends XMLElement implements MapStyle
 {
     protected $isSimpleStyle = true;
 
-    protected $iconStyle = array(); // color, colorMode, scale, heading, hotSpot, icon>href
-    protected $balloonStyle = array(); // bgColor, textColor, text, displayMode
-    protected $lineStyle = array(); // color, colorMode, width
-    protected $labelStyle = array();
-    protected $listStyle = array();
+    protected $iconStyle; // color, colorMode, scale, heading, hotSpot, icon>href
+    protected $balloonStyle; // bgColor, textColor, text, displayMode
+    protected $lineStyle; // color, colorMode, width
+    protected $labelStyle;
+    protected $listStyle;
+    protected $polyStyle;
 
     // pointers to simple style objects
     protected $normalStyle;
     protected $highlightStyle;
     protected $styleContainer; // pointer to whoever owns the lookup table of simple styles
 
-    public function getPointStyle() {
-        if ($this->isSimpleStyle) {
-            $style = array_merge($this->balloonStyle, $this->iconStyle);
-        } else {
-            $styleRef = $this->styleContainer->getStyle($this->normalStyle);
-            $style = $styleRef->getPointStyle();
-        }
-        return $style;
+    public function getIconStyle() {
+        return $this->iconStyle;
     }
 
     public function getLineStyle() {
-        if ($this->isSimpleStyle) {
+        return $this->lineStyle;
+    }
+
+    public function getPolyStyle() {
+        return $this->polyStyle;
+    }
+
+    // point styles
+    private function getIconStyleForParam($param) {
+        if ($this->isSipmleStyle) {
+            $style = $this->iconStyle;
+        } else {
+            $styleRef = $this->styleContainer->getStyle($this->normalStyle);
+            $style = $styleRef->getIconStyle();
+        }
+
+        if ($style && isset($style[$param])) {
+            return $style[$param];
+        }
+        return null;
+    }
+
+    public function getPointColor() { return null; }
+    public function getPointShape() { return null; }
+    public function getPointWidth() { return $this->getIconStyleForParam('width'); }
+    public function getPointHeight() { return $this->getIconStyleForParam('height'); }
+    public function getPointIcon() { return $this->getIconStyleForParam('icon'); }
+    public function getPointScale() { return $this->getIconStyleForParam('scale'); }
+
+    // line (and polygon stroke) styles
+    private function getLineStyleForParam($param) {
+        if ($this->isSipmleStyle) {
             $style = $this->lineStyle;
         } else {
             $styleRef = $this->styleContainer->getStyle($this->normalStyle);
             $style = $styleRef->getLineStyle();
         }
-        return $style;
+
+        if ($style && isset($style[$param])) {
+            return $style[$param];
+        }
+        return null;
     }
 
-    public function isSimpleStyle() {
-        return $this->isSimpleStyle;
+    public function getLineColor() { return $this->getLineStyleForParam('color'); }
+    public function getLineWeight() { return $this->getLineStyleForParam('weight'); }
+    public function getLineConsistency() { return null; }
+
+    // polygon styles
+    private function getPolyStyleForParam($param) {
+        if ($this->isSipmleStyle) {
+            $style = $this->polyStyle;
+        } else {
+            $styleRef = $this->styleContainer->getStyle($this->normalStyle);
+            $style = $styleRef->getPolyStyle();
+        }
+
+        if ($style && isset($style[$param])) {
+            return $style[$param];
+        }
+        return null;
     }
+
+    public function getFillColor() { return $this->getPolyStyleForParam('color'); }
+    public function shouldStrokePolygon() { return $this->getPolyStyleForParam('outline') == 1; }
+
+    // xml parsing
 
     public function setStyleContainer($container) {
         $this->styleContainer = $container;
@@ -108,6 +158,13 @@ class KMLStyle extends XMLElement
                 $this->lineStyle = array(
                     'color' => $element->getProperty('COLOR'),
                     'weight' => $element->getProperty('WEIGHT'),
+                    );
+                break;
+            case 'POLYSTYLE':
+                $this->polyStyle = array(
+                    'color' => $element->getProperty('COLOR'),
+                    'fill' => $element->getProperty('FILL'),
+                    'outline' => $element->getProperty('OUTLINE'),
                     );
                 break;
             case 'LABELSTYLE':
@@ -225,6 +282,10 @@ class KMLPlacemark extends XMLElement implements MapFeature
         $this->index = $index;
     }
 
+    public function getStyle() {
+        return $this->style;
+    }
+/*
     public function getStyleAttribs() {
         if (!isset($this->style)) {
             return null;
@@ -239,7 +300,7 @@ class KMLPlacemark extends XMLElement implements MapFeature
                 return null;
         }
     }
-
+*/
     public function addElement(XMLElement $element)
     {
         $name = $element->name();
@@ -391,14 +452,13 @@ class KMLPolygon extends XMLElement implements MapGeometry
     public function getRings()
     {
         $outerRing = $this->outerBoundary->getPoints();
+        $result = array($outerRing);
         if (isset($this->innerBoundaries) && count($this->innerBoundaries)) {
-            $result = array($outerRing);
             foreach ($this->innerBoundaries as $boundary) {
                 $result[] = $boundary->getPoints();
             }
-            return $result;
         }
-        return $outerRing;
+        return $result;
     }
 
     public function addElement(XMLElement $element)
