@@ -681,6 +681,8 @@ class LibrariesModule extends Module {
           $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
         }
         
+        $this->addOnLoad('setupItemList();');
+
         $this->assign('keywords',    implode(' ', array($keywords, $q)));
         $this->assign('title',       $title);
         $this->assign('author',      $author);
@@ -758,6 +760,8 @@ class LibrariesModule extends Module {
         }
         
         //error_log(print_r($results, true));
+        
+        $this->addOnLoad('setupItemList();');
         
         $this->assign('bookmarkType', $type);
         $this->assign('results', $results);

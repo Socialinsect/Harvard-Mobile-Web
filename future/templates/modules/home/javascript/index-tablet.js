@@ -1,22 +1,49 @@
+var newsEllipsizer = null;
 
-function getCSSHeight(elem) {
-  return elem.offsetHeight
-    - parseFloat(getCSSValue(elem, 'border-top-width')) 
-    - parseFloat(getCSSValue(elem, 'border-bottom-width'))
-    - parseFloat(getCSSValue(elem, 'padding-top'))
-    - parseFloat(getCSSValue(elem, 'padding-bottom'))
-    - parseFloat(getCSSValue(elem, 'margin-top'))
-    - parseFloat(getCSSValue(elem, 'margin-bottom'));
+function getNewsStories() {
+  return document.getElementById('newsStories').childNodes;
+}
+
+function getNewsDots() {
+  return document.getElementById('newsPagerDots').childNodes;
 }
 
 function moduleHandleWindowResize() {
+  function getCSSValue(element, key) {
+    if (window.getComputedStyle) {
+      return document.defaultView.getComputedStyle(element, null).getPropertyValue(key);
+        
+    } else if (elelementem.currentStyle) {
+      if (key == 'float') { 
+        key = 'styleFloat'; 
+      } else {
+        var re = /(\-([a-z]){1})/g; // hyphens to camel case
+        if (re.test(key)) {
+          key = key.replace(re, function () {
+            return arguments[2].toUpperCase();
+          });
+        }
+      }
+      return element.currentStyle[key] ? element.currentStyle[key] : null;
+    }
+    return '';
+  }
+
+  function getCSSHeight(element) {
+    return element.offsetHeight
+      - parseFloat(getCSSValue(element, 'border-top-width')) 
+      - parseFloat(getCSSValue(element, 'border-bottom-width'))
+      - parseFloat(getCSSValue(element, 'padding-top'))
+      - parseFloat(getCSSValue(element, 'padding-bottom'));
+  }
+
   var blocks = document.getElementById('fillscreen').childNodes;
   
   for (var i = 0; i < blocks.length; i++) {
     var blockborder = blocks[i].childNodes[0];
     if (!blockborder) { continue; }
       
-    var clipHeight = blocks[i].offsetHeight
+    var clipHeight = getCSSHeight(blocks[i])
       - parseFloat(getCSSValue(blockborder, 'border-top-width')) 
       - parseFloat(getCSSValue(blockborder, 'border-bottom-width'))
       - parseFloat(getCSSValue(blockborder, 'padding-top'))
@@ -32,6 +59,12 @@ function moduleHandleWindowResize() {
     var blockheader = blockborder.childNodes[0];
     var blockcontent = blockborder.childNodes[1];
     
+    // How big can the content be?
+    var contentClipHeight = clipHeight 
+      - blockheader.offsetHeight
+      - parseFloat(getCSSValue(blockheader, 'margin-top'))
+      - parseFloat(getCSSValue(blockheader, 'margin-bottom'));
+
     if (!blockcontent.childNodes.length) { continue; }
     var last = blockcontent.childNodes[blockcontent.childNodes.length - 1];
     
@@ -40,15 +73,73 @@ function moduleHandleWindowResize() {
       for (var j = 0; j < listItems.length; j++) {
         listItems[j].style.display = 'list-item'; // make all list items visible
       }
-      
-      // How big can the content be?
-      var contentClipHeight = clipHeight - blockheader.offsetHeight;
   
       var k = listItems.length - 1;
       while (getCSSHeight(blockcontent) > contentClipHeight) {
         listItems[k].style.display = 'none';
         if (--k < 0) { break; } // hid everything, stop
       }
+    } else {
+      // set block content height
+      blockcontent.style.height = contentClipHeight+'px';
     }
   }
+  
+  // set the size on the news stories
+  var stories = getNewsStories();
+  if (stories.length) {
+    var pager = document.getElementById('newsPager');
+    var storyClipHeight = getCSSHeight(document.getElementById('newsStories'))
+      - pager.offsetHeight
+      - parseFloat(getCSSValue(stories[0], 'border-top-width')) 
+      - parseFloat(getCSSValue(stories[0], 'border-bottom-width'))
+      - parseFloat(getCSSValue(stories[0], 'padding-top'))
+      - parseFloat(getCSSValue(stories[0], 'padding-bottom'))
+      - parseFloat(getCSSValue(stories[0], 'margin-top'))
+      - parseFloat(getCSSValue(stories[0], 'margin-bottom'));
+      
+    for (var i = 0; i < stories.length; i++) {
+      stories[i].style.height = storyClipHeight+'px';
+    }
+  }
+  
+  if (newsEllipsizer == null) {
+    newsEllipsizer = new ellipsizer({refreshOnResize: false});
+    newsEllipsizer.addElements(getNewsStories());
+  } else {
+    newsEllipsizer.refresh();
+  }
+}
+
+function newsPaneSwitchStory(elem, direction) {
+  if (elem.className == 'disabled') { return false; }
+
+  var stories = getNewsStories();
+  
+  var dots = getNewsDots();
+  var prev = document.getElementById('newsStoryPrev');
+  var next = document.getElementById('newsStoryNext');
+  
+  for (var i = 0; i < stories.length; i++) {
+    if (stories[i].className == 'current') {
+      var j = direction == 'next' ? i+1 : i-1;
+      
+      if (j >= 0 || j < stories.length) {
+        stories[i].className = '';
+        stories[j].className = 'current';
+        
+        dots[i].className = '';
+        dots[j].className = 'current';
+        
+        prev.className = (j == 0) ? 'disabled' : '';
+        next.className = (j == (stories.length-1)) ? 'disabled' : '';
+        
+        newsEllipsizer.refresh();
+      }
+      
+      break;
+    }
+  }
+  
+  return false;
 }

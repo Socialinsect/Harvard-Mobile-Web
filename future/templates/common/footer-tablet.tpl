@@ -1,6 +1,7 @@
 {extends file="findExtends:common/footer.tpl"}
 
 {block name="containerEnd"}
+        </div> <!-- containerinset -->
       </div> <!-- container -->
     </div> <!-- wrapper -->
   </div> <!--nonfooternav -->
@@ -21,9 +22,6 @@
   <div id="footernav">
     <div id="navsliderwrapper">
       <div id="navslider">
-        {if count($moduleNavList)}
-          <div class="module spacer"></div>{* leftmost module spacer *}
-        {/if}
         {foreach $moduleNavList as $item}
           {if !$item['separator']}
             <div class="module{if $item['class']} {$item['class']}{/if}">
@@ -39,7 +37,7 @@
         {/foreach}
       </div>
     </div>
-    <div id="slideleft"></div>
-    <div id="slideright"></div>
+    <div id="slideleft" style="display:none"></div>
+    <div id="slideright" style="display:none"></div>
   </div>
 {/block}

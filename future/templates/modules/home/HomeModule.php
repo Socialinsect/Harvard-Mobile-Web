@@ -8,16 +8,16 @@ class HomeModule extends Module {
   private function getTabletModulePanes($tabletConfig) {
     $modulePanes = array();
     
-    $modulesConfig = $this->getAllModules();
-    
     foreach ($tabletConfig as $blockName => $moduleID) {
       $module = self::factory($moduleID, 'pane', $this->args);
+      
+      $paneContent = $module->fetchPage(); // sets pageTitle var
       
       $modulePanes[$blockName] = array(
         'id' => $moduleID,
         'url' => $this->buildURLForModule($moduleID, 'index'),
-        'title' => $modulesConfig[$moduleID]['title'],
-        'content' => $module->fetchPage(),
+        'title' => $module->getTemplateVars('pageTitle'),
+        'content' => $paneContent,
       );
     }
     

@@ -53,12 +53,16 @@ class CalendarModule extends Module {
     );
   }
     
-  private function timeText($event) {
-    return strval($event->get_range());
-    if ($event->get_end() - $event->get_start() == -1) {
-      return $event->get_range()->format('D M j').' '.date('g:i a', $event->get_start());
+  private function timeText($event, $timeOnly=false) {
+    if ($timeOnly) {
+      if ($event->get_end() - $event->get_start() == -1) {
+        return $event->get_start()->format('g:i a');
+      } else {
+        return date('g:ia', $event->get_start()).' - '.date('g:ia', $event->get_end());
+      }
+    } else {
+      return strval($event->get_range());
     }
-    return $event->get_range()->format('D M j g:i a');
   }
 
   private function ucname($name) {
@@ -223,7 +227,7 @@ class CalendarModule extends Module {
   }
   
   private function detailURLForModule($event, $options=array()) {
-    return $this->buildURLForModule('detail', array_merge($options, array(
+    return $this->buildURLForModule($this->id, 'detail', array_merge($options, array(
       'id'   => $event->get_uid(),
       'time' => $event->get_start()
     )));
@@ -312,7 +316,7 @@ class CalendarModule extends Module {
                 
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $subtitle = $this->timeText($iCalEvent);
+          $subtitle = $this->timeText($iCalEvent, true);
           $briefLocation = $iCalEvent->get_location();
           if (isset($briefLocation)) {
             $subtitle .= " | $briefLocation";
@@ -320,7 +324,7 @@ class CalendarModule extends Module {
         
           $events[] = array(
             'url'      => $this->detailURLForModule($iCalEvent),
-            'title'    => $iCalEvent->get_summary(),
+            'title'    => $iCalEvent->get_summary().':',
             'subtitle' => $subtitle,
           );
         }
@@ -428,7 +432,7 @@ class CalendarModule extends Module {
                 
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $subtitle = $this->timeText($iCalEvent);
+          $subtitle = $this->timeText($iCalEvent, true);
           $briefLocation = $iCalEvent->get_location();
           if (isset($briefLocation)) {
             $subtitle .= " | $briefLocation";
