@@ -247,7 +247,7 @@ class MapModule extends Module {
             if (!$this->feeds)
                 $this->feeds = $this->loadFeedData();
             $mapSearch->setFeedData($this->feeds);
-            
+
             $searchResults = $mapSearch->searchCampusMap($searchTerms);
 
             if (count($searchResults) == 1) {
