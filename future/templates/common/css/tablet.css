@@ -309,9 +309,9 @@ input.formbutton {
 /* Top navigation/titlebar */
 
 #navbar {
-	height: 46px;
+	height: 50px;
 	margin: 0;
-	line-height: 44px;
+	line-height: 48px;
 	overflow: hidden;
 	position: relative;
 }
@@ -326,10 +326,10 @@ input.formbutton {
 .breadcrumbs a {
 	display: inline-block;
 	height: 100%;
-	line-height: 44px;
+	line-height: 50px;
 	vertical-align: top;
   margin-left: -4px; /* overlap by the width of the drillup art */
-  padding: 0 22px 0 2px; 
+  padding: 0 22px 0 4px; 
   background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
 	background-position: top right;
@@ -349,7 +349,7 @@ a.homelink {
     margin-left: -2px;
     margin-right: -5px;
     padding: 0!important;	/* !important necessitated by IE for WP7 grrr */
-    width: 62px;
+    width: 74px;
 }
 
 .breadcrumbs a.homelink img {
@@ -357,11 +357,11 @@ a.homelink {
 }
 
 a.module img {
-	padding: 8px 2px 8px 4px;
+	padding: 10px 2px 8px 4px;
 }
 
 .homepage .moduleicon {
-    padding: 8px 5px 8px 6px;
+    padding: 10px 7px 8px 6px;
 }
 
 *:first-child+html .homepage .moduleicon {
@@ -401,10 +401,10 @@ a.module img {
 	display: inline-block;
 	font-weight: bold;
 	margin-left: -4px;
-	padding-left: 2px;
+	padding-left: 4px;
 	vertical-align: top;
-	line-height: 44px;
-	height: 44px;
+	line-height: 50px;
+	height: 50px;
 }
 
 *:first-child+html .pagetitle {
@@ -426,7 +426,7 @@ a.module img {
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	width: 46px;
+	width: 52px;
 }
 
 #navbar.helpon {

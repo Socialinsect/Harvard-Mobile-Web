@@ -16,7 +16,7 @@
   <div id="navbar">
     <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
       <a name="top" href="/home/" class="homelink">
-        <img src="/common/images/homelink.png" width="57" height="45" alt="Home" />
+        <img src="/common/images/homelink.png" width="66" height="50" alt="Home" />
       </a>
       
       {$breadcrumbHTML}
@@ -29,7 +29,7 @@
     </div>
     {if $hasHelp}
       <div class="help">
-        <a href="help.php"><img src="/common/images/help.png" width="46" height="45" alt="Help" /></a>
+        <a href="help.php"><img src="/common/images/help.png" width="52" height="50" alt="Help" /></a>
       </div>
     {/if}
   </div>
