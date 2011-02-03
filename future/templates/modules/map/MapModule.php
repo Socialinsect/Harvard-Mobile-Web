@@ -49,6 +49,9 @@ class MapModule extends Module {
 
         // image size
         switch ($this->pagetype) {
+            case 'tablet':
+                $imageWidth = 600; $imageHeight = 350;
+                break;
             case 'compliant':
                 if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
                     $imageWidth = 410; $imageHeight = 260;
