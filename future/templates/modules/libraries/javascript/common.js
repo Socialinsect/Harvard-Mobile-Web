@@ -1,13 +1,14 @@
 // Initalize the ellipsis event handlers
-clipWithEllipsis(function () {
-  var elems = [];
-  for (var i = 0; i < 100; i++) { // cap at 100 divs to avoid overloading phone
-    var elem = document.getElementById('ellipsis_'+i);
-    if (!elem) { break; }
-    elems[i] = elem;
-  }
-  return elems;
-});
+function setupItemList() {
+    var itemListEllipsizer = new ellipsizer();
+    
+    // cap at 100 divs to avoid overloading phone
+    for (var i = 0; i < 100; i++) {
+        var elem = document.getElementById('ellipsis_'+i);
+        if (!elem) { break; }
+        itemListEllipsizer.addElement(elem);
+    }
+}
 
 function toggleBookmark(elem, id, cookie) {
   var bookmarks = getBookmarks(cookie);

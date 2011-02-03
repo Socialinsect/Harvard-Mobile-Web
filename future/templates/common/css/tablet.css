@@ -218,10 +218,16 @@ select {
 }
 #navbar .inputcombo .forminput {
   border-width: 1px;
-	height: 24px;
-	line-height: 24px;
+	height: 20px;
+	line-height: 20px;
 	font-size: 105%;
   width: 400px;
+}
+
+#navbar .nonfocal,
+#navbar .emphasized {
+  margin: 0;
+  padding: 0;
 }
 
 .formbuttons {
@@ -323,7 +329,7 @@ input.formbutton {
 	line-height: 44px;
 	vertical-align: top;
   margin-left: -4px; /* overlap by the width of the drillup art */
-  padding: 0 18px 0 2px; 
+  padding: 0 22px 0 2px; 
   background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
 	background-position: top right;
@@ -351,7 +357,7 @@ a.homelink {
 }
 
 a.module img {
-	padding: 8px 2px 8px 0px;
+	padding: 8px 2px 8px 4px;
 }
 
 .homepage .moduleicon {
@@ -365,33 +371,37 @@ a.module img {
 }
 
 .crumb1 {
-	max-width: 120px;
+	max-width: 250px;
 }
 
 .crumb2a  {
-	max-width: 45px;
+	max-width: 250px;
 }
 
 .crumb2b  {
-	max-width: 50px;
+	max-width: 250px;
 }
 
 .crumb3a {
-	max-width: 45px;
+	max-width: 200px;
 }
 
 .crumb3b {
-	max-width: 45px;
+	max-width: 200px;
 }
 
 .crumb3c {
-	max-width: 50px;
+	max-width: 250px;
+}
+.crumb3c + .crumb3c {
+	display: none;
 }
 
 .pagetitle {
 	display: inline-block;
 	font-weight: bold;
-	margin-left: -4px;	
+	margin-left: -4px;
+	padding-left: 2px;
 	vertical-align: top;
 	line-height: 44px;
 	height: 44px;
@@ -483,7 +493,7 @@ a.module img {
 
 .nav {	   
 	padding: 0;	   
-	margin: 9px; 
+	margin: 9px 12px; 
 	border: 1px solid #ccc;
 	-webkit-border-radius: 9px;	
 	border-radius: 9px;	
@@ -764,8 +774,6 @@ ul.focal li:first-child {
 }
 
 .nonfocal form {
-	margin-left: -4px;
-	margin-right: -4px;
 }
 
 .shaded {
@@ -1365,6 +1373,7 @@ html, body, #nonfooternav {
   height: 100%;
   padding: 0;
   margin: 0;
+  overflow: hidden;
 }
 
 #nonfooternav {
@@ -1377,8 +1386,6 @@ html, body, #nonfooternav {
 }
 
 #wrapper {
-	height: 200px;		/* will be updated by Javascript */
-
 	position: relative;	/* On older OS versions "position" and "z-index" must be defined (absolute | relative), */
 	z-index: 1;			/* it seems that recent webkit is less picky and works anyway. */
 
@@ -1392,6 +1399,16 @@ html, body, #nonfooternav {
   margin: 0;
   float: left;
   width: 100%;
+  background-color: #b8c1d2;
+}
+
+#containerinset {
+  overflow: hidden;
+  margin: 0 10px;
+  border: solid 1px #6b717c;
+  border-width: 0 1px;
+  height: 100%;
+  background-color: #f2f4f7;
 }
 
 #footernav {
@@ -1424,29 +1441,26 @@ html, body, #nonfooternav {
   float: left;
   width: 85px;
   height: 75px;
-  background: transparent url(/common/images/footernav-spacer.png) no-repeat top right;
+  background: transparent url(/common/images/footernav-spacer.png) no-repeat top left;
 }
-#footernav .spacer {
-  width: 2px;
-}
-#footernav .spacer + .module {
+#footernav .module:first-child {
+  background: none;
   width: 87px;
 }
 
 #footernav a {
   display: block;
-  width: 83px;
-  height: 69px;
-  padding-top: 6px;
-  margin-right: 2px;
+  width: 100%;
+  height: 100%;
+  margin-left: 2px;
 	text-decoration: none;
-  font-size: 65%;
+  font-size: 79%;
   line-height: normal;
   text-align: center;
   white-space: normal;
 }
-#footernav .spacer + .module a {
-  width: 85px;
+#footernav .module:first-child a {
+  margin-left: 0;
 }
 
 #footernav .selected a {
@@ -1456,7 +1470,7 @@ html, body, #nonfooternav {
 #footernav a img {
 	height: 45px;
 	width: 45px;
-	margin-bottom: 1px;
+  margin-top: 5px;
 }
 
 #slideleft,

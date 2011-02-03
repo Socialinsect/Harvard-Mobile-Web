@@ -55,7 +55,7 @@ class TransitModule extends Module {
             $routes[] = array(
               'title' => $routeConfig['name'],
               'subtitle' => $routeConfig['description'],
-              'url'   => $this->timesURL($routeID),
+              'url'   => $this->timesURL($routeID, false, true, true),
             );
           }
         }

@@ -12,6 +12,8 @@
   {/foreach}
   
   {block name="javascript"}
+    <script src="/media/ellipsizer.js" type="text/javascript"></script>
+
     {if strlen($GOOGLE_ANALYTICS_ID)}
       <script type="text/javascript">
         var _gaq = _gaq || [];

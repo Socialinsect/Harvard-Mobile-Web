@@ -199,6 +199,8 @@ class NewsModule extends Module {
             'section' => $this->feedIndex
           );
 
+          $this->addOnLoad('setupNewsListing();');
+
           $this->assign('extraArgs',   $extraArgs);
           $this->assign('searchTerms', $searchTerms);
           $this->assign('stories',     $stories);
@@ -222,7 +224,7 @@ class NewsModule extends Module {
           );
           $stories[] = $item;
         }
-        $this->assign('stories',        $stories);
+        $this->assign('stories', $stories);
         break;
       
       case 'index':
@@ -271,6 +273,8 @@ class NewsModule extends Module {
           'section'=>$this->feedIndex
         );
         
+        $this->addOnLoad('setupNewsListing();');
+
         $this->assign('hiddenArgs',     $hiddenArgs);
         $this->assign('sections',       $sections);
         $this->assign('currentSection', $sections[$this->feedIndex]);

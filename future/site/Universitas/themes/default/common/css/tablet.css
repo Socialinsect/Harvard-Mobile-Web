@@ -14,7 +14,7 @@ body, th, td, li, option, select, input {
 .focal, .nav, .results {
 	/* Border color for many container elements */
 	/* border-color: #bbb; */
-	border: none;
+	border-color: #949AA4;
 }
 
 .secondary {
@@ -231,7 +231,7 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 }
 
 #tabs li.active {
-	border-bottom: 1px solid #fff;	/* Should match #tabbodies background-color */
+	border-bottom: . solid #fff;	/* Should match #tabbodies background-color */
 	background-color: #fff;	/* Should match #tabbodies background-color */
 }
 
@@ -279,7 +279,7 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
   background: #aaa; /* background color for bounce when scrolling */
 }
 #container {
-  background-color: #dcdddf;
+  background-color: #b8c1d2;
 }
 
 #scroller {
@@ -291,7 +291,7 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 }
 
 #footernav .module {
-  background: transparent url(/common/images/footernav-spacer.png) no-repeat top right;
+  background: transparent url(/common/images/footernav-spacer.png) no-repeat top left;
 }
 
 #footernav a {
