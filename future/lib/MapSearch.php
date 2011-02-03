@@ -52,9 +52,9 @@ class MapSearch {
     // tolerance specified in meters
     public function searchByProximity($center, $tolerance=1000, $maxItems=0) {
         // approximate upper/lower bounds for lat/lon before calculating GCD
-        $dLatRadians = $tolerance / (EARTH_RADIUS_IN_METERS);
+        $dLatRadians = $tolerance / EARTH_RADIUS_IN_METERS;
         // by haversine formula
-        $dLonRadians = asin(acos($center['lat'] * M_PI / 180) * sin($dLatRadians));
+        $dLonRadians = 2 * asin(sin($dLatRadians / 2) / cos($center['lat'] * M_PI / 180));
 
         $dLatDegrees = $dLatRadians * 180 / M_PI;
         $dLonDegrees = $dLonRadians * 180 / M_PI;
