@@ -316,16 +316,10 @@ class CalendarModule extends Module {
                 
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $subtitle = $this->timeText($iCalEvent, true);
-          $briefLocation = $iCalEvent->get_location();
-          if (isset($briefLocation)) {
-            $subtitle .= " | $briefLocation";
-          }
-        
           $events[] = array(
             'url'      => $this->detailURLForModule($iCalEvent),
             'title'    => $iCalEvent->get_summary().':',
-            'subtitle' => $subtitle,
+            'subtitle' => $this->timeText($iCalEvent, true),
           );
         }
         
@@ -545,7 +539,7 @@ class CalendarModule extends Module {
         }
     
         $this->assign('fields', $fields);
-        //error_log(print_r($fields, true));
+        error_log(print_r($fields, true));
         break;
         
       case 'search':

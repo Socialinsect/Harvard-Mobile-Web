@@ -73,9 +73,10 @@ function moduleHandleWindowResize() {
       - parseFloat(getCSSValue(blockcontent, 'margin-top'))
       - parseFloat(getCSSValue(blockcontent, 'margin-bottom'));
 
-
     if (!blockcontent.childNodes.length) { continue; }
     var last = blockcontent.childNodes[blockcontent.childNodes.length - 1];
+    
+    blockcontent.style.height = 'auto';
     
     if (last.nodeName == 'UL') {
       var listItems = last.childNodes;
@@ -88,10 +89,9 @@ function moduleHandleWindowResize() {
         listItems[k].style.display = 'none';
         if (--k < 0) { break; } // hid everything, stop
       }
-    } else {
-      // set block content height
-      blockcontent.style.height = contentClipHeight+'px';
     }
+
+    blockcontent.style.height = contentClipHeight+'px'; // set block content height
   }
   
   // set the size on the news stories

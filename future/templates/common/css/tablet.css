@@ -1376,10 +1376,6 @@ html, body, #nonfooternav {
   overflow: hidden;
 }
 
-#nonfooternav {
-  margin-bottom: 75px;
-}
-
 #navbar {
   margin: 0;
   position: relative;
@@ -1419,6 +1415,7 @@ html, body, #nonfooternav {
   bottom: 0;
   white-space: nowrap;
   text-align: left;
+  z-index: 1000;
 }
 #navsliderwrapper {
   height: 75px;

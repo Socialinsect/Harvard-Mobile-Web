@@ -131,8 +131,7 @@ function refreshElement(element) {
   var copy = element.cloneNode(true);
   copy.innerHTML = element.originalInnerHTML;
   copy.id += '_ellipsisCopy';
-  //copy.style['visibility'] = 'hidden';
-  copy.style['color'] = 'pink';
+  copy.style['visibility'] = 'hidden';
   copy.style['position'] = 'absolute';
   copy.style['top'] = '0';
   copy.style['left'] = '0';
@@ -152,34 +151,31 @@ function refreshElement(element) {
 
   if (copy.offsetHeight > clipHeight) {
     var lastNodeClose = element.originalInnerHTML.lastIndexOf('>');
-    console.log('clippable text is '+element.originalInnerHTML.substr(lastNodeClose+1));
+    
     var lastTestLoc = -1;
     var lower = lastNodeClose > 0 ? lastNodeClose + 1 : 0;
     var upper = element.originalInnerHTML.length;
 
     for (var i = 0; i < 20 && lower < upper; i++) {
       var testLoc = Math.floor((lower + upper) / 2);
-      if (testLoc == lastTestLoc) {console.log('    found it');
+      if (testLoc == lastTestLoc) {
         break;
       } else {
         lastTestLoc = testLoc;
       }
       
-      console.log('testing '+testLoc+' ('+lower+' to '+upper+')');
-      console.log(element.originalInnerHTML.substr(0, testLoc)+'&hellip;');
       copy.innerHTML = element.originalInnerHTML.substr(0, testLoc)+'&hellip;';
       if (copy.offsetHeight > clipHeight) {
         upper = testLoc;
-        console.log('    new upper '+testLoc);
+        
       } else if (copy.offsetHeight < clipHeight) {
         lower = testLoc;
-        console.log('    new lower '+testLoc);
+        
       } else if (upper - lower > 1) {
         lower = testLoc; // this works but try to fill out last line
-        console.log('    new lower filling out last line '+testLoc);
+        
       } else {
         upper = lower = testLoc; // found it!
-        console.log('    found it');
       }
     }   
   }
