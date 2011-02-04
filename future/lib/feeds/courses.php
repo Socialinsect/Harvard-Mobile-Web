@@ -7,7 +7,22 @@ define('MISC_CLASSES_SUFFIX', ' - other');
 
 function compare_courseNumber($a, $b)
 {
-  return strnatcmp($a['name'], $b['name']);
+  // Attach leading zeros to non-numeric keywords so 
+  // they get sorted above numeric keywords
+  $partsGroups = array(
+    explode(' ', $a['name']),
+    explode(' ', $b['name'])
+  );
+  
+  foreach ($partsGroups as $i => $parts) {
+    foreach ($parts as $j => $part) {
+      if (ctype_alpha($part)) {
+        $partsGroups[$i][$j] = "0$part";
+      }
+    }
+  }
+
+  return strnatcmp(implode(' ', $partsGroups[0]), implode(' ', $partsGroups[1]));
 }
 
 function compare_schoolName($a, $b)
@@ -541,12 +556,6 @@ class CourseData {
       foreach($xml_obj->courses->course as $single_course) {
         $subject_fields = array();
         
-        /* Is this actually needed?
-        $num = strval($single_course->course_number);
-        if (ctype_alpha(str_replace(' ', '', $num)) || (substr($num, 0, 1) == '0')) {
-          $num = '0'.$num;
-        }*/
-        
         $subject_fields['name'] = strval($single_course->course_number);
         $subject_fields['masterId'] = strval($single_course['id']);
         $subject_fields['title'] = strval($single_course->title);
@@ -563,11 +572,6 @@ class CourseData {
 
     usort($subject_array, 'compare_courseNumber');
     
-    foreach($subject_array as $i => $subject) {
-      if (substr($subject["name"], 0, 1) == '0') {
-        $subject_array[$i]["name"] = substr($subject["name"], 1);
-      }
-    }
     return $subject_array;
   }
 
