@@ -1,6 +1,5 @@
 /* Nav bar at top of the home screen */
 #navbar {
-	height: 50px; 
 	background: url(/common/images/navback-home.png) repeat-x;
 }
 
@@ -12,4 +11,13 @@
 body,
 #container {
   background-color: #b8c1d2;
+}
+
+.blockcontent .results a,
+.blockcontent .results a:visited {
+  color: #29557e;
+}
+
+#newsStories .title {
+  color: #29557e;
 }

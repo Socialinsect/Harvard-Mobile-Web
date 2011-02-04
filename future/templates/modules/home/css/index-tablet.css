@@ -1,5 +1,5 @@
 #navbar {
-	height: 53px;
+	height: 50px;
 	line-height: 49px;
 }
 #navbar .moduleicon {
@@ -7,7 +7,7 @@
   padding-left: 5px;
 }
 #navbar .pagetitle {
-	height: 53px;
+	height: 50px;
   line-height: 49px;
   vertical-align: top;
   margin-left: .25em;
@@ -169,7 +169,6 @@ form {
 .blockcontent .results a,
 .blockcontent .results a:visited {
   background: none;
-  color: #29557e;
 }
 
 .portrait .large {
@@ -279,14 +278,20 @@ form {
 #newsStories .thumbnail {
   float: left;
   margin: 0 12px 6px 0;
-  max-width: 50%;
-  max-height: 60%;
+  height: 6.5em;
+  width: 6.5em;
+  line-height: 6.5em;
+  line-height: 6.5em;
+  overflow: hidden;
+}
+#newsStories .thumbnail img {
+  width: 100%;
+  vertical-align: middle;
 }
 
 #newsStories .title {
   font-size: 110%;
   font-weight: bold;
-  color: #29557e;
   padding-bottom: 6px;
 }
 

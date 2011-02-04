@@ -9,7 +9,9 @@ class HomeModule extends Module {
     $modulePanes = array();
     
     foreach ($tabletConfig as $blockName => $moduleID) {
-      $module = self::factory($moduleID, 'pane', $this->args);
+      $path = self::getPathSegmentForModuleID($moduleID);
+    
+      $module = self::factory($path, 'pane', $this->args);
       
       $paneContent = $module->fetchPage(); // sets pageTitle var
       
@@ -54,7 +56,8 @@ class HomeModule extends Module {
         foreach ($this->getHomeScreenModules() as $id => $info) {
           if ($info['search']) {
             $results = array();
-            $module = Module::factory($id, $this->page, $this->args);
+            $path = self::getPathSegmentForModuleID($id);
+            $module = self::factory($path, $this->page, $this->args);
             $total = $module->federatedSearch($searchTerms, 2, $results);
             $federatedResults[] = array(
               'title'   => $info['title'],

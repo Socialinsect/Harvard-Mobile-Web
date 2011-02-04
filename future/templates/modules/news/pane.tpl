@@ -1,11 +1,9 @@
 <div id="newsStories">
   {foreach $stories as $story}
     <a id="newsStory_{$story@index}" href="{$story['url']}"{if $story@first} class="current"{/if}>
-      {if $story['image']}
-        <img class="thumbnail" src="{$story['image']['src']}" />
-      {else}
-        <img class="thumbnail" src="/common/images/news-placeholder.png" />
-      {/if}
+      <div class="thumbnail">
+        <img src="{if $story['image']}{$story['image']['src']}{else}/common/images/news-placeholder.png{/if}" />
+      </div>
       <div class="title">{$story["title"]}</div>
       {$story['description']}
     </a>

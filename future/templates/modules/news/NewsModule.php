@@ -213,7 +213,8 @@ class NewsModule extends Module {
         break;
       
       case 'pane':
-        $items = $this->feed->items(0, $this->maxPerPage, $totalItems);
+        $start = 0;
+        $items = $this->feed->items($start, $this->maxPerPage, $totalItems);
         $stories = array();
         foreach ($items as $story) {
           $item = array(

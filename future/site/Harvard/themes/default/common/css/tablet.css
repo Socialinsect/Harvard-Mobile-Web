@@ -2,13 +2,18 @@
 
 body {
 	background-color: #ded8c9;
-	background: url(/common/images/background-tile.jpg) top right repeat-x, url(/common/images/background-tile-2.jpg) bottom left repeat;
 	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: url(/common/images/background-tile.jpg) top right repeat-x, url(/common/images/background-tile-2.jpg) bottom left repeat;
 }
 
 body, th, td, li, option, select, input {
 	/* Primary font */
 	color: #222;
+}
+
+#wrapper,
+#container {
+  background: none;
 }
 
 .focal, .nav, .results {

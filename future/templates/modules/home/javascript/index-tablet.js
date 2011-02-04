@@ -63,7 +63,16 @@ function moduleHandleWindowResize() {
     var contentClipHeight = clipHeight 
       - blockheader.offsetHeight
       - parseFloat(getCSSValue(blockheader, 'margin-top'))
-      - parseFloat(getCSSValue(blockheader, 'margin-bottom'));
+      - parseFloat(getCSSValue(blockheader, 'margin-bottom'))
+      - parseFloat(getCSSValue(blockheader, 'border-top-width'))
+      - parseFloat(getCSSValue(blockheader, 'border-bottom-width'))
+      - parseFloat(getCSSValue(blockcontent, 'border-top-width')) 
+      - parseFloat(getCSSValue(blockcontent, 'border-bottom-width'))
+      - parseFloat(getCSSValue(blockcontent, 'padding-top'))
+      - parseFloat(getCSSValue(blockcontent, 'padding-bottom'))
+      - parseFloat(getCSSValue(blockcontent, 'margin-top'))
+      - parseFloat(getCSSValue(blockcontent, 'margin-bottom'));
+
 
     if (!blockcontent.childNodes.length) { continue; }
     var last = blockcontent.childNodes[blockcontent.childNodes.length - 1];
