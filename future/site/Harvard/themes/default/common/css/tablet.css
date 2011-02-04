@@ -107,6 +107,9 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 	font-size: 94.118%;
 }
 */
+#navbar #searchformcontainer {
+  top: 8px;
+}
 
 #wrapper {
   padding-top: 4px;
