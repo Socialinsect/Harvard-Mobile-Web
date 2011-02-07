@@ -3,6 +3,7 @@ var navScroller = null;
 
 function onDOMChange() {
   if (containerScroller) {
+    setContainerWrapperHeight();
     containerScroller.refresh();
   }
 }
@@ -21,6 +22,8 @@ function updateNavSlider() {
 
 // Change wrapper height based on device orientation.
 function setContainerWrapperHeight() {
+  document.getElementById('container').style.height = 'auto';
+
 	var navbarHeight = document.getElementById('navbar').offsetHeight;
   var footerNavHeight = document.getElementById('footernav').offsetHeight;
 	var wrapperHeight = window.innerHeight - navbarHeight - footerNavHeight;

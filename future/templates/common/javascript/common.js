@@ -24,6 +24,7 @@ function showTab(strID, objTrigger) {
 			objTriggerTab.className="active";
 		}
 	} 
+	onDOMChange();
 }
 
 function rotateScreen() {
