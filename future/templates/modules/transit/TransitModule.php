@@ -231,6 +231,8 @@ class TransitModule extends Module {
             $offlineRoutes[$routeID] = $entry;
           }
         }
+        uasort($runningRoutes, array(get_class($this), 'routeSort'));
+        uasort($offlineRoutes, array(get_class($this), 'routeSort'));
         
         $mapImageWidth = 298;
         if ($this->pagetype == 'basic') {
