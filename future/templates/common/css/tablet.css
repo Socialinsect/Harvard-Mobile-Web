@@ -1460,7 +1460,7 @@ html, body, #nonfooternav {
 }
 
 #footernav .selected a {
-  background: transparent url(/common/images/footernav-selected.png) repeat-x top left;
+  background: none;
 }
 
 #footernav a img {

@@ -1,0 +1,14 @@
+#searchformcontainer {
+  position: relative;
+}
+
+#searchformcontainer fieldset:first-child {
+  margin-right: 11em;
+}
+#searchformcontainer fieldset + fieldset {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10.25em;
+}
+

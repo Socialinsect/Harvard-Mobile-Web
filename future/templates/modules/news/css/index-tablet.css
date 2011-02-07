@@ -1,46 +1,50 @@
-#category-switcher table {
-    padding-top: 2px;
-    width: 100%;
-    margin: 0;
-    padding: 0;
+#newsHeader {
+  width: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
-#category-switcher .inputcombo {
-    margin: .25em .5em .5em .5em;
+
+#newsHeader fieldset {
+  display: block;
+  padding: 0;
+  margin: 0;
+  height: auto;
 }
-#category-switcher td {
-    vertical-align: middle;
-    height: 32px;
-    padding: 0;
+
+#newsHeader tr td {
+  padding: 1em .5em 0 0;
+  height: 40px;
+  line-height: 40px;
 }
-#category-switcher .inputfield select,
-#category-switcher .inputfield input[type=text] {
-    width: 99.9%;
-    margin: 0;
+
+#newsHeader tr #categoryformcontainer {
+  width: 19em;
+  padding-left: .5em;
 }
-#category-switcher .inputfield input[type=text] {
-    line-height: 1.25em;
-    padding-left: .25em;
+
+#categoryformcontainer label {
+  padding-right: .5em;
+  font-size: 89%;
 }
-#category-switcher .formlabel {
-    padding: 0 .25em;
-    padding-right: .25em;
+#categoryformcontainer select {
+  width: auto;
+  min-width: 250px;
 }
-#category-switcher #category-form .togglefield {
-    width: 40px;
+
+#newsHeader tr #searchformcontainer form,
+#searchformcontainer fieldset {
+  height: 40px;
+  width: 100%;
+  position: relative;
 }
-#category-form .toggle-search-button {
-    padding: 0 .5em 0 .5em;
+#searchformcontainer fieldset .forminput {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 89%;
 }
-#category-switcher #search-form .togglefield {
-    width: 4em;
-    padding: 0 .25em 0 .5em;
-}
-#search-form .toggle-search-button {
-	font-size: 90%;
-	margin-left: .75em;
-	margin-right: .25em;
-	font-weight: bold;
-}
+
 form {
 	margin: -8px 0 0 0;
 	padding: 0;
@@ -81,19 +85,4 @@ form {
   font-weight: bold;
   background-image: none;
   font-size: 90%;
-}
-
-.newsinput  {
-	width: 200px;
-}
-
-.search-field, select {
-}
-
-.search-mode #category-form {
-    display: none;
-}
-
-.category-mode #search-form {
-    display: none;
 }

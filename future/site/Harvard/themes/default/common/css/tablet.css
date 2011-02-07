@@ -109,6 +109,7 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 */
 #navbar #searchformcontainer {
   top: 8px;
+  right: 10px;
 }
 
 #wrapper {

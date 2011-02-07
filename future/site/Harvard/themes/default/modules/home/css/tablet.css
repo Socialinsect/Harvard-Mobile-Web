@@ -26,14 +26,14 @@ body {
 }
 
 .blockheader {
-  background: url(/common/images/navback.png) repeat-x;
   margin: 0;
   -webkit-border-top-left-radius: 8px;
   -webkit-border-top-right-radius: 8px;
   -webkit-border-bottom-left-radius: 0px;
   -webkit-border-bottom-right-radius: 0px;
   padding-left: 46px;
-  font-size: 110%;
+  font-size: 100%;
+  font-weight: bold;
   border-bottom: solid 1px #430f13;
 }
 
