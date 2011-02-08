@@ -37,11 +37,12 @@ class HomeModule extends Module {
       case 'index':
         $homeConfig = $this->loadWebAppConfigFile('home-index', 'home');
         
-        $this->addOnLoad('rotateScreen(); moduleHandleWindowResize();');
+        $this->addOnLoad('rotateScreen();');
         $this->addOnOrientationChange('rotateScreen();');
 
         if ($this->pagetype == 'tablet') {
           $this->assign('modulePanes', $this->getTabletModulePanes($homeConfig['tabletPanes']));
+          $this->addOnLoad('moduleHandleWindowResize();');
         } else {
           $this->assign('modules', $this->getModuleNavList());
         }

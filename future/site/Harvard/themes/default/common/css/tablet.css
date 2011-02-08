@@ -89,8 +89,6 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 
 #navbar {
 	height: 54px;
-	margin-bottom: -4px;
-	overflow: visible;
 	z-index: 1000;
 	background: url(/common/images/navback.png) repeat-x;
 	font-size: 94.118%;
@@ -113,6 +111,7 @@ dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smal
 }
 
 #wrapper {
+  top: 50px;
   padding-top: 4px;
 }
 

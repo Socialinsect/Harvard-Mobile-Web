@@ -116,12 +116,14 @@ function moduleHandleWindowResize() {
     newsEllipsizer = new ellipsizer({refreshOnResize: false});
     newsEllipsizer.addElements(getNewsStories());
   } else {
-    newsEllipsizer.refresh();
+    setTimeout(function () {
+      newsEllipsizer.refresh();
+    }, 1);
   }
 }
 
 function newsPaneSwitchStory(elem, direction) {
-  if (elem.className == 'disabled') { return false; }
+  if (elem.className.match(/disabled/)) { return false; }
 
   var stories = getNewsStories();
   

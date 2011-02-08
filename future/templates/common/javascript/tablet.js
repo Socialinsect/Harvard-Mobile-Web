@@ -65,6 +65,7 @@ function tabletInit() {
     checkDOMChanges: false, 
     hScrollbar: false,
     desktopCompatibility: true,
+    bounce: false,
     bounceLock: true
   });
 

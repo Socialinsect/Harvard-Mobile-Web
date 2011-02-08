@@ -206,6 +206,7 @@ select {
   position: absolute;
   top: 6px;
   right: 8px;
+  width: 50%;
 }
 #navbar form {
   margin: 0;
@@ -221,7 +222,8 @@ select {
 	height: 20px;
 	line-height: 20px;
 	font-size: 105%;
-  width: 400px;
+	width: 90%;
+	float: right;
 }
 
 #navbar .nonfocal,
@@ -1374,6 +1376,7 @@ html, body, #nonfooternav {
   padding: 0;
   margin: 0;
   overflow: hidden;
+  position: relative;
 }
 
 #navbar {
@@ -1382,7 +1385,9 @@ html, body, #nonfooternav {
 }
 
 #wrapper {
-	position: relative;	/* On older OS versions "position" and "z-index" must be defined (absolute | relative), */
+	position: absolute;	/* On older OS versions "position" and "z-index" must be defined (absolute | relative), */
+	top: 50px;
+	left: 0;
 	z-index: 1;			/* it seems that recent webkit is less picky and works anyway. */
 
 	width: 100%;
@@ -1393,7 +1398,9 @@ html, body, #nonfooternav {
 #container {
   padding: 0;
   margin: 0;
-  float: left;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
 }
 

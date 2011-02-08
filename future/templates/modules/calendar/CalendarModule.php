@@ -539,7 +539,6 @@ class CalendarModule extends Module {
         }
     
         $this->assign('fields', $fields);
-        error_log(print_r($fields, true));
         break;
         
       case 'search':

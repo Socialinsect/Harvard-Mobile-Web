@@ -140,6 +140,9 @@ form {
 .transit .blockheader .icon {
   background-image: url(/common/images/pane-transit.png);
 }
+.dining .blockheader .icon {
+  background-image: url(/common/images/pane-dining.png);
+}
 .blockheader .nextlink {
   position: absolute;
   right: 8px;
@@ -310,6 +313,7 @@ form {
   text-align: center;
   overflow: hidden;
   height: 38px;
+  white-space: nowrap;
 }
 
 #newsPager .dots > * {
@@ -318,6 +322,9 @@ form {
   width: 12px;
   margin: 0 0 0 12px;
   background: transparent url(/common/images/page-dot.png) no-repeat center left;
+}
+#newsPager .dots > *:first-child {
+  margin-left: 0;
 }
 #newsPager .dots .current {
   background-image: url(/common/images/page-dot-current.png);
