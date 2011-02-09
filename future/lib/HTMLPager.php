@@ -1,12 +1,21 @@
 <?php
+/**
+ * HTMLPage
+ * @package HTML
+ */
 
 if (!class_exists('DOMDocument')) {
     die('DOMDocument Functions not available (php-xml)');
 }
 
-define("PARAGRAPH_LIMIT", 4);
-define("ALL_PAGES", 'all');
+if (!function_exists('mb_convert_encoding')) {
+    die('Multibyte String Functions not available (mbstring)');
+}
 
+/**
+ * HTMLPage
+ * @package HTML
+ */
 class HTMLPage {
   private $document;
   private $body;
@@ -40,12 +49,18 @@ class HTMLPage {
 
 }
 
+/**
+ * HTMLPager
+ * @package HTML
+ */
 class HTMLPager {
+  const PARAGRAPH_LIMIT=4;
+  const ALL_PAGES='all';
   private $pages = array();
   private $pageCount = 0;
   private $pageNumber = 0;
   
-  public function __construct($html, $encoding, $pageNumber, $paragraphsPerPage=PARAGRAPH_LIMIT) {
+  public function __construct($html, $encoding, $pageNumber, $paragraphsPerPage=HTMLPager::PARAGRAPH_LIMIT) {
     $dom = new DOMDocument();
     $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', $encoding));
     $body = $dom->getElementsByTagName("body")->item(0);
@@ -94,7 +109,7 @@ class HTMLPager {
   }
   
   public function getPageHTML() {
-    if ($this->pageNumber == ALL_PAGES) {
+    if ($this->pageNumber == HTMLPager::ALL_PAGES) {
       return $this->getAllPagesHTML();
     
     } else if (isset($this->pages[$this->pageNumber])) {

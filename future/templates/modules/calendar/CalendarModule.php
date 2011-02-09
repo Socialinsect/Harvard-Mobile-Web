@@ -264,8 +264,8 @@ class CalendarModule extends Module {
   }
   
   protected function urlForFederatedSearch($searchTerms) {
-    return $this->buildBreadcrumbURL("/{$this->id}/search", array(
-      'filter'    => $searchTerms,
+    return $this->buildBreadcrumbURLForModule($this->id, 'search', array(
+      'filter' => $searchTerms,
       'timeframe' => '0',
     ), false);
   }
@@ -405,6 +405,41 @@ class CalendarModule extends Module {
         }
         
         $this->assign('events', $events);        
+        break;
+        
+      case 'list':
+        $current = $this->getArg('time', time());
+        $type = $this->getArg('type', $this->getDefaultFeed());
+        $limit = $this->getArg('limit', 20);
+        $feed = $this->getFeed($type); 
+        $this->setPageTitle($this->getFeedTitle($type));
+        $this->setBreadcrumbTitle('List');
+        $this->setBreadcrumbLongTitle($this->getFeedTitle($type));
+        
+        $start = new DateTime(date('Y-m-d H:i:s', $current), $this->timezone);
+        $start->setTime(0,0,0);
+
+        $feed->setStartDate($start);
+        $iCalEvents = $feed->items(0, $limit);
+                        
+        $events = array();
+        foreach($iCalEvents as $iCalEvent) {
+          $subtitle = $this->timeText($iCalEvent);
+          if ($briefLocation = $iCalEvent->get_location()) {
+            $subtitle .= " | $briefLocation";
+          }
+
+          $events[] = array(
+            'url'      => $this->detailURL($iCalEvent),
+            'title'    => $iCalEvent->get_summary(),
+            'subtitle' => $subtitle
+          );
+        }
+
+        $this->assign('feedTitle', $this->getFeedTitle($type));
+        $this->assign('type',    $type);
+        $this->assign('current', $current);
+        $this->assign('events',  $events);        
         break;
         
       case 'day':  
@@ -587,7 +622,7 @@ class CalendarModule extends Module {
         $type  = $this->getArg('type', 'events');
         $month = $this->getArg('month', 1); //default to january
         
-        $start = new DateTime(sprintf("%d%02d01", $year, $month, $this->timezone));
+        $start = new DateTime(sprintf("%d%02d01", $year, $month), $this->timezone);
         $end   = new DateTime(sprintf("%d%02d01", $year+1, $month), $this->timezone);
         
         $feed = $this->getFeed($type);

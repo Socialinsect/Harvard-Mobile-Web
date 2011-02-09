@@ -1,7 +1,15 @@
 <?php
+/**
+  * @package Core
+  */
 
+/**
+  */
 require_once realpath(LIB_DIR.'/smarty/Smarty.class.php');
 
+/**
+  * @package Core
+  */
 class TemplateEngine extends Smarty {
   static $accessKey = 0;
   
@@ -38,7 +46,7 @@ class TemplateEngine extends Smarty {
         }
       }
     }
-    return false;
+    return $name;
   }
   
   public static function smartyResourceIncludeGetSource($name, &$source, $smarty) {
@@ -77,6 +85,7 @@ class TemplateEngine extends Smarty {
     
     $checkDirs = array(
       'TEMPLATES_DIR' => TEMPLATES_DIR,
+      'SITE_DIR'      => SITE_DIR,
       'THEME_DIR'     => THEME_DIR
     );
     
@@ -251,7 +260,8 @@ class TemplateEngine extends Smarty {
       array('TemplateEngine','smartyResourceIncludeGetTrusted')
     ));
     
-    // Postfilter to add url prefix to absolute urls
+    // Postfilter to add url prefix to absolute urls and
+    // strip unnecessary whitespace (ignores <pre>, <script>, etc)
     $this->registerFilter('output', array('TemplateEngine', 
       'smartyOutputfilterAddURLPrefixAndStripWhitespace'));
     
@@ -266,7 +276,6 @@ class TemplateEngine extends Smarty {
     $this->assign('supportsCerts', $supportsCerts ? 1 : 0);
     $this->assign('showDeviceDetection', $GLOBALS['siteConfig']->getVar('SHOW_DEVICE_DETECTION'));
     $this->assign('moduleDebug', $GLOBALS['siteConfig']->getVar('MODULE_DEBUG'));
-    
   }
   
   //

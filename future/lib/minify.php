@@ -1,5 +1,10 @@
 <?php
+/**
+ * @package Minify
+ */
 
+/**
+  */
 require_once LIB_DIR.'/DiskCache.php';
   
 //
@@ -88,6 +93,29 @@ function getMinifyGroupsConfig() {
   $minifyConfig = array();
   
   $key = $_GET['g'];
+  
+  //
+  // Check for specific file request
+  //
+  if (strpos($key, MIN_FILE_PREFIX) === 0) {
+    // file path relative to either templates or the theme (check theme first)
+    $path = substr($key, strlen(MIN_FILE_PREFIX));
+    
+    $config = array(
+      'include' => 'all',
+      'files' => array(
+        THEME_DIR.$path,
+        SITE_DIR.$path,
+        TEMPLATES_DIR.$path,
+      ),
+    );
+    
+    return array($key => buildFileList($config));
+  }
+  
+  //
+  // Page request
+  //
   list($ext, $module, $page, $pagetype, $platform, $pathHash) = explode('-', $key);
 
   $cache = new DiskCache(CACHE_DIR.'/minify', 30, true);
@@ -100,10 +128,12 @@ function getMinifyGroupsConfig() {
     // CSS includes all in order.  JS prefers theme
     $cssDirs = array(
       TEMPLATES_DIR, 
+      SITE_DIR, 
       THEME_DIR,
     );
     $jsDirs = array(
       THEME_DIR,
+      SITE_DIR, 
       TEMPLATES_DIR, 
     );
     
@@ -142,7 +172,7 @@ function minifyPostProcess($content, $type) {
     $urlPrefix = URL_PREFIX;
           
     if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG') && URL_PREFIX == URL_BASE) {
-      // if device debugging is on, always append since minify
+      // if device debugging is on, always append device classification
       $urlPrefix .= 'device/'.$GLOBALS['deviceClassifier']->getDevice().'/';
     }
 

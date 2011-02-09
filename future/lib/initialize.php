@@ -36,6 +36,8 @@ function Initialize(&$path=null) {
   define('TEMPLATES_DIR',     ROOT_DIR.'/templates');
   define('MODULES_DIR',       TEMPLATES_DIR.'/modules');
   
+  define('MIN_FILE_PREFIX', 'file:');
+  
   
   //
   // Pull in functions to deal with php version differences

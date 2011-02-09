@@ -42,10 +42,12 @@ class HomeModule extends Module {
 
         if ($this->pagetype == 'tablet') {
           $this->assign('modulePanes', $this->getTabletModulePanes($homeConfig['tabletPanes']));
+          $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
           $this->addOnLoad('moduleHandleWindowResize();');
         } else {
           $this->assign('modules', $this->getModuleNavList());
         }
+        $this->assign('displayType', $homeConfig['springboard'] ? 'springboard' : 'list');
         $this->assign('topItem', null);
         break;
         
@@ -54,11 +56,12 @@ class HomeModule extends Module {
         
         $federatedResults = array();
      
-        foreach ($this->getHomeScreenModules() as $id => $info) {
+        foreach ($this->getNavigationModules(false) as $id => $info) {
+          $path = self::getPathSegmentForModuleID($id);
+          $module = self::factory($path, $this->page, $this->args);
+
           if ($info['search']) {
             $results = array();
-            $path = self::getPathSegmentForModuleID($id);
-            $module = self::factory($path, $this->page, $this->args);
             $total = $module->federatedSearch($searchTerms, 2, $results);
             $federatedResults[] = array(
               'title'   => $info['title'],

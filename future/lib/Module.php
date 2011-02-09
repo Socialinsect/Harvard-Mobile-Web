@@ -1,9 +1,11 @@
 <?php
+/**
+  * @package Module
+  */
 
-require_once realpath(LIB_DIR.'/TemplateEngine.php');
-require_once realpath(LIB_DIR.'/HTMLPager.php');
-require_once realpath(LIB_DIR.'/User.php');
-
+/**
+  * Breadcrumb Parameter
+  */
 define('MODULE_BREADCRUMB_PARAM', '_b');
 define('DISABLED_MODULES_COOKIE', 'disabledmodules');
 define('MODULE_ORDER_COOKIE', 'moduleorder');
@@ -11,6 +13,7 @@ define('MODULE_ORDER_COOKIE', 'moduleorder');
 abstract class Module {
 
   protected $id = 'none';
+  protected $moduleName = '';
   
   protected $session;
   
@@ -29,14 +32,13 @@ abstract class Module {
   private $breadcrumbTitle     = 'No Title';
   private $breadcrumbLongTitle = 'No Title';
   
-  private $moduleName = 'No Title';
-  
   private $inlineCSSBlocks = array();
+  private $cssURLs = array();
   private $inlineJavascriptBlocks = array();
   private $inlineJavascriptFooterBlocks = array();
   private $onOrientationChangeBlocks = array();
   private $onLoadBlocks = array('scrollTo(0,1);');
-  private $externalJavascriptURLs = array();
+  private $javascriptURLs = array();
 
   private $moduleDebugStrings = array();
   
@@ -53,6 +55,8 @@ abstract class Module {
   
   private $tabbedView = null;
   
+  protected $cacheMaxAge = 0;
+
   //
   // Tabbed View support
   //
@@ -110,7 +114,7 @@ abstract class Module {
     $pager = array(
       'pageNumber'   => $this->htmlPager->getPageNumber(),
       'pageCount'    => $this->htmlPager->getPageCount(),
-      'inPagedMode'  => $this->htmlPager->getPageNumber() != ALL_PAGES,
+      'inPagedMode'  => $this->htmlPager->getPageNumber() != HTMLPager::ALL_PAGES,
       'html' => array(
         'all'  => $this->htmlPager->getAllPagesHTML(),
         'page' => $this->htmlPager->getPageHTML(),
@@ -118,7 +122,7 @@ abstract class Module {
       'url' => array(
         'prev'  => null,
         'next'  => null,
-        'all'   => $this->urlForPage(ALL_PAGES),
+        'all'   => $this->urlForPage(HTMLPager::ALL_PAGES),
         'pages' => array(),
       ),
     );
@@ -170,7 +174,8 @@ abstract class Module {
   // Minify URLs
   //
   private function getMinifyUrls() {
-    $minKey = "{$this->id}-{$this->page}-{$this->pagetype}-{$this->platform}-".md5(ROOT_DIR);
+    $page = preg_replace('/[\s-]+/', '+', $this->page);
+    $minKey = "{$this->id}-{$page}-{$this->pagetype}-{$this->platform}-".md5(SITE_DIR);
     $minDebug = $GLOBALS['siteConfig']->getVar('MINIFY_DEBUG') ? '&debug=1' : '';
     
     return array(
@@ -239,7 +244,7 @@ abstract class Module {
       $argString = http_build_query($args);
     }
     
-    return "$page.php".(strlen($argString) ? "?$argString" : "");
+    return $page.(strlen($argString) ? "?$argString" : "");
   }
 
   public static function buildURLForModule($id, $page, $args=array()) {
@@ -264,11 +269,9 @@ abstract class Module {
     return $url;
   }
 
-  public function redirectToModule($id, $args=array()) {
-    $path = self::getPathSegmentForModuleID($id);
-  
-    $url = URL_BASE."{$path}/?". http_build_query($args);
-    error_log('Redirecting to: '.$url);
+  public function redirectToModule($id, $page, $args=array()) {
+    $url = self::buildURLForModule($id, $page, $args);
+    //error_log('Redirecting to: '.$url);
     
     header("Location: $url");
     exit;
@@ -284,7 +287,7 @@ abstract class Module {
       $url = self::buildURL($page, $args);
     }
     
-    error_log('Redirecting to: '.$url);
+    //error_log('Redirecting to: '.$url);
     header("Location: $url");
     exit;
   }
@@ -371,7 +374,7 @@ abstract class Module {
     
     $disabled = self::argVal($moduleData, 'disabled', false);
     if ($disabled) {
-        $this->redirectToModule('error', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
+        $this->redirectToModule('error', '', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
     }
     
     $secure = self::argVal($moduleData, 'secure', false);
@@ -389,7 +392,7 @@ abstract class Module {
         $protected = self::argVal($moduleData, 'protected', false);
         if ($protected) {
             if (!$this->session->isLoggedIn()) {
-                $this->redirectToModule('error', array(
+                $this->redirectToModule('error', '', array(
                   'code' => 'protected', 
                   'url'  => self::buildURLForModule('login', 'index', array(
                     'url' => $_SERVER['REQUEST_URI']
@@ -439,53 +442,81 @@ abstract class Module {
   }
 
   //
-  // Module control functions
+  // Module list control functions
   //
   protected function getAllModules() {
     $modules = $GLOBALS['siteConfig']->getWebAppVar('modules');
     return $modules;
   }
 
-  protected function getHomeScreenModules() {
-    $modules = $this->getAllModules();
+  protected function getModuleNavlist() {
+    $navModules = $this->getNavigationModules(false);
+    $separator = array('separator' => array('separator' => true));
+    return array_merge($navModules['primary'], $separator, $navModules['secondary']);
+  }
+  
+  protected function getModuleCustomizeList() {    
+    $navModules = $this->getNavigationModules(true);
+    return $navModules['primary'];
+  }
+
+  protected function getNavigationModules($includeDisabled=true) {
+    $allModules = $this->getAllModules();
     
-    foreach ($modules as $id => $info) {
-      if (!$info['homescreen'] && 
-          ($this->pagetype != 'tablet' || !isset($info['navigation']) || !$info['navigation'])) {
-        unset($modules[$id]);
-        
-      } else if (!isset($info['url'])) {
-        $modules[$id]['url'] = '/'.self::argVal($info, 'path', $id).'/';
-      }
+    $disabledIDs = array();
+    if (isset($_COOKIE[DISABLED_MODULES_COOKIE]) && $_COOKIE[DISABLED_MODULES_COOKIE] != "NONE") {
+      $disabledIDs = explode(",", $_COOKIE[DISABLED_MODULES_COOKIE]);
     }
     
-    if (isset($_COOKIE[DISABLED_MODULES_COOKIE]) && $_COOKIE[DISABLED_MODULES_COOKIE] != "NONE") {
-      $hiddenModuleIDs = explode(",", $_COOKIE[DISABLED_MODULES_COOKIE]);
+    $modules = array(
+      'primary'   => array(),
+      'secondary' => array(),
+    );
 
-      foreach ($hiddenModuleIDs as $moduleID) {
-        if (isset($modules[$moduleID]) && $modules[$moduleID]['disableable']) {
-          $modules[$moduleID]['disabled'] = true;
-        }
+    foreach ($allModules as $id => $info) {
+      $type = $info['primary'] ? 'primary' : 'secondary';
+      $disabled = in_array($id, $disabledIDs) || (!count($disabledIDs) && $info['disabled']);
+      
+      if ($info['homescreen'] && ($includeDisabled || !$disabled)) {
+        $selected = $this->id == $id;
+        $primary = $type == 'primary';
+
+        $classes = array();
+        if ($selected) { $classes[] = 'selected'; }
+        if (!$primary) { $classes[] = 'utility'; }
+  
+        $imgSuffix = ($this->pagetype == 'tablet' && $selected) ? '-selected' : '';
+
+        $modules[$type][$id] = array(
+          'title'       => $info['title'],
+          'shortTitle'  => self::argVal($info, 'shortTitle', $info['title']),
+          'url'         => '/'.self::argVal($info, 'path', $id).'/',
+          'primary'     => $primary,
+          'disableable' => $info['disableable'],
+          'disabled'    => $disabled,
+          'img'         => "/modules/home/images/{$id}{$imgSuffix}".$this->imageExt,
+          'class'       => implode(' ', $classes),
+        );
       }
     }
     
     if (isset($_COOKIE[MODULE_ORDER_COOKIE])) {
-      $sortedModuleIDs = array_merge(array('home'), explode(",", $_COOKIE[MODULE_ORDER_COOKIE]));
-      $unsortedModuleIDs = array_diff(array_keys($modules), $sortedModuleIDs);
+      $sortedIDs = array_merge(array('home'), explode(",", $_COOKIE[MODULE_ORDER_COOKIE]));
+      $unsortedIDs = array_diff(array_keys($modules['primary']), $sortedIDs);
             
       $sortedModules = array();
-      foreach (array_merge($sortedModuleIDs, $unsortedModuleIDs) as $moduleID) {
-        if (isset($modules[$moduleID])) {
-          $sortedModules[$moduleID] = $modules[$moduleID];
+      foreach (array_merge($sortedIDs, $unsortedIDs) as $id) {
+        if (isset($modules['primary'][$id])) {
+          $sortedModules[$id] = $modules['primary'][$id];
         }
       }
-      $modules = $sortedModules;
+      $modules['primary'] = $sortedModules;
     }
     //error_log('$modules(): '.print_r(array_keys($modules), true));
     return $modules;
   }
   
-  protected function setHomeScreenModuleOrder($moduleIDs) {
+  protected function setNavigationModuleOrder($moduleIDs) {
     $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
     $value = implode(",", $moduleIDs);
     
@@ -494,67 +525,13 @@ abstract class Module {
     //error_log(__FUNCTION__.'(): '.print_r($value, true));
   }
   
-  protected function setHomeScreenHiddenModules($moduleIDs) {
+  protected function setNavigationHiddenModules($moduleIDs) {
     $lifespan = $GLOBALS['siteConfig']->getVar('MODULE_ORDER_COOKIE_LIFESPAN');
     $value = count($moduleIDs) ? implode(",", $moduleIDs) : 'NONE';
     
     setcookie(DISABLED_MODULES_COOKIE, $value, time() + $lifespan, COOKIE_PATH);
     $_COOKIE[DISABLED_MODULES_COOKIE] = $value;
     //error_log(__FUNCTION__.'(): '.print_r($value, true));
-  }
-
-  //
-  // Module navigation list 
-  // (shared by tablet footer and home module)
-  //
-  private function imageForNavListModule($id, $module) {
-    if ($this->id == $id) {
-      return self::argVal($module, 'img', "/modules/home/images/$id-selected").$this->imageExt;
-    } else {
-      return self::argVal($module, 'img', "/modules/home/images/$id").$this->imageExt;
-    }
-  }
-  
-  protected function getModuleNavList() {
-    $whatsNewCount = 0;
-    $modules = array();
-    $secondaryModules = array();
-    
-    foreach ($this->getHomeScreenModules() as $id => $info) {
-      if (!$info['disabled']) {
-        $module = array(
-          'id'         => $id,
-          'title'      => $info['title'],
-          'shortTitle' => isset($info['shortTitle']) ? $info['shortTitle'] : $info['title'],
-          'url'        => $info['url'],
-          'img'        => $this->imageForNavListModule($id, $info),
-        );
-        if ($id == 'about' && $whatsNewCount > 0) {
-          $module['badge'] = $whatsNewCount;
-        }
-        if ($id == $this->id) {
-          $module['class'] = 'selected';
-        }
-        
-        if ($info['primary']) {
-          $modules[] = $module;
-          
-        } else {
-          if (isset($module['class'])) {
-            $module['class'] .= ' utility';
-          } else {
-            $module['class'] = 'utility';
-          }
-          
-          $secondaryModules[] = $module;
-        }
-      }
-    }
-    
-    if (count($modules) && count($secondaryModules)) {
-      $modules[] = array('separator' => true);
-    }
-    return array_merge($modules, $secondaryModules);
   }
   
   //
@@ -563,6 +540,12 @@ abstract class Module {
   //
   protected function addInlineCSS($inlineCSS) {
     $this->inlineCSSBlocks[] = $inlineCSS;
+  }
+  protected function addInternalCSS($path) {
+    $this->cssURLs[] = '/min/g='.MIN_FILE_PREFIX.$path;
+  }
+  protected function addExternalCSS($url) {
+    $this->cssURLs[] = $url;
   }
   protected function addInlineJavascript($inlineJavascript) {
     $this->inlineJavascriptBlocks[] = $inlineJavascript;
@@ -576,8 +559,11 @@ abstract class Module {
   protected function addOnLoad($onLoad) {
     $this->onLoadBlocks[] = $onLoad;
   }
+  protected function addInternalJavascript($path) {
+    $this->javascriptURLs[] = '/min/g='.MIN_FILE_PREFIX.$path;
+  }
   protected function addExternalJavascript($url) {
-    $this->externalJavascriptURLs[] = $url;
+    $this->javascriptURLs[] = $url;
   }
   
   //
@@ -593,8 +579,8 @@ abstract class Module {
   }
   
   private function loadBreadcrumbs() {
-    if (isset($this->args[MODULE_BREADCRUMB_PARAM])) {
-      $breadcrumbs = $this->decodeBreadcrumbParam($this->args[MODULE_BREADCRUMB_PARAM]);
+    if ($breadcrumbArg = $this->getArg(MODULE_BREADCRUMB_PARAM)) {
+      $breadcrumbs = $this->decodeBreadcrumbParam($breadcrumbArg);
       if (is_array($breadcrumbs)) {
         for ($i = 0; $i < count($breadcrumbs); $i++) {
           $b = $breadcrumbs[$i];
@@ -602,7 +588,7 @@ abstract class Module {
           $breadcrumbs[$i]['title'] = $b['t'];
           $breadcrumbs[$i]['longTitle'] = $b['lt'];
           
-          $breadcrumbs[$i]['url'] = "{$b['p']}.php";
+          $breadcrumbs[$i]['url'] = "{$b['p']}";
           if (strlen($b['a'])) {
             $breadcrumbs[$i]['url'] .= "?{$b['a']}";
           }
@@ -662,7 +648,13 @@ abstract class Module {
   }
 
   protected function buildBreadcrumbURL($page, $args, $addBreadcrumb=true) {
-    return "$page.php?".http_build_query(array_merge($args, $this->getBreadcrumbArgs($addBreadcrumb)));
+    return "$page?".http_build_query(array_merge($args, $this->getBreadcrumbArgs($addBreadcrumb)));
+  }
+  
+  protected function buildBreadcrumbURLForModule($id, $page, $args, $addBreadcrumb=true) {
+    $path = self::getPathSegmentForModuleID($id);
+  
+    return URL_BASE."$path/$page?".http_build_query(array_merge($args, $this->getBreadcrumbArgs($addBreadcrumb)));
   }
   
   protected function getBreadcrumbArgString($prefix='?', $addBreadcrumb=true) {
@@ -820,7 +812,8 @@ abstract class Module {
     
     // Tablet module nav list
     if ($this->pagetype == 'tablet') {
-      $this->assign('moduleNavList', $this->getModuleNavList());
+      $this->addInternalJavascript('/common/javascript/lib/iscroll.js');
+      $this->assign('moduleNavList', $this->getModuleNavlist());
     }
             
     // Set variables for each page
@@ -829,13 +822,14 @@ abstract class Module {
     $this->assign('pageTitle', $this->pageTitle);
 
     // Variables which may have been modified by the module subclass
-    $this->assign('inlineCSSBlocks', $this->inlineCSSBlocks);
-    $this->assign('inlineJavascriptBlocks', $this->inlineJavascriptBlocks);
-    $this->assign('onOrientationChangeBlocks', $this->onOrientationChangeBlocks);
-    $this->assign('onLoadBlocks', $this->onLoadBlocks);
+    $this->assign('inlineCSSBlocks',              $this->inlineCSSBlocks);
+    $this->assign('cssURLs',                      $this->cssURLs);
+    $this->assign('inlineJavascriptBlocks',       $this->inlineJavascriptBlocks);
+    $this->assign('onOrientationChangeBlocks',    $this->onOrientationChangeBlocks);
+    $this->assign('onLoadBlocks',                 $this->onLoadBlocks);
     $this->assign('inlineJavascriptFooterBlocks', $this->inlineJavascriptFooterBlocks);
-    $this->assign('externalJavascriptURLs', $this->externalJavascriptURLs);
-
+    $this->assign('javascriptURLs',               $this->javascriptURLs);
+    
     $this->assign('breadcrumbs',            $this->breadcrumbs);
     $this->assign('breadcrumbArgs',         $this->getBreadcrumbArgs());
     $this->assign('breadcrumbSamePageArgs', $this->getBreadcrumbArgs(false));
@@ -873,6 +867,11 @@ abstract class Module {
       }
     }
     $this->assign('accessKeyStart', $accessKeyStart);
+
+    /* set cache age. Modules that present content that rarely changes can set this value
+    to something higher */
+    header(sprintf("Cache-Control: max-age=%d", $this->cacheMaxAge));
+    header("Expires: " . gmdate('D, d M Y H:i:s', time() + $this->cacheMaxAge) . ' GMT');
     
     return $template;
   }
@@ -897,6 +896,10 @@ abstract class Module {
     return $this->templateEngine->fetchForDevice($template);    
   }
   
+  protected function setCacheMaxAge($age) {
+    $this->cacheMaxAge = intval($age);
+  }
+  
   
   //
   // Subclass this function to set up variables for each template page
@@ -917,7 +920,7 @@ abstract class Module {
   }
   
   protected function urlForFederatedSearch($searchTerms) {
-    return $this->buildBreadcrumbURL('search', array(
+    return $this->buildBreadcrumbURLForModule($this->id, 'search', array(
       'filter' => $searchTerms,
     ), false);
   }

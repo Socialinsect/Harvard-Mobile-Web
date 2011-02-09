@@ -1,17 +1,20 @@
 <?php
+/**
+  * @package Module
+  * @subpackage News
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
-if (!function_exists('mb_substr')) {
-    die('Multibyte String Functions not available (mbstring)');
-}
-
+/**
+  * @package Module
+  * @subpackage News
+  */
 class NewsModule extends Module {
   protected $id = 'news';
+  protected $hasFeeds = true;
   protected $feeds = array();
-  private   $feedIndex = 0;
+  protected $feedIndex = 0;
   protected $feed;
-  protected $maxPerPage;
+  protected $maxPerPage = 10;
   
   private function feedURLForFeed($feedIndex) {
     return isset($this->feeds[$feedIndex]) ? 
@@ -199,6 +202,7 @@ class NewsModule extends Module {
             'section' => $this->feedIndex
           );
 
+          $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
           $this->addOnLoad('setupNewsListing();');
 
           $this->assign('extraArgs',   $extraArgs);
@@ -274,6 +278,7 @@ class NewsModule extends Module {
           'section'=>$this->feedIndex
         );
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
         $this->addOnLoad('setupNewsListing();');
 
         $this->assign('hiddenArgs',     $hiddenArgs);

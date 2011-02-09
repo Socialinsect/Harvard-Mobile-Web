@@ -115,7 +115,7 @@ $min_serveOptions['maxAge'] = 1800;
  * Set to true to disable the "f" GET parameter for specifying files.
  * Only the "g" parameter will be considered.
  */
-$min_serveOptions['minApp']['groupsOnly'] = true;
+$min_serveOptions['minApp']['groupsOnly'] = false;
 
 /**
  * Maximum # of files that can be specified in the "f" GET parameter

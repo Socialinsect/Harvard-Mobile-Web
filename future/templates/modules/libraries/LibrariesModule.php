@@ -681,6 +681,7 @@ class LibrariesModule extends Module {
           $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
         }
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
         $this->addOnLoad('setupItemList();');
 
         $this->assign('keywords',    implode(' ', array($keywords, $q)));
@@ -761,6 +762,7 @@ class LibrariesModule extends Module {
         
         //error_log(print_r($results, true));
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
         $this->addOnLoad('setupItemList();');
         
         $this->assign('bookmarkType', $type);

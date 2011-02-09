@@ -1,7 +1,7 @@
 {include file="findInclude:common/header.tpl"}
 
 <div class="nonfocal">
-  <h2>Academic Calendar for {$current}</h2>
+  <h2>{$feedTitle}</h2>
 </div>
 
 {capture name="sideNav" assign="sideNav"}

@@ -7,11 +7,11 @@ class CustomizeModule extends Module {
 
   private function handleRequest($args) {
     if (isset($args['action'])) {
-      $currentModules = $this->getHomeScreenModules();
+      $currentModules = $this->getModuleCustomizeList();
       
       switch ($args['action']) {
         case 'swap':
-         $currentIDs = array_keys($currentModules);
+          $currentIDs = array_keys($currentModules);
           
           if (isset($args['module1'], $args['module2']) && 
               in_array($args['module1'], $currentIDs) && 
@@ -25,23 +25,23 @@ class CustomizeModule extends Module {
               }
             }
             
-            $this->setHomeScreenModuleOrder($currentIDs);
+            $this->setNavigationModuleOrder($currentIDs);
           }
           break;
           
         case 'on':
         case 'off':
           if (isset($args['module'])) {
-            $hiddenModuleIDs = array();
+            $disabledModuleIDs = array();
             
             foreach ($currentModules as $id => &$info) {
               if ($id == $args['module']) {
                 $info['disabled'] = $args['action'] != 'on';
               }
-              if ($info['disabled']) { $hiddenModuleIDs[] = $id; }
+              if ($info['disabled']) { $disabledModuleIDs[] = $id; }
             }
             
-            $this->setHomeScreenHiddenModules($hiddenModuleIDs);
+            $this->setNavigationHiddenModules($disabledModuleIDs);
           }
           break;
         
@@ -55,23 +55,14 @@ class CustomizeModule extends Module {
   protected function initializeForPage() {
     $this->handleRequest($this->args);
 
-    $modules = array();
+    $modules = $this->getModuleCustomizeList();
     $moduleIDs = array();
     $disabledModuleIDs = array();
-    $newCount = 0;
 
-    foreach ($this->getHomeScreenModules() as $moduleID => $info) {
-      if ($info['primary'] && $info['movable'] && $info['disableable']) {
-        $modules[$moduleID] = $info;
-        
-        $moduleIDs[] = $moduleID;
-        if ($info['disabled']) { 
-          $disabledModuleIDs[] = $moduleID; 
-        }
-        
-        if ($info['new']) { 
-          $newCount++; 
-        }
+    foreach ($modules as $id => $info) {
+      $moduleIDs[] = $id; 
+      if ($info['disabled']) { 
+        $disabledModuleIDs[] = $id; 
       }
     }
     
@@ -119,6 +110,5 @@ class CustomizeModule extends Module {
     }    
     
     $this->assignByRef('modules', $modules);
-    $this->assignByRef('newCount', $newCount);
   }
 }

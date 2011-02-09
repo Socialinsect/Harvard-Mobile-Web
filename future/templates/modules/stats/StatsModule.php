@@ -55,10 +55,10 @@ protected function generate_popular_content($system, $data) {
   $viewcounts = array();
   if ($system == 'web') {
     $modules = array();
-    $moduleData = $this->getHomeScreenModules();
-
-    foreach ($moduleData as $module => $mdata) {
-      $modules[$module] = $mdata['title'];
+    $moduleData = $this->getAllModules();
+    
+    foreach ($moduleData as $moduleID => $mdata) {
+      $modules[$moduleID] = $mdata['title'];
     }
   } else { // api
     $modules = array(
