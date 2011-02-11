@@ -10,6 +10,9 @@
       {$css}
     </style>
   {/foreach}
+  {foreach $cssURLs as $cssURL}
+    <link href="{$cssURL}" rel="stylesheet" media="all" type="text/css"/>
+  {/foreach}
   
   {block name="javascript"}
     {if strlen($GOOGLE_ANALYTICS_ID)}

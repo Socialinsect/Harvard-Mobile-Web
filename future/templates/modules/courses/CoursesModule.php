@@ -96,7 +96,7 @@ class CoursesModule extends Module {
       $listItem = array(
         'title' => "<strong>{$class['name']}:</strong> {$class['title']}".$staffNamesIfNeeded,
         'url'   => $externalLink ? 
-          $this->buildURLForModule($this->id, 'detail', $args) :
+          $this->buildURL('detail', $args) :
           $this->buildBreadcrumbURL('detail', $args),
       );
       

@@ -10,18 +10,14 @@ class TransitModule extends Module {
   }
 
   private function timesURL($routeID, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
-    if ($paneLink) {
-      return $this->buildURLForModule('transit', 'route', array(
-        'id' => $routeID,      
-      ));
-    } else if ($noBreadcrumb) {
-      return $this->buildURL('route', array(
-        'id' => $routeID,      
-      ));
+    $args = array(
+      'id' => $routeID,
+    );
+  
+    if ($paneLink || $noBreadcrumb) {
+      return $this->buildURL('route', $args);
     } else {
-      return $this->buildBreadcrumbURL('route', array(
-        'id' => $routeID,      
-      ), $addBreadcrumb);
+      return $this->buildBreadcrumbURL('route', $args, $addBreadcrumb);
     }
   }
 

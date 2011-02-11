@@ -827,7 +827,7 @@ class LibrariesModule extends Module {
         }
         
         $this->assign('openOnly',         $openOnly);
-        $this->assign('openNowToggleURL', $this->buildURL($this->page, $toggleOpenArgs, false));
+        $this->assign('openNowToggleURL', $this->buildBreadcrumbURL($this->page, $toggleOpenArgs, false));
         $this->assign('entries',          $entries);
         break;
         

@@ -165,7 +165,7 @@ abstract class Module {
     $args = $this->args;
     foreach ($this->fontsizes as $fontsize) {
       $args['font'] = $fontsize;
-      $urls[$fontsize] = self::buildURL($this->page, $args);
+      $urls[$fontsize] = $this->buildURL($this->page, $args);
     }
     return $urls;
   }
@@ -173,14 +173,16 @@ abstract class Module {
   //
   // Minify URLs
   //
-  private function getMinifyUrls() {
+  private function getMinifyUrls($pageOnly=false) {
     $page = preg_replace('/[\s-]+/', '+', $this->page);
     $minKey = "{$this->id}-{$page}-{$this->pagetype}-{$this->platform}-".md5(SITE_DIR);
     $minDebug = $GLOBALS['siteConfig']->getVar('MINIFY_DEBUG') ? '&debug=1' : '';
     
+    $addArgString = $pageOnly ? '&pageOnly=true' : '';
+    
     return array(
-      'css' => "/min/g=css-$minKey$minDebug",
-      'js'  => "/min/g=js-$minKey$minDebug",
+      'css' => "/min/g=css-$minKey$minDebug$addArgString",
+      'js'  => "/min/g=js-$minKey$minDebug$addArgString",
     );
   }
 
@@ -238,19 +240,19 @@ abstract class Module {
     return self::argVal($this->args, $key, $default);
   }
 
-  protected static function buildURL($page, $args=array()) {
-    $argString = '';
-    if (isset($args) && count($args)) {
-      $argString = http_build_query($args);
-    }
-    
-    return $page.(strlen($argString) ? "?$argString" : "");
+  protected function buildURL($page, $args=array()) {
+    return self::buildURLForModule($this->id, $page, $args);
   }
 
   public static function buildURLForModule($id, $page, $args=array()) {
     $path = self::getPathSegmentForModuleID($id);
+
+    $argString = '';
+    if (isset($args) && count($args)) {
+      $argString = http_build_query($args);
+    }
   
-    return URL_BASE."$path/".self::buildURL($page, $args);
+    return "/$path/$page".(strlen($argString) ? "?$argString" : "");
   }
   
   protected function buildMailToLink($to, $subject, $body) {
@@ -284,7 +286,7 @@ abstract class Module {
     if ($preserveBreadcrumbs) {
       $url = $this->buildBreadcrumbURL($page, $args, false);
     } else {
-      $url = self::buildURL($page, $args);
+      $url = $this->buildURL($page, $args);
     }
     
     //error_log('Redirecting to: '.$url);
@@ -566,6 +568,42 @@ abstract class Module {
     $this->javascriptURLs[] = $url;
   }
   
+  public function exportCSSAndJavascript() {
+    $memberArrays = array(
+      'inlineCSSBlocks',
+      'cssURLs',
+      'inlineJavascriptBlocks',
+      'inlineJavascriptFooterBlocks',
+      'onOrientationChangeBlocks',
+      'onLoadBlocks',
+      'javascriptURLs',
+    );
+    $data = array();
+    foreach ($memberArrays as $memberName) {
+      $data[$memberName] = $this->$memberName;
+    }
+
+    // Add page Javascript and CSS if any
+    $minifyURLs = $this->getMinifyUrls(true);
+    
+    $javascript = @file_get_contents(FULL_URL_PREFIX.$minifyURLs['js']);
+    if ($javascript) {
+      array_unshift($data['inlineJavascriptBlocks'], $javascript);
+    }
+
+    $css = @file_get_contents(FULL_URL_PREFIX.$minifyURLs['css']);
+    if ($css) {
+      array_unshift($data['inlineCSSBlocks'], $css);
+    }
+    
+    return $data;
+  }
+  protected function importCSSAndJavascript($data) {
+    foreach ($data as $memberName => $arrays) {
+      $this->$memberName = array_unique(array_merge($this->$memberName, $arrays));
+    }
+  }
+  
   //
   // Breadcrumbs
   //
@@ -648,13 +686,13 @@ abstract class Module {
   }
 
   protected function buildBreadcrumbURL($page, $args, $addBreadcrumb=true) {
-    return "$page?".http_build_query(array_merge($args, $this->getBreadcrumbArgs($addBreadcrumb)));
+    return $this->buildBreadcrumbURLForModule($this->id, $page, $args, $addBreadcrumb);
   }
   
   protected function buildBreadcrumbURLForModule($id, $page, $args, $addBreadcrumb=true) {
     $path = self::getPathSegmentForModuleID($id);
   
-    return URL_BASE."$path/$page?".http_build_query(array_merge($args, $this->getBreadcrumbArgs($addBreadcrumb)));
+    return "/$path/$page?".http_build_query(array_merge($args, $this->getBreadcrumbArgs($addBreadcrumb)));
   }
   
   protected function getBreadcrumbArgString($prefix='?', $addBreadcrumb=true) {
@@ -728,7 +766,7 @@ abstract class Module {
   }
 
   //
-  // Theme config files
+  // Config files
   //
   
   protected function loadWebAppConfigFile($name, $keyName=null, $ignoreError=false) {
@@ -839,7 +877,6 @@ abstract class Module {
     // Module Help
     if ($this->page == 'help') {
       $this->assign('hasHelp', false);
-      
       $template = 'common/'.$this->page;
     } else {
       $helpConfig = $this->getTemplateVars('help');
@@ -920,7 +957,7 @@ abstract class Module {
   }
   
   protected function urlForFederatedSearch($searchTerms) {
-    return $this->buildBreadcrumbURLForModule($this->id, 'search', array(
+    return $this->buildBreadcrumbURL('search', array(
       'filter' => $searchTerms,
     ), false);
   }

@@ -15,9 +15,11 @@ class HomeModule extends Module {
       
       $paneContent = $module->fetchPage(); // sets pageTitle var
       
+      $this->importCSSAndJavascript($module->exportCSSAndJavascript());
+      
       $modulePanes[$blockName] = array(
         'id' => $moduleID,
-        'url' => $this->buildURLForModule($moduleID, 'index'),
+        'url' => self::buildURLForModule($moduleID, 'index'),
         'title' => $module->getTemplateVars('pageTitle'),
         'content' => $paneContent,
       );

@@ -57,7 +57,7 @@ class NewsModule extends Module {
         );
         
         if ($paneLink) {
-          return $this->buildURLForModule($this->id, 'story', $args);
+          return $this->buildURL('story', $args);
         } else {
           return $this->buildBreadcrumbURL('story', $args, $addBreadcrumb);
         }
@@ -229,6 +229,7 @@ class NewsModule extends Module {
           );
           $stories[] = $item;
         }
+        
         $this->assign('stories', $stories);
         break;
       
