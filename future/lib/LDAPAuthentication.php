@@ -1,9 +1,11 @@
 <?php
+/**
+  * @package Authentication
+  */
 
-require_once(LIB_DIR . '/AuthenticationAuthority.php');
-require_once(LIB_DIR . '/User.php');
-
-// this authority uses a passed style file
+/**
+  * @package Authentication
+  */
 class LDAPAuthentication extends AuthenticationAuthority
 {
     private $ldapServer;
@@ -158,6 +160,9 @@ class LDAPAuthentication extends AuthenticationAuthority
     }
 }
 
+/**
+  * @package Authentication
+  */
 class LDAPUser extends BasicUser
 {
     protected $ldapUIDField='uid';

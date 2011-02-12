@@ -1,7 +1,13 @@
 <?php
+/**
+  * @package Module
+  * @subpackage About
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
+/**
+  * @package Module
+  * @subpackage About
+  */
 class AboutModule extends Module {
   protected $id = 'about';
   
@@ -32,14 +38,17 @@ class AboutModule extends Module {
         break;
         
       case 'about_site':
-        $this->assign('devicePhrase', $this->getPhraseForDevice());
+        $this->assign('devicePhrase', $this->getPhraseForDevice()); // TODO: this should be more generic, not part of this module
         break;
       
       case 'about':
         break;
       
-      case 'new':
-        $this->assign('items', array()); // Disabled for now
+      case 'pane':
+        break;
+
+      default:
+        $this->redirectTo('index');
         break;
     }
   }

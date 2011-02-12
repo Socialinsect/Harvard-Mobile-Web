@@ -1,7 +1,13 @@
 <?php
+/**
+  * @package Module
+  * @subpackage People
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
+/**
+  * @package Module
+  * @subpackage People
+  */
 class PeopleModule extends Module {
   protected $id = 'people';
   
@@ -131,7 +137,7 @@ class PeopleModule extends Module {
         $results[] = array(
           'url' => $this->buildBreadcrumbURL("/{$this->id}/detail", array(
              'uid'    => $people[$i]->getId(),
-             'filter' => $this->args['filter'],
+             'filter' => $searchTerms
           ), false),
           'title' => htmlentities($section[0]['title']),
         );
@@ -165,7 +171,7 @@ class PeopleModule extends Module {
   protected function initializeForPage() {
     $PeopleController = $this->getFeed('people');
     
-    if ($GLOBALS['siteConfig']->getVar('LDAP_DEBUG')) {
+    if ($GLOBALS['siteConfig']->getVar('DATA_DEBUG')) {
       $this->addModuleDebugString($PeopleController->debugInfo());
     }
     
@@ -174,8 +180,8 @@ class PeopleModule extends Module {
         break;
         
       case 'detail':
-        if (isset($this->args['uid'])) {
-          $person = $PeopleController->lookupUser($this->args['uid']);
+        if ($uid = $this->getArg('uid')) {
+          $person = $PeopleController->lookupUser($uid);
           
           if ($person) {
             $this->assign('personDetails', $this->formatPersonDetails($person));
@@ -188,8 +194,8 @@ class PeopleModule extends Module {
         break;
         
       case 'search':
-        if (isset($this->args['filter']) && !empty($this->args['filter'])) {
-          $searchTerms = trim($this->args['filter']);
+        if ($filter = $this->getArg('filter')) {
+          $searchTerms = trim($filter);
           
           $this->assign('searchTerms', $searchTerms);
           
@@ -220,7 +226,7 @@ class PeopleModule extends Module {
                   $results[] = array(
                     'url' => $this->buildBreadcrumbURL('detail', array(
                        'uid'    => $person->getId(),
-                       'filter' => $this->args['filter'],
+                       'filter' => $this->getArg('filter')
                     )),
                     'title' => htmlentities($section[0]['title']),
                   );
@@ -241,10 +247,10 @@ class PeopleModule extends Module {
         
       case 'index':
         // Redirect for old bookmarks
-        if (isset($this->args['uid'])  && !empty($this->args['uid'])) {
+        if ($this->getArg('uid')) {
           $this->redirectTo('detail');
     
-        } else if (isset($this->args['filter']) && !empty($this->args['filter'])) {
+        } else if ($this->getArg('filter')) {
           $this->redirectTo('search');
         }
         

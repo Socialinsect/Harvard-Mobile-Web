@@ -1,7 +1,8 @@
-ACTIVE_SITE = "Harvard"
+; Should be a folder within site/ case sensitivity is based on your file system
+ACTIVE_SITE = "Universitas" 
 
-SITE_DIR    = ROOT_DIR"/site/{ACTIVE_SITE}"
+; if used, config files with a -mode.ini are loaded if present for each config file.
+CONFIG_MODE = "development" 
 
-; One of development, stage or production
-; Causes SITE_DIR/config/config_SITE_MODE.ini to get loaded
-SITE_MODE = "development"
+; you can move the site folder elsewhere if you wish
+SITE_DIR    = ROOT_DIR"/site/{ACTIVE_SITE}" 

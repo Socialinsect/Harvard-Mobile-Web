@@ -1,8 +1,18 @@
 <?php
+/**
+  * @package Authentication
+  */
 
+/**
+  */
 require_once(LIB_DIR . '/AuthenticationAuthority.php');
+/**
+  */
 require_once(LIB_DIR . '/User.php');
 
+/**
+  * @package Authentication
+  */
 class Session
 {
     protected $user;
@@ -29,7 +39,7 @@ class Session
     private function reset() {
         $user = new AnonymousUser();
         $this->setUser($user);
-		session_regenerate_id(true);
+		    session_regenerate_id(true);
     }
 
     public function isLoggedIn()
@@ -62,7 +72,7 @@ class Session
 
     public function logout()
     {
-    	$this->reset();
+    	  $this->reset();
         return true;
     }
 }

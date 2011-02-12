@@ -1,7 +1,13 @@
 <?php
+/**
+  * @package Module
+  * @subpackage Home
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
+/**
+  * @package Module
+  * @subpackage Home
+  */
 class HomeModule extends Module {
   protected $id = 'home';
   
@@ -18,9 +24,9 @@ class HomeModule extends Module {
       $this->importCSSAndJavascript($module->exportCSSAndJavascript());
       
       $modulePanes[$blockName] = array(
-        'id' => $moduleID,
-        'url' => self::buildURLForModule($moduleID, 'index'),
-        'title' => $module->getTemplateVars('pageTitle'),
+        'id'      => $moduleID,
+        'url'     => self::buildURLForModule($moduleID, 'index'),
+        'title'   => $module->getTemplateVars('pageTitle'),
         'content' => $paneContent,
       );
     }

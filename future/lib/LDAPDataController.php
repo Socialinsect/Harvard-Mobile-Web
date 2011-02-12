@@ -1,5 +1,10 @@
 <?php
+/**
+  * @package Directory
+  */
 
+/**
+  */
 require_once(LIB_DIR . '/LDAP.php');
 
 if (!function_exists('ldap_connect')) {
@@ -12,6 +17,9 @@ define("LDAP_SIZELIMIT_EXCEEDED", 0x04);
 define("LDAP_PARTIAL_RESULTS", 0x09);
 define("LDAP_INSUFFICIENT_ACCESS", 0x32);
 
+/**
+  * @package Directory
+  */
 class LDAPDataController extends PeopleController {
   protected $personClass = 'LDAPPerson';
   protected $searchBase;
@@ -158,7 +166,7 @@ class LDAPDataController extends PeopleController {
 
     // suppress warnings on non-dev servers
     // about searches that go over the result limit
-    if (!$GLOBALS['siteConfig']->getVar('LDAP_DEBUG')) {
+    if (!$GLOBALS['siteConfig']->getVar('DATA_DEBUG')) {
       $error_reporting = ini_get('error_reporting');
       error_reporting($error_reporting & ~E_WARNING);
     }
@@ -178,7 +186,7 @@ class LDAPDataController extends PeopleController {
         $this->errorMsg = $this->generateErrorMessage($ds);
     }
     
-    if (!$GLOBALS['siteConfig']->getVar('LDAP_DEBUG')) {
+    if (!$GLOBALS['siteConfig']->getVar('DATA_DEBUG')) {
       error_reporting($error_reporting);
     }
 
@@ -272,7 +280,9 @@ protected function generateErrorMessage($ldap_resource) {
 
 }
 
-
+/**
+  * @package Directory
+  */
 class LDAPFilter
 {
     const FILTER_OPTION_WILDCARD_TRAILING=1;
@@ -324,6 +334,9 @@ class LDAPFilter
     }
 }
 
+/**
+  * @package Directory
+  */
 class LDAPCompoundFilter extends LDAPFilter
 {
     const JOIN_TYPE_AND='&';
@@ -345,11 +358,11 @@ class LDAPCompoundFilter extends LDAPFilter
         
         for ($i=1; $i < func_num_args(); $i++) {
             $filter = func_get_arg($i);
-            if (is_a($filter, 'LDAPFilter')) { 
+            if ($filter instanceOF LDAPFilter) { 
                 $this->filters[] = $filter;
             } elseif (is_array($filter)) {
                 foreach ($filter as $_filter) {
-                    if (!is_a($_filter, 'LDAPFilter')) {
+                    if (!($_filter instanceOf LDAPFilter)) {
                         throw new Exception("Invalid filter for in array");
                     }
                 }

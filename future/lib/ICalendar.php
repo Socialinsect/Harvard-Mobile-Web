@@ -1,15 +1,27 @@
 <?php
-
-/*
- * The ICal* classes in this file together partially implement RFC 2445.
- *
+/**
+  * ICalendar
+  * The ICal* classes in this file together partially implement RFC 2445.
+  * @package ExternalData
+  * @subpackage Calendar
  */
 
+/**
+ *
+ */
 require_once('TimeRange.php');
 
+/**
+ * ICalendar
+ * @package Exceptions
+ */
 class ICalendarException extends Exception {
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+  */
 abstract class ICalObject {
   protected $classname;
 
@@ -24,24 +36,40 @@ abstract class ICalObject {
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalTodo extends ICalObject {
   public function __construct() {
     $this->classname = 'VTODO';
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalJournal extends ICalObject {
   public function __construct() {
     $this->classname = 'VJOURNAL';
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalFreeBusy extends ICalObject {
   public function __construct() {
     $this->classname = 'VFREEBUSY';
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalTimeZone extends ICalObject {
   public $tzid;
 
@@ -58,24 +86,40 @@ class ICalTimeZone extends ICalObject {
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalDaylight extends ICalTimeZone {
   public function __construct() {
     $this->classname = 'DAYLIGHT';
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalStandard extends ICalTimeZone {
   public function __construct() {
     $this->classname = 'STANDARD';
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalAlarm extends ICalObject {
   public function __construct() {
     $this->classname = 'VALARM';
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalEvent extends ICalObject {
 
   protected $uid;
@@ -288,7 +332,6 @@ class ICalEvent extends ICalObject {
         $this->url = iCalendar::ical_unescape_text($value);
         break;
     case 'DTSTAMP':
-
         if (array_key_exists('TZID', $params)) {
             $datetime = new DateTime($value, new DateTimeZone($params['TZID']));
         } else {
@@ -516,7 +559,7 @@ class ICalEvent extends ICalObject {
         }
         
         if ($this->range) {
-            if (is_a($this->range, 'DayRange'))  {
+            if ($this->range instanceOf DayRange)  {
                 $this->addLine($output_string, "DTSTART", date('Ymd', $this->range->get_start()));
             } else {
                 $this->addLine($output_string, "DTSTART", strftime('%Y%m%dT%H%M%S', $this->range->get_start()));
@@ -539,6 +582,10 @@ class ICalEvent extends ICalObject {
   }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage Calendar
+ */
 class ICalendar extends ICalObject {
   protected $properties;
   public $timezone = NULL;
@@ -674,4 +721,3 @@ class ICalendar extends ICalObject {
   }
 
 }
-

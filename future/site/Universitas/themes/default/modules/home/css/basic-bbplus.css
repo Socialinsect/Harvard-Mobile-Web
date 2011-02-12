@@ -1,6 +1,4 @@
 body {
-	background-color: #ebe7dd; 
-	background-image: url('/common/images/background-tile.png');
 	font-family: Helvetica, Arial, sans-serif;
 	line-height: 1.33em;
 	color: #333;
@@ -24,10 +22,15 @@ h1 {
 	color: #333;
 }
 #homegrid a:hover {
-	border-color: #c00;
+	border-color: #003366;
 }
 #homegrid a:active {
-	border-color: #900;
+	border-color: #999;
+}
+
+#homegrid a img {
+    height: 60px;
+    width: 60px;
 }
 
 .forminput {

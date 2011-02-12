@@ -1,5 +1,13 @@
 <?php
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSElement
 {
     protected $attribs=array();
@@ -13,7 +21,7 @@ class RSSElement
         $this->debugMode = $debugMode ? true : false;
     }
     
-    public function __construct($name, $attribs)
+    public function __construct($name, $attribs=array())
     {
         $this->setName($name);
         $this->setAttribs($attribs);
@@ -38,7 +46,7 @@ class RSSElement
     
     public function setValue($value, $strip_tags=false)
     {
-        $this->value = $strip_tags ? strip_tags($value) : $value;
+        $this->value = $strip_tags ? strip_tags($value) : html_entity_decode($value);
     }
 
     public function appendValue($value)
@@ -87,8 +95,8 @@ class RSSElement
         $value = $element->value();
         $map = $this->elementMap();
         
-        if (array_key_exists($name, $map)) {
-            $this->$map[$name] = $value;
+        if (array_key_exists(strtoupper($name), $map)) {
+            $this->$map[strtoupper($name)] = $value;
         } elseif (isset($this->properties[$name])) {
             if (!is_array($this->properties[$name])) {
                 $this->properties[$name] = array($this->properties[$name]);
@@ -101,6 +109,10 @@ class RSSElement
     
 }
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSChannel extends RSSElement
 {
     protected $name='channel';
@@ -197,6 +209,10 @@ class RSSChannel extends RSSElement
     
 }
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSItem extends RSSElement
 {
     protected $name='item';
@@ -205,6 +221,7 @@ class RSSItem extends RSSElement
     protected $link;
     protected $guid;
     protected $pubDate;
+    protected $author;
     protected $comments;
     protected $content;
     protected $category=array();
@@ -224,6 +241,11 @@ class RSSItem extends RSSElement
     public function getDescription()
     {
         return $this->description;
+    }
+
+    public function getAuthor()
+    {
+        return $this->author;
     }
 
     public function getLink()
@@ -311,6 +333,7 @@ class RSSItem extends RSSElement
             'description',
             'content',
             'link',
+            'author',
             'guid',
             'pubDate',
             'comments',
@@ -333,8 +356,10 @@ class RSSItem extends RSSElement
             'SUMMARY'=>'description',
             'CONTENT'=>'content',
             'CONTENT:ENCODED'=>'content',
+            'BODY'=>'content',
             'DC:DATE'=>'pubDate',
-            'PUBLISHED'=>'pubDate'
+            'PUBLISHED'=>'pubDate',
+            'AUTHOR'=>'author'
             
         );
     }
@@ -346,6 +371,10 @@ class RSSItem extends RSSElement
     
 }
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSEnclosure extends RSSElement
 {
     protected $name='enclosure';
@@ -397,6 +426,10 @@ class RSSEnclosure extends RSSElement
     }
 }
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSImage extends RSSElement
 {
     protected $name='image';

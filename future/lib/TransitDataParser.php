@@ -789,7 +789,7 @@ abstract class TransitDataParser {
  
   protected function getMapIconUrlForRouteStop($routeID) {
     if($_SERVER['SERVER_NAME'] != 'localhost') {
-      $iconURL = "http://".SERVER_HOST."/modules/transit/images/shuttle_stop_dot.png";
+      $iconURL = FULL_URL_PREFIX.'/modules/transit/images/shuttle_stop_dot.png';
     } else {
       return $GLOBALS['siteConfig']->getVar('GOOGLE_CHART_API_URL').http_build_query(array(
         'chst' => 'd_simple_text_icon_left',
@@ -800,7 +800,7 @@ abstract class TransitDataParser {
  
   protected function getMapIconUrlForRouteStopPin($routeID=null) {
     if($_SERVER['SERVER_NAME'] != 'localhost') {
-      return "http://".SERVER_HOST."/modules/transit/images/shuttle_stop_pin.png";
+      return FULL_URL_PREFIX.'modules/transit/images/shuttle_stop_pin.png';
     } else {
       $routeColor = $GLOBALS['siteConfig']->getVar('TRANSIT_DEFAULT_ROUTE_COLOR');
       if ($routeID) {

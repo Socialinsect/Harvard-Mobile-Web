@@ -492,7 +492,7 @@ abstract class Module {
         $modules[$type][$id] = array(
           'title'       => $info['title'],
           'shortTitle'  => self::argVal($info, 'shortTitle', $info['title']),
-          'url'         => '/'.self::argVal($info, 'path', $id).'/',
+          'url'         => self::argVal($info, 'url', '/'.self::argVal($info, 'path', $id).'/'),
           'primary'     => $primary,
           'disableable' => $info['disableable'],
           'disabled'    => $disabled,
