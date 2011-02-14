@@ -136,10 +136,6 @@ $url_patterns = array(
     'func'    => '_outputSiteFile',
   ),
   array(
-    'pattern' => ';^.*(sample/.*)$;',
-    'func'    => '_phpFile',
-  ),
-  array(
     'pattern' => ';^.*api/$;',
     'func'    => '_outputAPICall',
   ),
