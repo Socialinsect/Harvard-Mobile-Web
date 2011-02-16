@@ -83,34 +83,3 @@
 	font-size: 75%;
 	padding-left: 0.2em
 }
-
-.landscape #tabs {
-  display: none;
-}
-.landscape #tabbodies {
-  position: relative;
-  margin-top: .5em;
-}
-
-.landscape .tabbody {
-  display: block !important;
-}
-.landscape #stopsTab {
-  margin-left: 270px;
-  border-left: 1px solid #bbb;
-}
-.landscape #mapTab {
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  min-height: 270px;
-}
-.landscape #mapTab #map img {
-  width: 270px;
-  height: 270px;
-  border-width: 0 0 1px 0;
-  border-color: #bbb;
-}
-

@@ -246,8 +246,12 @@ class TransitModule extends Module {
         if ($this->pagetype == 'basic') {
           $mapImageWidth = 200;
         }
-        $mapImageHeight = floor($mapImageWidth/1.5);
-
+        if ($this->pagetype == 'tablet') {
+          $mapImageWidth = 600;
+          $mapImageHeight = floor($mapImageWidth/2);
+        } else {
+          $mapImageHeight = floor($mapImageWidth/1.5);
+        }
         $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');
         
         $this->assign('mapImageSrc',    $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight));
