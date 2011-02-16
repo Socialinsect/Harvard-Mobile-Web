@@ -203,6 +203,8 @@ class TransitModule extends Module {
         $mapImageSize = 270;
         if ($this->pagetype == 'basic') {
           $mapImageSize = 200;
+        } else if ($this->pagetype == 'tablet') {
+          $mapImageSize = 350;
         }
 
         $this->addOnLoad('rotateScreen(); autoReload('.self::RELOAD_TIME.');');

@@ -236,8 +236,7 @@ function formatStopForRouteInfo($stopID, $stopInfo) {
   if ($stop['next'] == 0) {
     $stop['next'] = time();
   }
-  if (isset($stopInfo['predictions']) && count($stopInfo['predictions']) > 1) {
-    array_shift($stopInfo['predictions']); // remove prediction corresponding to $stop['next']
+  if (isset($stopInfo['predictions']) && count($stopInfo['predictions'])) {
     $stop['predictions'] = $stopInfo['predictions'];
   }
   if ($stopInfo['upcoming']) {
@@ -252,12 +251,12 @@ function formatStopInfo($routeID, $stopID, $stopInfo, $stopTimes) {
     'route_id'    => "$routeID",
     'lat'         => $stopInfo['coordinates']['lat'],
     'lon'         => $stopInfo['coordinates']['lon'],
+    'predictions' => array(),
     'next'        => $stopTimes['arrives'],
     'gps'         => isset($routeInfo['live']) && $routeInfo['live'] ? true : false,
   );
   
-  if (isset($stopTimes['predictions']) && count($stopTimes['predictions']) > 1) {
-    array_shift($stopTimes['predictions']); // remove prediction corresponding to $stop['next']
+  if (isset($stopTimes['predictions']) && count($stopTimes['predictions'])) {
     $stop['predictions'] = $stopTimes['predictions'];
   }
   return $stop;

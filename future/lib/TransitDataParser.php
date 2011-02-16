@@ -1047,7 +1047,6 @@ abstract class TransitDataParser {
 
         foreach ($segment->getStops() as $stopIndex => $stopInfo) {
           $stopID = $stopInfo['stopID'];
-          
           $arrivalTime = null;
           if ($stopInfo['hasTiming']) {
             $arrivalTime = $segment->getNextArrivalTime($time, $stopIndex);
@@ -1057,7 +1056,7 @@ abstract class TransitDataParser {
             $stop = $this->getStop($stopID);
             if ($stop) {
               $directionStops[$stopID] = array(
-                  'name'      => $stop->getName(),
+                'name'      => $stop->getName(),
                 'arrives'   => $arrivalTime,
                 'hasTiming' => $stopInfo['hasTiming'],
               );
@@ -1066,7 +1065,7 @@ abstract class TransitDataParser {
             if (isset($stopInfo['predictions'])) {
               $directionStops[$stopID]['predictions'] = $stopInfo['predictions'];
             }
-            //error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrives).' for '.$this->stops[$stopID]->getName());
+            //error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime).' for '.$this->stops[$stopID]->getName());
           } else {
             $oldArrivalTime = $directionStops[$stopID]['arrives'];
             if ($arrivalTime > $time && ($arrivalTime < $oldArrivalTime || $oldArrivalTime < $time)) {
@@ -1635,7 +1634,7 @@ class TransitRoute {
               $frequency = $arrivalTimes[$i] - $arrivalTimes[$i-1];
             }
           }
-          if ($frequency > 0 && $frequency < MAX_ARRIVAL_DELAY) { break; }
+          if ($frequency > 0 && $frequency < $GLOBALS['siteConfig']->getVar('TRANSIT_MAX_ARRIVAL_DELAY')) { break; }
         }
       }
       if ($frequency == 0) { $frequency = 60*60; } // default to 1 hour

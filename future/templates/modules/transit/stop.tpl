@@ -19,19 +19,22 @@
 </div>
 
 <h3 class="nonfocal">Currently serviced by:</h3>
+  
+{if count($runningRoutes)}  
+  {foreach $runningRoutes as $i => $routeInfo}
+    {capture name="subtitle" assign="subtitle"}
+      {include file="findInclude:modules/{$moduleID}/include/predictions.tpl" predictions=$routeInfo['predictions']}
+    {/capture}
+    {if $subtitle}
+      {$runningRoutes[$i]['subtitle'] = $subtitle}
+    {/if}
+  {/foreach}
 
-{foreach $runningRoutes as $i => $routeInfo}
-  {capture name="subtitle" assign="subtitle"}
-    {include file="findInclude:modules/{$moduleID}/include/predictions.tpl" predictions=$routeInfo['predictions']}
-  {/capture}
-  {if $subtitle}
-    {$runningRoutes[$i]['subtitle'] = $subtitle}
-  {/if}
-{/foreach}
-
-{if count($runningRoutes)}
   {include file="findInclude:common/navlist.tpl" navlistItems=$runningRoutes accessKey=false subTitleNewline=true}
+{else}
+  <div class="focal">No routes currently servicing this stop</div>  
 {/if}
+
 {if count($offlineRoutes)}
   <h3 class="nonfocal">Services at other times by:</h3>
   {include file="findInclude:common/navlist.tpl" navlistItems=$offlineRoutes accessKey=false}

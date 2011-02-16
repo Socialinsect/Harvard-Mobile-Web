@@ -349,12 +349,4 @@ class TranslocTransitSegment extends TransitSegment {
   public function isRunning($time) {
     return TranslocTransitDataParser::translocRouteIsRunning($this->hostname, $this->routeID);
   }
-  
-  public function getArrivalTimesForStop($stopID=null) {
-    return array();
-  }
-  
-  public function getNextArrivalTime($time, $stopIndex) {
-    return 0;
-  }
 }

@@ -42,6 +42,15 @@
   </h2>
   
   <p class="smallprint logoContainer clear">
+    {block name="headerServiceLogo"}
+      {if $routeConfig['serviceLogo']}
+        <span id="servicelogo">
+          {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
+            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
+          {if $routeConfig['serviceLink']}</a>{/if}
+        </span>
+      {/if}
+    {/block}
     {block name="routeInfo"}
       {if $routeInfo['description']}
         {$routeInfo['description']}<br/>
@@ -58,15 +67,6 @@
       Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
     {/block}
     
-    {block name="headerServiceLogo"}
-      {if $routeConfig['serviceLogo']}
-        <span id="servicelogo">
-          {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
-          {if $routeConfig['serviceLink']}</a>{/if}
-        </span>
-      {/if}
-    {/block}
   </p>
 {block name="tabView"}
 	  {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
