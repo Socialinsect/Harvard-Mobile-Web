@@ -17,7 +17,8 @@
 }
 
 #schedule li.icon a {
-  padding: 13px 25px 13px 25px;
+  margin: 0;
+  padding: 0.6em 0.5em 0.6em 25px;
   line-height: 1.2em;
 }
 #schedule li.icon img {

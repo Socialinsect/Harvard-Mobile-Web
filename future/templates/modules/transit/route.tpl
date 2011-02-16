@@ -63,10 +63,11 @@
         {if $routeConfig['serviceName']}&nbsp;using {$routeConfig['serviceName']}{/if}
       {else}
         Bus not running.
-      {/if}<br/>
-      Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+      {/if}
     {/block}
-    
+    {block name="autoReload"}
+      <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+    {/block}  
   </p>
 {block name="tabView"}
 	  {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}

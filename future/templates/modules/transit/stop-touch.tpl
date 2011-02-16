@@ -1,4 +1,4 @@
-{extends file="findExtends:modules/{$moduleID}/route.tpl"}
+{extends file="findExtends:modules/{$moduleID}/stop.tpl"}
 
 {block name="refreshButton"}
 {/block}
@@ -8,9 +8,9 @@
   {$smarty.block.parent}
 {/block}
 
-{block name="routeInfo"}
+{block name="stopInfo"}
   {$smarty.block.parent}
-  (<a href="{$refreshURL}">refresh</a>)
+  &nbsp;(<a href="{$refreshURL}">refresh</a>)
 {/block}
 
 {block name="autoReload"}

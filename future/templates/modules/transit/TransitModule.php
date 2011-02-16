@@ -210,7 +210,7 @@ class TransitModule extends Module {
         $this->addOnLoad('rotateScreen(); autoReload('.self::RELOAD_TIME.');');
         $this->addOnOrientationChange('rotateScreen();');
 
-        $this->assign('mapImageSrc',  $view->getMapImageForRoute($routeID, $mapImageSize, $mapImageSize));
+        $this->assign('mapImageSrc',    $view->getMapImageForRoute($routeID, $mapImageSize, $mapImageSize));
         $this->assign('mapImageSize',   $mapImageSize);
         $this->assign('lastRefresh',    time());
         $this->assign('autoReloadTime', self::RELOAD_TIME);
@@ -219,6 +219,8 @@ class TransitModule extends Module {
       
       case 'stop':
         $stopID = $this->getArg('id');
+        
+        $routeConfig = $this->loadWebAppConfigFile('transit-route', 'routeConfig');
         
         $stopInfo = $view->getStopInfo($stopID);
         
@@ -258,6 +260,8 @@ class TransitModule extends Module {
         $this->assign('mapImageWidth',  $mapImageWidth);
         $this->assign('mapImageHeight', $mapImageHeight);
         $this->assign('stopName',       $stopInfo['name']);
+        $this->assign('serviceLogo',    '');
+        $this->assign('serviceLink',    '');
         $this->assign('runningRoutes',  $runningRoutes);
         $this->assign('offlineRoutes',  $offlineRoutes);
         $this->assign('lastRefresh',    time());

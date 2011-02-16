@@ -438,25 +438,28 @@ class TransitDataView {
             $firstStop = reset(array_keys($staticRouteInfo['stops']));
             $foundFirstStop = false;
             $moveToEnd = array();
-            foreach ($routeInfo['stops'] as $stopID => &$stop) {
-              if (!isset($staticRouteInfo['stops'][$stopID])) {
+            foreach ($routeInfo['stops'] as $stopID => $stop) {
+              $staticStopID = $stopID;
+            
+              if (!isset($staticRouteInfo['stops'][$staticStopID])) {
                 // NextBus sometimes has _ar suffixes on it.  Try stripping them
                 $parts = explode('_', $stopID);
                 if (isset($staticRouteInfo['stops'][$parts[0]])) {
                   //error_log("Warning: static route does not have live stop id $stopID, using {$parts[0]}");
-                  $stopID = $parts[0];
+                  $staticStopID = $parts[0];
                 }
               }
               
-              if (isset($staticRouteInfo['stops'][$stopID])) {
-                $stop['name'] = $staticRouteInfo['stops'][$stopID]['name'];
+              if (isset($staticRouteInfo['stops'][$staticStopID])) {
+                $routeInfo['stops'][$stopID]['name'] = $staticRouteInfo['stops'][$staticStopID]['name'];
   
-                if (!$stop['hasTiming'] && $staticRouteInfo['stops'][$stopID]['hasTiming']) {
-                  $stop['arrives'] = $staticRouteInfo['stops'][$stopID]['arrives'];
-                  if (isset($staticRouteInfo['stops'][$stopID]['predictions'])) {
-                    $stop['predictions'] = $staticRouteInfo['stops'][$stopID]['predictions'];
+                if (!$stop['hasTiming'] && $staticRouteInfo['stops'][$staticStopID]['hasTiming']) {
+                  $routeInfo['stops'][$stopID]['arrives'] = $staticRouteInfo['stops'][$staticStopID]['arrives'];
+                  
+                  if (isset($staticRouteInfo['stops'][$staticStopID]['predictions'])) {
+                    $routeInfo['stops'][$stopID]['predictions'] = $staticRouteInfo['stops'][$staticStopID]['predictions'];
                   } else {
-                    unset($stop['predictions']);
+                    unset($routeInfo['stops'][$stopID]['predictions']);
                   }
                 }
               } else {
@@ -471,6 +474,8 @@ class TransitDataView {
               }
             }
             $routeInfo['stops'] += $moveToEnd;
+            
+            uasort($routeInfo['stops'], array('TransitDataParser', 'sortStops'));
           }
         }
       }
@@ -1047,6 +1052,7 @@ abstract class TransitDataParser {
 
         foreach ($segment->getStops() as $stopIndex => $stopInfo) {
           $stopID = $stopInfo['stopID'];
+          
           $arrivalTime = null;
           if ($stopInfo['hasTiming']) {
             $arrivalTime = $segment->getNextArrivalTime($time, $stopIndex);
@@ -1059,6 +1065,7 @@ abstract class TransitDataParser {
                 'name'      => $stop->getName(),
                 'arrives'   => $arrivalTime,
                 'hasTiming' => $stopInfo['hasTiming'],
+                'i'         => $stopInfo['i'],
               );
               $directionStops[$stopID]['coordinates'] = $stop->getCoordinates();
             }
@@ -1225,6 +1232,13 @@ abstract class TransitDataParser {
   public static function removeFirstStop(&$stops) {
     reset($stops);
     unset($stops[key($stops)]);
+  }
+  
+  public static function sortStops($a, $b) {
+    if ($a["i"] == $b["i"]) { 
+      return 0; 
+    }
+    return ($a["i"] < $b["i"]) ? -1 : 1;
   }
 }
 
@@ -1830,16 +1844,9 @@ class TransitSegment {
     }
   }
   
-  private static function sortStops($a, $b) {
-    if ($a["i"] == $b["i"]) { 
-      return 0; 
-    }
-    return ($a["i"] < $b["i"]) ? -1 : 1;
-  }
-  
   private function sortStopsIfNeeded() {
     if (!$this->stopsSorted) {
-      usort($this->stops, array(get_class($this), 'sortStops'));
+      usort($this->stops, array('TransitDataParser', 'sortStops'));
       $this->stopsSorted = true;
     }
   }

@@ -9,10 +9,23 @@
     {/block}
     {$stopName}
   </h2>
-  <div class="smallprint">
-    Refreshed at {$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span><br/>
-    Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
-  </div>
+  <p class="smallprint logoContainer clear">
+    {block name="headerServiceLogo"}
+      {if $routeConfig['serviceLogo']}
+        <span id="servicelogo">
+          {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
+            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
+          {if $routeConfig['serviceLink']}</a>{/if}
+        </span>
+      {/if}
+    {/block}
+    {block name="stopInfo"}
+      Refreshed at {$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span>
+    {/block}
+    {block name="autoReload"}
+      <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+    {/block}
+  </p>
 </div>
 <div id="map">
   <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />

@@ -53,8 +53,10 @@
   (<a href="{$refreshURL}">refresh</a>)
 {/block}
 
+{block name="autoReload"}
+{/block}
+
 {block name="tabView"}
     {$tabBodies['stops']}
     {$tabBodies['map']}
 {/block}
-
