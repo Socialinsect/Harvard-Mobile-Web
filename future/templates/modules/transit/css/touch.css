@@ -42,9 +42,7 @@
 }
 #servicelogo {
   display: inline-block;
-  position: absolute;
-  bottom: -12px;
-  right: -5px;
+  float: right;
 }
 .ampm {
 	font-size: 75%;
