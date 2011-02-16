@@ -2,8 +2,8 @@
 
 body {
 	background-color: #dcdddf;
-	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	/* background: url(/common/images/background-tile.jpg) top right repeat-x, url(/common/images/background-tile-2.jpg) bottom left repeat; */
+	background-image: none;
+	font: 12pt/1.33em Helvetica, Arial, sans-serif;
 }
 
 body, th, td, li, option, select, input {
@@ -13,12 +13,6 @@ body, th, td, li, option, select, input {
 
 .focal, .nav, .results {
 	/* Border color for many container elements */
-	/* border-color: #bbb; */
-	border: none;
-}
-
-.secondary {
-	/* Border color override specific to this theme */
 	border-color: #ccc;
 }
 
@@ -27,46 +21,48 @@ body, th, td, li, option, select, input {
 	border-color: #ccc;
 }
 
+
 a, a:visited {
 	color: #036;
 }
 
 h1 {
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-size: 29px;
+	font-family: Georgia, serif;
+	font-size: 180%;
 	font-weight: normal;
-	color: #fff;
+	color: #036;
 }
 
 h2 {
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-size: 21px;
+	font-family: Georgia, serif;
+	font-size: 133%;
 	font-weight: normal;
 	color: #036;
 }
 
 h3 {
-	font-size: 1em;
+	font-size: 100%;
 	font-weight: bold;
 	color: #036;
 }
 
 h4 {
-	font-size: 1em;
+	font-size: 100%;
 	font-weight: normal;
 	color: #333;
 }
 
-dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .smallprint, .fineprint, .dek {
+dt, .label, .longlabel, .legend, .legend.nonfocal, .legend h2, .legend h3, .smallprint, .fineprint, .dek {
 	/* Accent text color for several types of secondary text that appears on white backgrounds, e.g., label in label/value pairs, e.g., People Directory detail screen and for labels in certain calendar listing screens */
 	/* Often the same as the secondary text color defined in the next rule */
 	color: #404649;
 }
 
-.foundat, .address, #footer, .copyright, #footerlinks a, #footerlinks a:visited {
+.foundat, .address, #footer, #footer a, .copyright, #footerlinks a, #footerlinks a:visited {
 	/* Secondary text color for several types of secondary text that typically appear on the colored background */
 	color: #555;
 }
+
 
 
 /* Major content blocks */
@@ -88,26 +84,12 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 
 #navbar {
 	height: 48px; 
-	background: url(/common/images/navback.png) repeat-x;
-	font-size: 16px;
+	background: url(/common/images/navback.jpg) repeat-x;
+	font-size: 100%;
 }
 
-/* Uncomment this rule and comment out the previous one to use a background gradient rather than image
-#navbar {
-	height: 45px;
-	background: #800;	
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#d02023), to(#400006));
-	font-size: 16px;
-}
-*/
-
-.breadcrumbs, .breadcrumbs a, .breadcrumbs a:visited {
- 	/* All breadcrumb links in nav bar */
-	color: #036;
-}
-
-.pagetitle {
- 	/* Current page title in nav bar */
+.breadcrumbs, .breadcrumbs a, .breadcrumbs a:visited, .pagetitle {
+ 	/* All text and links in nav bar area */
 	color: #036;
 }
 
@@ -115,8 +97,7 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 /* Footer */
 
 #footer {
-	font-size: 12px;
-	line-height: 14px;
+	font-size: 75%;
 }
 
 #footer .copyright {
@@ -127,60 +108,53 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 	color: #fff
 }
 
-/* Text input fields, e.g., search fields */
 
+/* Text input fields, e.g., search fields */
 .forminput {
-  /* Should match the border color of image /common/images/mobile/search_button.png */
 	border-color: #666; 	
 }
 
-.inputcombo .forminput {
-  /* Border color should match the border color of image /common/images/mobile/search_button.png */
-	border: 1px 0 1px 1px solid #666; 	
-	-webkit-border-bottom-left-radius: 8px;	
-	-webkit-border-top-left-radius: 8px;	
-}
-
-.emphasized  .forminput {
-  /* Border color should match the border color of image /common/images/mobile/search_button.png, border weight should be 2px greater than border weight of .inputcombo .forminput */
-	border: 3px solid #666; 		
-	/* Corner radius should be 2px greater than corner radius of .inputcombo .forminput */
-	-webkit-border-bottom-left-radius: 10px; 		
-	-webkit-border-top-left-radius: 10px;	
+.submitbutton {
+	background-color: #666;	/* Background color of form submit buttons that have text labels */
+	color: #fff;
 }
 
 /* Springboards */
 
 .springboard div {
 	/* Overall size of one cell in the springboard */
-	width: 77px;
-	height: 100px;
-	font-size: 13px;
-	line-height: 14px;
+	width: 57px;
+	height: 82px;
 }
 
 .springboard a {	
+	/* Color and size of text label below each springboard icon */
 	color: #404355;
+	font-size: 75%;
 }
 
-.springboard a img {
-	/* Size of actual item icon in springboard */
-	width: 60px;
-	height: 60px;
+.springboard a img { 
+	/* Size of actual item icon in springboard - for best results make actual PNGs match this size */
+	width: 44px;
+	height: 44px;
 }
 
 .springboard div.utility {
 	/* Overall size of one cell in the springboard's fixed utility-type items */
-	width: 76px;
-	height: 86px;
-	font-size: 12px;
-	line-height: 13px;
+	width: 57px;
+	height: 72px;
+	font-size: 75%;
+	line-height: 1.1em;
 }
 
 .springboard div.utility a img {
-	/* Size of actual item icon in the springboard's fixed utility-type items */
-	width: 36px;
-	height: 36px;
+	/* Size of actual item icon in the springboard's fixed utility-type items - for best results make actual PNGs match this size */
+	width: 32px;
+	height: 32px;
+}
+
+.springboard .separator {
+	height: 20px;
 }
 
 /* Navigation and results lists */
@@ -211,8 +185,8 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 }
 
 .announcements li {	
-	font-size: 14px;
-	line-height: 19px;
+	font-size: 83.353%;
+	line-height: 1.462em;
 	color: #202020;
 }
 
@@ -272,15 +246,4 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 
 
 
-/* Data charts */
-
-.rowbar {
-	background: #6499cb url(/common/images/rowbar.png) repeat-x;
-}
-.colbar {
-	background: #6499cb url(/common/images/colbar.png) repeat-y;
-}
-.average {
-	border-color: #c00;
-}
 
