@@ -2,9 +2,8 @@
 
 body {
 	background-color: #e3dfd5;
-	background-image: none;
 	font: 12pt/1.33em Helvetica, Arial, sans-serif;
-	color: #333;
+	background-image: none;
 }
 
 body, th, td, li, option, select, input {
