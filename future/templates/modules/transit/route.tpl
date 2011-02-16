@@ -12,6 +12,15 @@
 {$tabBodies['map'] = $mapPane}
 
 {capture name="stopsPane" assign="stopsPane"}
+  {foreach $routeInfo['stops'] as $stopID => $stopInfo}
+    {capture name="subtitle" assign="subtitle"}
+      {include file="findInclude:modules/{$moduleID}/include/predictions.tpl" predictions=$stopInfo['predictions']}
+    {/capture}
+    {if $subtitle}
+      {$routeInfo['stops'][$stopID]['subtitle'] = $subtitle}
+    {/if}
+  {/foreach}
+
   {block name="stopsPane"}
     <span class="smallprint">{$routeConfig['stopTimeHelpText']}</span>
     <div id="schedule">
@@ -45,7 +54,8 @@
         {if $routeConfig['serviceName']}&nbsp;using {$routeConfig['serviceName']}{/if}
       {else}
         Bus not running.
-      {/if}
+      {/if}<br/>
+      Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
     {/block}
     
     {block name="headerServiceLogo"}

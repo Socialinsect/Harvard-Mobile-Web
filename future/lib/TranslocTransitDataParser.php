@@ -102,6 +102,10 @@ class TranslocTransitDataParser extends TransitDataParser {
     }
     return $vehicles;
   }
+  
+  private function filterPredictions($prediction) {
+    return $prediction > 9;
+  }
 
   protected function loadData() {
     $this->translocHostname = $this->args['hostname'];
@@ -161,6 +165,25 @@ class TranslocTransitDataParser extends TransitDataParser {
       }
     }
 
+    $updateInfo = self::getData($this->translocHostname, 'update');
+    $baseTime = intval($updateInfo['time']);
+
+    $stopPredictions = array();
+    $arrivalTimes = self::getData($this->translocHostname, 'arrivals');
+    foreach ($arrivalTimes as $arrivalInfo) {
+      $routeID = $arrivalInfo['route_id'];
+      $stopID = $arrivalInfo['stop_id'];
+      
+      if (!isset($stopPredictions[$routeID])) {
+        $stopPredictions[$routeID] = array();
+      }
+      if (!isset($stopPredictions[$routeID][$stopID])) {
+        $stopPredictions[$routeID][$stopID] = array();
+      }
+    
+      $stopPredictions[$routeID][$stopID][] = intval($arrivalInfo['timestamp']) - $baseTime;
+    }  
+    
     $stopsInfo = self::getData($this->translocHostname, 'stops');
     foreach ($stopsInfo['stops'] as $stopInfo) {
       $this->addStop(new TransitStop(
@@ -174,7 +197,16 @@ class TranslocTransitDataParser extends TransitDataParser {
     foreach ($stopsInfo['routes'] as $routeInfo) {
       $routeID = $routeInfo['id'];
       foreach($routeInfo['stops'] as $stopIndex => $stopID) {
+        $predictions = array();
+        if (isset($stopPredictions[$routeID], $stopPredictions[$routeID][$stopID])) {
+          sort($stopPredictions[$routeID][$stopID]);
+          
+          $predictions = array_filter($stopPredictions[$routeID][$stopID], 
+            array($this, 'filterPredictions')); 
+        }
+        
         $mergedSegments[$routeID]->addStop($stopID, $stopIndex);
+        $mergedSegments[$routeID]->setStopPredictions($stopID, $predictions);
       }
     }
     
@@ -196,6 +228,7 @@ class TranslocTransitDataParser extends TransitDataParser {
           $cacheTimeout = $GLOBALS['siteConfig']->getVar('TRANSLOC_ROUTE_CACHE_TIMEOUT');
           break;
  
+        case 'arrivals':
         case 'update':
           $cacheTimeout = $GLOBALS['siteConfig']->getVar('TRANSLOC_UPDATE_CACHE_TIMEOUT');
           break;
@@ -235,7 +268,7 @@ class TranslocTransitDataParser extends TransitDataParser {
       } else if ($action == 'announcements') {
         $params['contents'] = 'true';
       }
-
+      
       $url = sprintf($GLOBALS['siteConfig']->getVar('TRANSLOC_SERVICE_URL_FORMAT'), 
         $hostname, $action).http_build_query($params);
       

@@ -17,13 +17,13 @@
 }
 
 #schedule li.icon a {
-  padding: 13px 25px 13px 25px;
+  padding: 10px 25px 10px 25px;
   line-height: 1.2em;
 }
 #schedule li.icon img {
   width: 18px;
   height: 19px;
-  top: 14px;
+  top: 12px;
 }
 
 .sid {
@@ -47,7 +47,7 @@
 }
 
 .stop-map {
-    border: 2pt solid white;
+  border: 2pt solid white;
 }
 
 .logoContainer {
@@ -56,13 +56,18 @@
 #servicelogo {
   display: inline-block;
   position: absolute;
-  bottom: -12px;
+  bottom: -4px;
   right: -5px;
+}
+.refreshContainer {
+  text-align: left;
 }
 #refresh {
   float: right;
 	margin-top: -4px;
 	margin-right: -4px;
+	margin-left: 4px;
+	margin-bottom: 4px;
 	font-size: 82.35%;
 }
 

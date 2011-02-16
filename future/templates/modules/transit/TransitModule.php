@@ -5,6 +5,7 @@ require_once realpath(LIB_DIR.'/TransitDataParser.php');
 
 class TransitModule extends Module {
   protected $id = 'transit';
+  const RELOAD_TIME = 60;
   
   protected function initialize() {
   }
@@ -40,6 +41,10 @@ class TransitModule extends Module {
   protected function initializeForPage() {
     $transitConfig = new TransitConfig($this->loadFeedData());
     $view = new TransitDataView($transitConfig);
+
+    $args = $this->args;
+    $args['t'] = time();
+    $this->assign('refreshURL', $this->buildBreadcrumbURL($this->page, $args, false));
   
     switch ($this->page) {
       case 'pane':
@@ -181,7 +186,7 @@ class TransitModule extends Module {
           if ($stop['upcoming']) {
             $routeInfo['stops'][$stopID]['title'] = "<strong>{$stop['name']}</strong>";
             $routeInfo['stops'][$stopID]['imgAlt'] = $routeConfig['busImageAltText'];
-         }
+          }
           
           $routeInfo['stops'][$stopID]['img'] = '/common/images/';
           if ($this->pagetype == 'basic') {
@@ -200,13 +205,14 @@ class TransitModule extends Module {
           $mapImageSize = 200;
         }
 
-        $this->addOnLoad('rotateScreen();');
+        $this->addOnLoad('rotateScreen(); autoReload('.self::RELOAD_TIME.');');
         $this->addOnOrientationChange('rotateScreen();');
 
         $this->assign('mapImageSrc',  $view->getMapImageForRoute($routeID, $mapImageSize, $mapImageSize));
-        $this->assign('mapImageSize', $mapImageSize);
-        $this->assign('lastRefresh',  time());
-        $this->assign('routeInfo',    $routeInfo);
+        $this->assign('mapImageSize',   $mapImageSize);
+        $this->assign('lastRefresh',    time());
+        $this->assign('autoReloadTime', self::RELOAD_TIME);
+        $this->assign('routeInfo',      $routeInfo);
         break;
       
       case 'stop':
@@ -221,6 +227,10 @@ class TransitModule extends Module {
             'title' => $routeInfo['name'],
             'url'   => $this->timesURL($routeID, false, true), // no breadcrumbs
           );
+          if (isset($routeInfo['predictions'])) {
+            $entry['predictions'] = $routeInfo['predictions'];
+          }
+
           if ($routeInfo['running']) {
             $runningRoutes[$routeID] = $entry;
           } else {
@@ -235,6 +245,8 @@ class TransitModule extends Module {
           $mapImageWidth = 200;
         }
         $mapImageHeight = floor($mapImageWidth/1.5);
+
+        $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');
         
         $this->assign('mapImageSrc',    $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight));
         $this->assign('mapImageWidth',  $mapImageWidth);
@@ -242,6 +254,8 @@ class TransitModule extends Module {
         $this->assign('stopName',       $stopInfo['name']);
         $this->assign('runningRoutes',  $runningRoutes);
         $this->assign('offlineRoutes',  $offlineRoutes);
+        $this->assign('lastRefresh',    time());
+        $this->assign('autoReloadTime', self::RELOAD_TIME);
         break;
       
       case 'info':
