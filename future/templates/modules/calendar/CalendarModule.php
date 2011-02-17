@@ -71,7 +71,7 @@ class CalendarModule extends Module {
   private function timeText($event, $timeOnly=false) {
     if ($timeOnly) {
       if ($event->get_end() - $event->get_start() == -1) {
-        return $event->get_start()->format('g:i a');
+        return date('g:ia', $event->get_start());
       } else {
         return date('g:ia', $event->get_start()).' - '.date('g:ia', $event->get_end());
       }
