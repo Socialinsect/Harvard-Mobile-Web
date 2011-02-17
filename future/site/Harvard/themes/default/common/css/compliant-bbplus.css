@@ -7,14 +7,13 @@
 .springboard div {
 	/* Overall size of one cell in the springboard */
 	width: 5.1em;
-	height: 6.6em;
-	max-width: 115px;
-	max-height: 120px;
+	height: 6.5em;
+	font-size: 100%;
 }
 
 .springboard div a {	
 	/* Color and size of text label below each springboard icon */
-	font-size: 90%;
+	font-size: 100%;
 }
 
 .springboard a img {
@@ -26,13 +25,12 @@
 .springboard div.utility {
 	/* Overall size of one cell in the springboard's fixed utility-type items */
 	width: 5.1em;
-	height: 6.6em;
-	max-width: 115px;
-	max-height: 120px;
+	height: 6.5em;
+	font-size: 100%;
 }
 
 .springboard div.utility a {
-	font-size: 90%;
+	font-size: 100%;
 }
 
 .springboard div.utility a img {

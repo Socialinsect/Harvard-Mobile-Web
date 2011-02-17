@@ -8,11 +8,3 @@ h1 {
 #homegrid {
 	margin-top: 24px;
 }
-
-/* TODO: Move this to common/css/compliant-bbplus.css after testing on all pages. */
-/*.forminput {
-	border-color: #554c41;
-	width: 50%;
-	left: 40%;
-}
-*/
