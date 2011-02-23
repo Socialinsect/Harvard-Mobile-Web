@@ -51,7 +51,7 @@ function setLocationDistances(locations) {
     var curLat = location.coords.latitude;
     var curLon = location.coords.longitude;
     var earthRadius = 6371; // km
-    var milesPerKM = 1.609344000000865;
+    var milesPerKM = 0.621371192;
     
     for (var id in locations) {
       var elem = document.getElementById('location_'+id);
