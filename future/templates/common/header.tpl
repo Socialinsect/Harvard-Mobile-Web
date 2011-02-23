@@ -4,6 +4,7 @@
 <head>
   <meta http-equiv="content-type" content="application/xhtml+xml" />
   <title>{$moduleName}{if !$isModuleHome}: {$pageTitle}{/if}</title>
+  <link rel="shortcut icon" href="/favicon.ico" />
   <link href="{$minify['css']}" rel="stylesheet" media="all" type="text/css"/>
   {foreach $inlineCSSBlocks as $css}
     <style type="text/css" media="screen">
@@ -74,13 +75,10 @@
 {capture name="breadcrumbHTML" assign="breadcrumbHTML"}
   {block name="breadcrumbs"}
     {if !$isModuleHome}
-      {if $moduleID != 'home'}
-        <a href="./" class="module">
-          <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" />
-        </a>
-      {/if}
       {foreach $breadcrumbs as $breadcrumb}
-        {if count($breadcrumbs) == 1}
+        {if $breadcrumb@first}
+          {$crumbClass = 'module'}
+        {elseif count($breadcrumbs) == 1}
           {$crumbClass = 'crumb1'}
         {elseif count($breadcrumbs) == 2}
           {if !$breadcrumb@last}
@@ -99,7 +97,11 @@
           
         {/if}
         <a href="{$breadcrumb['url']}" {if isset($crumbClass)}class="{$crumbClass}{/if}">
-          <span>{$breadcrumb['title']}</span>
+          {if $breadcrumb@first}
+            <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" />
+          {else}
+            <span>{$breadcrumb['title']}</span>
+          {/if}
         </a>
       {/foreach}
     {/if}
