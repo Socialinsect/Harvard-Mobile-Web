@@ -174,7 +174,7 @@ if (!strlen($path) || $path == '/') {
   if ($GLOBALS['deviceClassifier']->isComputer() || $GLOBALS['deviceClassifier']->isSpider()) {
     $redirectID = 'info';
   }
-  $url = URL_BASE.Module::getPathSegmentForModuleID($redirectID).'/';
+  $url = URL_PREFIX.Module::getPathSegmentForModuleID($redirectID).'/';
   
   header("Location: $url");
   exit;
