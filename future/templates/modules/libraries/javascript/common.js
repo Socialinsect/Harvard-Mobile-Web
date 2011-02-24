@@ -38,7 +38,7 @@ function getBookmarks(cookie) {
 }
 
 function setBookmarks(bookmarks, cookie) {
-  setCookie(cookie, bookmarks.join(','));
+  setCookie(cookie, bookmarks.join(','), LIBRARIES_COOKIE_DURATION, COOKIE_PATH);
 }
 
 function setLocationDistances(locations) {

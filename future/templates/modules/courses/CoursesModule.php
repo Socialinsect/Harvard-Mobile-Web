@@ -3,7 +3,7 @@
 require_once realpath(LIB_DIR.'/Module.php');
 require_once realpath(LIB_DIR.'/feeds/courses.php');
 
-define('MYCOURSES_EXPIRE_TIME', 160 * 24 * 60 * 60); // Maybe use customize expire time?
+define('MY_CLASSES_COOKIE_DURATION', 160 * 24 * 60 * 60); // Maybe use customize expire time?
 define('MY_CLASSES_COOKIE', 'myclasses');
 
 
@@ -63,7 +63,7 @@ class CoursesModule extends Module {
   }
   
   private function setMyClasses($classes) {
-    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MYCOURSES_EXPIRE_TIME, COOKIE_PATH);
+    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MY_CLASSES_COOKIE_DURATION, COOKIE_PATH);
   }
   
   private function coursesURL($school, $addBreadcrumb=true) {
@@ -474,6 +474,7 @@ class CoursesModule extends Module {
         
         $this->addInlineJavascript(
           'var MY_CLASSES_COOKIE = "'.MY_CLASSES_COOKIE.'";'.
+          'var MY_CLASSES_COOKIE_DURATION = "'.MY_CLASSES_COOKIE_DURATION.'";'.
           'var COOKIE_PATH = "'.COOKIE_PATH.'";'
         );
         break;
