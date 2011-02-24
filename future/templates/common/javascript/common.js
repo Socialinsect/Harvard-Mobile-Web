@@ -118,7 +118,7 @@ function getCookie(name) {
   var start = cookie.indexOf(name + "=");
   if (start > -1) {
     start += name.length + 1;
-    end = cookie.indexOf(";", start);
+    var end = cookie.indexOf(";", start);
     if (end < 0) {
       end = cookie.length;
     }
@@ -133,6 +133,23 @@ function setCookie(name, value, expireseconds, path) {
   var exdateclause = (expireseconds == 0) ? "" : "; expires=" + exdate.toGMTString();
   var pathclause = (path == null) ? "" : "; path=" + path;
   document.cookie = name + "=" + value + exdateclause + pathclause;
+}
+
+function getCookieArrayValue(name) {
+  var value = getCookie(name);
+  if (value && value.length) {
+    return value.split(',');
+  } else {
+    return new Array();
+  }
+}
+
+function setCookieArrayValue(name, values, expireseconds, path) {
+  var value = '';
+  if (values && values.length) {
+    value = values.join(',');
+  }
+  setCookie(name, value, expireseconds, path);
 }
 
 // Share-related functions
