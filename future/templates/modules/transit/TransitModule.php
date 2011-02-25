@@ -260,8 +260,6 @@ class TransitModule extends Module {
         $this->assign('mapImageWidth',  $mapImageWidth);
         $this->assign('mapImageHeight', $mapImageHeight);
         $this->assign('stopName',       $stopInfo['name']);
-        $this->assign('serviceLogo',    '');
-        $this->assign('serviceLink',    '');
         $this->assign('runningRoutes',  $runningRoutes);
         $this->assign('offlineRoutes',  $offlineRoutes);
         $this->assign('lastRefresh',    time());

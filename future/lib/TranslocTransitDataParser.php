@@ -206,7 +206,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     $stopsInfo = self::getData($this->translocHostname, 'stops');
     foreach ($stopsInfo['stops'] as $stopInfo) {
       if (isset($stopInfo['id'])) {
-        $latLon = self::argVal($stopsInfo, 'll');
+        $latLon = self::argVal($stopInfo, 'll');
         
         $this->addStop(new TransitStop(
           $stopInfo['id'], 
