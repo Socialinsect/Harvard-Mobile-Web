@@ -6,18 +6,18 @@
 <div class="focal">
   {block name="firstField"}
     <h2>
-      {include file="findInclude:common/listItem.tpl" item=$firstField}
+      {include file="findInclude:common/listItem.tpl" item=$firstField accessKey=false}
     </h2>
   {/block}
   
   {block name="fields"}
     {if count($fields)}
-      {include file="findInclude:common/navlist.tpl" navlistItems=$fields}
+      {include file="findInclude:common/navlist.tpl" navlistItems=$fields accessKey=false}
     {/if}
   {/block}
   
   <p class="legend">
-    {include file="findInclude:common/listItem.tpl" item=$lastField}
+    {include file="findInclude:common/listItem.tpl" item=$lastField accessKey=false}
   </p>
 
 </div>
