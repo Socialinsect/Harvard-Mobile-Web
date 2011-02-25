@@ -2,14 +2,14 @@
 
 {block name="firstField"}
   <h2>
-    {include file="findInclude:common/listItem.tpl" item=$firstField accessKey=false}
+    {include file="findInclude:common/listItem.tpl" item=$firstField}
   </h2>
 {/block}
 
 {block name="fields"}
   {foreach $fields as $item}
     <p>
-      {include file="findInclude:common/listItem.tpl" subTitleNewline=false accessKey=false}
+      {include file="findInclude:common/listItem.tpl" subTitleNewline=false}
     <p>
   {/foreach}
 {/block}

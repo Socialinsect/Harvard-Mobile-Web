@@ -6,7 +6,7 @@
 <div class="focal">
   {block name="firstField"}
     <h2>
-      {include file="findInclude:common/listItem.tpl" item=$firstField accessKey=false}
+      {include file="findInclude:common/listItem.tpl" item=$firstField}
     </h2>
   {/block}
   
@@ -17,7 +17,7 @@
   {/block}
   
   <p class="legend">
-    {include file="findInclude:common/listItem.tpl" item=$lastField accessKey=false}
+    {include file="findInclude:common/listItem.tpl" item=$lastField}
   </p>
 
 </div>
