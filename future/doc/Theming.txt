@@ -167,7 +167,7 @@ CSS search paths from least specific to most specific.  All matching CSS files a
 
 CSS Search Paths:
 
-  Check common core files in /Web-app/templates/common/css/ for:
+  Check common core files in /app/common/css/ for:
       common.css
       [PAGETYPE].css
       [PAGETYPE]-[PLATFORM].css
@@ -175,7 +175,7 @@ CSS Search Paths:
       [PAGE]-[PAGETYPE].css
       [PAGE]-[PAGETYPE]-[PLATFORM].css
   
-  Check module core files in /Web-app/templates/modules/[current module]/css/ for:
+  Check module core files in /app/modules/[current module]/css/ for:
       common.css
       [PAGETYPE].css
       [PAGETYPE]-[PLATFORM].css
@@ -183,7 +183,7 @@ CSS Search Paths:
       [PAGE]-[PAGETYPE].css
       [PAGE]-[PAGETYPE]-[PLATFORM].css
 
-  Check common theme files in /Web-app/site/[SITE_NAME]/themes/[THEME_NAME]/common/css/ for:
+  Check common site files in /site/[SITE_NAME]/app/modules/common/css/ for:
       common.css
       [PAGETYPE].css
       [PAGETYPE]-[PLATFORM].css
@@ -191,7 +191,23 @@ CSS Search Paths:
       [PAGE]-[PAGETYPE].css
       [PAGE]-[PAGETYPE]-[PLATFORM].css
   
-  Check module theme files in /Web-app/site/[SITE_NAME]/themes/[THEME_NAME]/modules/[current module]/css/ for:
+  Check module site files in /site/[SITE_NAME]/app/modules/modules/[current module]/css/ for:
+      common.css
+      [PAGETYPE].css
+      [PAGETYPE]-[PLATFORM].css
+      [PAGE]-common.css
+      [PAGE]-[PAGETYPE].css
+      [PAGE]-[PAGETYPE]-[PLATFORM].css
+
+  Check common theme files in /site/[SITE_NAME]/themes/[THEME_NAME]/common/css/ for:
+      common.css
+      [PAGETYPE].css
+      [PAGETYPE]-[PLATFORM].css
+      [PAGE]-common.css
+      [PAGE]-[PAGETYPE].css
+      [PAGE]-[PAGETYPE]-[PLATFORM].css
+  
+  Check module theme files in /site/[SITE_NAME]/themes/[THEME_NAME]/modules/[current module]/css/ for:
       common.css
       [PAGETYPE].css
       [PAGETYPE]-[PLATFORM].css
@@ -205,29 +221,41 @@ Because Javascript does not allow overriding of functions, only the most device 
 
 Javascript Search Paths:
 
-  Check common theme files in /Web-app/site/[SITE_NAME]/themes/[THEME_NAME]/common/javascript/ for:
+  Check common theme files in /site/[SITE_NAME]/themes/[THEME_NAME]/common/javascript/ for:
       common.js
       [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
       [PAGE]-common.js
       [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
             
-          If there are no common theme files, check common core files in  /Web-app/templates/common/javascript/ for:
-                common.js
-                [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
-                [PAGE]-common.js
-                [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
+      If there are no common theme files, check common site files in /site/[SITE_NAME]/app/modules/common/javascript/ for:
+            common.js
+            [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
+            [PAGE]-common.js
+            [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
+        
+            If there are no common theme files, check common core files in /app/common/javascript/ for:
+                  common.js
+                  [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
+                  [PAGE]-common.js
+                  [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
   
-  Check module theme files in /Web-app/site/[SITE_NAME]/themes/[THEME_NAME]/modules/[current module]/javascript/ for:
+  Check module theme files in /site/[SITE_NAME]/themes/[THEME_NAME]/modules/[current module]/javascript/ for:
       common.js
       [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
       [PAGE]-common.js
       [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
   
-          If there are no module theme files, check module core files in /Web-app/templates/modules/[current module]/javascript/ for:
-                common.js
-                [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
-                [PAGE]-common.js
-                [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
+      If there are no module theme files, check module site files in /site/[SITE_NAME]/app/modules/[current module]/javascript/ for:
+            common.js
+            [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
+            [PAGE]-common.js
+            [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
+  
+            If there are no module theme files, check module core files in /app/modules/[current module]/javascript/ for:
+                  common.js
+                  [PAGETYPE]-[PLATFORM].js or if not check [PAGETYPE].js
+                  [PAGE]-common.js
+                  [PAGE]-[PAGETYPE]-[PLATFORM].js or if not check [PAGE]-[PAGETYPE].js
     
 
  
