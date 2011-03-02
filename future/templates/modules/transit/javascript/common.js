@@ -30,9 +30,15 @@ function hashToParamString(params) {
 }
 
 function autoReload(reloadTime) {
+  var params = paramStringToHash(window.location.search);
+  
+  if (params['y']) {
+    setTimeout(function () {
+      window.scrollTo(0, params['y']);
+    }, 500);
+  }
+  
   setTimeout(function () {
-    var params = paramStringToHash(window.location.search);
-    
     var date = new Date();
     params['t'] = date.getTime(); // prevent caching
   
@@ -46,7 +52,15 @@ function autoReload(reloadTime) {
         }
       }
     }
-
+    
+    params['y'] = 0;
+    if (typeof window.pageYOffset != 'undefined') {
+      params['y'] = window.pageYOffset;
+      
+    } else if (typeof document.body.scrollTop != 'undefined') {
+      params['y'] = document.body.scrollTop;
+    }
+    
     var href = window.location.protocol+'//'+window.location.hostname;
     if (window.location.port.length) {
       href += ':'+window.location.port;

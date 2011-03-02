@@ -95,8 +95,7 @@
 	<div class="focal shaded">
 
 		<h2>{$name}</h2>
-		<p class="address">{$address|replace:' ':'&shy; '}</p>
-		<a name="scrolldown"></a>		
+		<p class="address">{$address|replace:' ':'&shy; '}</p>	
     {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
   </div>
 {/block}
