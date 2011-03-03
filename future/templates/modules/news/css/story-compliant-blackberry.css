@@ -1,0 +1,4 @@
+/* Fix for Storm, Storm 2, and Tour */
+#storybody img {
+  width: 100% !important;
+}

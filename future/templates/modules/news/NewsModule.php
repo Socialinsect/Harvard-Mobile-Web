@@ -153,6 +153,10 @@ class NewsModule extends Module {
         
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
+        if ($this->platform == 'blackberry') {
+          $this->addOnLoad('fixImageSizes();');
+        }
+        
         $this->assign('date',          $date);
         $this->assign('storyURL',      urlencode($story->getLink()));
         $this->assign('shareEmailURL', $shareEmailURL);

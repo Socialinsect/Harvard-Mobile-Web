@@ -188,13 +188,23 @@ class TransitModule extends Module {
             $routeInfo['stops'][$stopID]['imgAlt'] = $routeConfig['busImageAltText'];
           }
           
-          $routeInfo['stops'][$stopID]['img'] = '/common/images/';
-          if ($this->pagetype == 'basic') {
-            $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'bus.gif' : 'bus-spacer.gif';
-          } else if ($this->pagetype == 'touch') {
-            $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
-          } else {
-            $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
+          if ($stop['upcoming'] || $this->pagetype != 'basic') {
+            $routeInfo['stops'][$stopID]['img'] = '/common/images/';
+          }
+          switch ($this->pagetype) {
+            case 'basic':
+              if ($stop['upcoming']) {
+                $routeInfo['stops'][$stopID]['img'] .= 'bus.gif';
+              }
+              break;
+            
+            case 'touch':
+              $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
+              break;
+              
+            default:
+              $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
+              break;
           }
         }
 
