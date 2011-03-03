@@ -920,9 +920,6 @@ abstract class Module {
     $accessKeyStart = count($this->breadcrumbs);
     if ($this->id != 'home') {
       $accessKeyStart++;  // Home link
-      if ($this->page != 'index') {
-        $accessKeyStart++;  // Module home link
-      }
     }
     $this->assign('accessKeyStart', $accessKeyStart);
 
