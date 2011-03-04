@@ -175,6 +175,11 @@ class RSSDataParser extends DataParser
         $this->data .= $data;
     }
     
+    public function clearInternalCache()
+    {
+        $this->items = array();
+    }
+
   public function parseData($contents) {
         $xml_parser = xml_parser_create();
         // use case-folding so we are sure to find the tag in $map_array

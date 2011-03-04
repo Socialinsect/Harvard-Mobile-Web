@@ -4,6 +4,7 @@ require_once(LIB_DIR . '/RSS.php');
 
 class GazetteRSScontroller extends RSSDataController
 {
+    protected $DEFAULT_PARSER_CLASS='GazetteRSSDataParser';
     protected $loadMore=true;
     
     public function addFilter($var, $value)
@@ -59,11 +60,15 @@ class GazetteRSScontroller extends RSSDataController
                 $items = array_slice($items, $start, $limit); //slice off what's not needed
                 
                 // see if we need to fill it out at the end
-                if (count($items)<$limit) {
+                if (count($items) < $limit && $page < $maxPages) {
                     $moreItems = $this->loadPage(++$page);
                     $items = array_merge($items, array_slice($moreItems,0,$limit-count($items)));
                     $totalItems += count($moreItems);
                 }
+            }
+            if ($page < $maxPages) {
+              // let the caller know there are more items available on the next page
+              $totalItems++;
             }
         } elseif ($limit) {
             $items = array_slice($items, $start, $limit); //slice off what's not needed
@@ -75,7 +80,7 @@ class GazetteRSScontroller extends RSSDataController
     private function loadPage($page)
     {
         $this->addFilter('paged',$page);
-        $items = $this->items();
+        $items = parent::items(); // get non-paged view
         return $items;   
     }
 
@@ -176,6 +181,24 @@ class GazetteRSScontroller extends RSSDataController
         }
                 
         return null;
+    }
+}
+
+class GazetteRSSDataParser extends RSSDataParser {
+    public function parseData($contents) {
+      parent::parseData($contents);
+      
+      foreach (array_keys($this->items) as $i) {
+          $categories = $this->items[$i]->getCategories();
+          foreach ($categories as $category) {
+              if ($category == 'Multimedia') {
+                  unset($this->items[$i]);
+                  continue;
+              }
+          }
+      }
+      
+      return $this->items;
     }
 }
 
