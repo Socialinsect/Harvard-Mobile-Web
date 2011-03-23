@@ -63,11 +63,12 @@ class HomeModule extends Module {
         $searchTerms = $this->getArg('filter');
         
         $federatedResults = array();
-     
-        foreach ($this->getNavigationModules(false) as $id => $info) {
+    
+        $navModulesBySection = $this->getNavigationModules(false); 
+        $primaryModules = $navModulesBySection['primary'];
+        foreach ($primaryModules as $id => $info) {
           $path = self::getPathSegmentForModuleID($id);
           $module = self::factory($path, $this->page, $this->args);
-
           if ($info['search']) {
             $results = array();
             $total = $module->federatedSearch($searchTerms, 2, $results);

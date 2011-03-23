@@ -326,7 +326,6 @@ abstract class Module {
   public static function factory($path, $page='index', $args=array()) {
     // Is there a path alias for this module?
     $id = self::getModuleIDForPathSegment($path);
-    
     $className = ucfirst($id).'Module';
     
     $modulePaths = array(
@@ -498,6 +497,7 @@ abstract class Module {
           'disabled'    => $disabled,
           'img'         => "/modules/home/images/{$id}{$imgSuffix}".$this->imageExt,
           'class'       => implode(' ', $classes),
+          'search'      => $info['search'],
         );
       }
     }
