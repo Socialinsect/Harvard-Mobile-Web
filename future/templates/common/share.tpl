@@ -15,7 +15,7 @@
             <a class="sharelink" href="http://m.facebook.com/sharer.php?u={$shareURL}&t={$shareRemark}"><img src="/common/images/button-facebook.png" alt="" width="32" height="32" />Facebook</a>
           </li>
           <li>
-            <a class="sharelink" href="http://m.twitter.com/share?url={$shareURL}&amp;text={$shareRemark}&amp;Via=Harvard"><img src="/common/images/button-twitter.png" alt="" width="32" height="32" />Twitter</a>
+            <a class="sharelink" href="http://twitter.com/intent/tweet?url={$shareURL}&amp;text={$shareRemark}&amp;Via=Harvard"><img src="/common/images/button-twitter.png" alt="" width="32" height="32" />Twitter</a>
           </li>
         {/if}
 			</ul>
