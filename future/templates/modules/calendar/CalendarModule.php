@@ -198,9 +198,9 @@ class CalendarModule extends Module {
 
   private function categoryDayURL($time, $categoryID, $name, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('category', array(
-      'time' => $time,
-      'id'   => $categoryID,
-      'name' => $name, 
+      'time'  => $time,
+      'catid' => $categoryID,
+      'name'  => $name,
     ), $addBreadcrumb);
   }
   
@@ -210,8 +210,8 @@ class CalendarModule extends Module {
   
   private function categoryURL($category, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('category', array(
-      'catid'   => is_array($category) ? $category['catid'] : $category->get_cat_id(),
-      'name' => is_array($category) ? $category['name']  : $this->ucname($category->get_name()),
+      'catid' => is_array($category) ? $category['catid'] : $category->get_cat_id(),
+      'name'  => is_array($category) ? $category['name']  : $this->ucname($category->get_name()),
     ), $addBreadcrumb);
   }
   
