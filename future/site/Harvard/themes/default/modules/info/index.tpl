@@ -65,15 +65,20 @@
             visitors. We will continue to improve the app and roll out new features.
         </p>
         
-        <div class="feedback">
-        	<p>
-            <span class="black_font"><strong>Feedback</strong></span>
-            <br />
-            Find a bug? Want to recommend a feature? This initiative is 1.0, and your
-            ideas and usage will help inform future development. Please send your feedback
-            to <a href="mailto:digitalcomms@harvard.edu">digitalcomms@harvard.edu</a>.      
-            </p>
-        </div><!--/feedback-->
+        <h2>Feedback on Harvard Mobile</h2>
+        <p>
+Find a bug? Want to recommend a feature? Your ideas and usage help inform future development. Please send your feedback to <a href="mailto:digitalcomms@harvard.edu">digitalcomms@harvard.edu</a>.
+</p>
+<h2>Other Mobile Initiatives</h2>
+<p>
+The Harvard-Radcliffe College Reunion app enables alumni/ae returning to campus to engage and reconnect with classmates during reunion. Find your next event on the map, exchange contact information, or share reunion photos with your classmates.
+</p>
+<p style="text-align:center">
+<img src="/modules/info/images/reunion_app.png" alt="Harvard Reunion" width="300" height="369" />
+</p>
+<p>
+Available on mobile web at <a href="http://m.reunion.harvard.edu">http://m.reunion.harvard.edu</a>, with native applications for the iPhone and iPad available <a href="http://itunes.apple.com/us/app/harvard-reunions/id435641074?mt=8" target="_blank">in the App store</a>.
+</p>
         
     </div><!--/leftcol-->
     
