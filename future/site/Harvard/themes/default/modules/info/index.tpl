@@ -203,7 +203,7 @@ service, parking, and commuter offices.
 {/block}
     
 {block name="footer"}
-  <span class="copyright">&copy; 2010 <a href="http://www.harvard.edu" target="_blank">The President and Fellows of Harvard College</a></span>
+  <span class="copyright">&copy; 2011 <a href="http://www.harvard.edu" target="_blank">The President and Fellows of Harvard College</a></span>
 {/block}
 
 {block name="footerJavascript"}
