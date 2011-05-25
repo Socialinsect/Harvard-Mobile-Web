@@ -48,10 +48,15 @@ class ArcGISServer {
     foreach (self::$collections as $id => $collection) {
       
       foreach ($collection->getLayerNames() as $layerId => $name) {
+        if ($id == 'Athletics' && $layerId == 0) {
+          continue;
+        }
         $result["$id.$layerId"] = $name;
+
         // suppress all further disaggregations but housing for now
-        if ($id != 'Housing')
+        if ($id != 'Housing' && $id != 'Athletics') {
 	  break;
+        }
       }
     }
     return $result;
@@ -197,6 +202,7 @@ class ArcGISServer {
         'Dining',
         'LEED',
         'PublicSafety',
+        'Athletics',
         //'WirelessLAN',
         //'Accessibility',
         //'AlternativeEnergy', 
@@ -354,6 +360,8 @@ class ArcGISLayer {
   private $displayField;
   private $spatialRef;
   private $geometryType;
+  private $geometryField;
+  private $idFIeld;
 
   private $url;
   private $diskCache;
@@ -400,8 +408,9 @@ class ArcGISLayer {
       $attributes = $featureInfo->attributes;
       $displayAttribs = array();
       foreach ($attributes as $attrName => $attrValue) {
-        if ($attrValue != 'Null')
+        if ($attrValue != 'Null' && isset($this->fields[$attrName])) {
           $displayAttribs[$this->fields[$attrName]] = $attrValue;
+        }
       }
       $featureId = $attributes->{$displayField};
       $result[$featureId] = $displayAttribs;
@@ -468,7 +477,19 @@ class ArcGISLayer {
     $this->geometryType = $data->geometryType;
 
     foreach ($data->fields as $fieldInfo) {
-      $this->fields[$fieldInfo->name] = str_replace('_', ' ', $fieldInfo->alias);
+        if ($fieldInfo->type == 'esriFieldTypeOID') {
+            $this->idField = $fieldInfo->name;
+            continue;
+        } else if ($fieldInfo->type == 'esriFieldTypeGeometry') {
+            $this->geometryField = $fieldInfo->name;
+            continue;
+        } else if ($fieldInfo->type == 'esriFieldTypeString' && !isset($possibleDisplayField)) {
+            $possibleDisplayField = $fieldInfo->name;
+        }
+        $this->fields[$fieldInfo->name] = str_replace('_', ' ', $fieldInfo->alias);
+    }
+    if (!isset($this->fields[$this->displayField]) && isset($possibleDisplayField)) {
+        $this->displayField = $possibleDisplayField;
     }
 
     $this->extent = $data->extent;
