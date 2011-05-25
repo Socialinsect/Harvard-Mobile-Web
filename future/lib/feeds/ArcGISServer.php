@@ -432,13 +432,18 @@ class ArcGISLayer {
 
     $text = str_replace('\\\'', '\'\'', $text);
 
+    if ($text) {
+      $whereText = "{$this->displayField} like '$text'";
+    } else {
+      $whereText = '';
+    }
     $params = array(
-      'text'           => $text,
+      'text'           => '',
       'geometry'       => serializeBBox($this->extent),
       'geometryType'   => 'esriGeometryEnvelope',
       'inSR'           => $this->spatialRef,
       'spatialRel'     => 'esriSpatialRelIntersects',
-      'where'          => '',
+      'where'          => $whereText,
       'returnGeometry' => 'true',
       'outSR'          => '',
       'outFields'      => implode(',', array_keys($this->fields)),
@@ -446,7 +451,6 @@ class ArcGISLayer {
       );
 
     $url = $this->url . '/query?' . http_build_query($params);
-
     $contents = file_get_contents($url);
     if ($data = json_decode($contents)) {
       if ($text == '') {

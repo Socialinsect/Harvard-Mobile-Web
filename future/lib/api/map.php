@@ -74,7 +74,7 @@ switch (apiGetArg('command')) {
             $moreResults = ArcGISServer::search($searchTerms);
             if (count($moreResults->results) == 1) {
               $result = $moreResults->results[0];
-              if (count($results)) {
+              if (count($results->results)) {
                 $attributes = $results->results[0]->attributes;
                 foreach ($attributes as $name => $value) {
                   $result->attributes->{$name} = $value;
