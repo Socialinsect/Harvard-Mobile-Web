@@ -1,0 +1,21 @@
+/* support up to 4 links in the Athletics feed fields */
+.nav li strong + a,
+.nav li strong + a:visited,
+.nav li strong + a + a,
+.nav li strong + a + a:visited,
+.nav li strong + a + a + a,
+.nav li strong + a + a + a:visited,
+.nav li strong + a + a + a + a,
+.nav li strong + a + a + a + a:visited {
+  display: inline;
+  text-decoration: underline;
+  background: none;
+  margin: 0;
+  padding: 0;
+  color: #933 !important;
+}
+
+/* work around bogus HTML in the Athletics feed */
+.nav li + a {
+  display: none;
+}
