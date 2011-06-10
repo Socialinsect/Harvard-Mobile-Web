@@ -1,7 +1,13 @@
 <?php
+/**
+  * @package Module
+  * @subpackage Stats
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
+/**
+  * @package Module
+  * @subpackage Stats
+  */
 class StatsModule extends Module {
   protected $id = 'stats';
   protected $platforms = Array(
@@ -55,10 +61,10 @@ protected function generate_popular_content($system, $data) {
   $viewcounts = array();
   if ($system == 'web') {
     $modules = array();
-    $moduleData = $this->getHomeScreenModules();
-
-    foreach ($moduleData as $module => $mdata) {
-      $modules[$module] = $mdata['title'];
+    $moduleData = $this->getAllModules();
+    
+    foreach ($moduleData as $moduleID => $module) {
+      $modules[$moduleID] = $module['title'];
     }
   } else { // api
     $modules = array(

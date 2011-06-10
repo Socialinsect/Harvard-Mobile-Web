@@ -6,9 +6,9 @@
   </p>
 {/if}
 
-{if $springboard}
+{if $displayType == 'springboard'}
   {include file="findInclude:common/springboard.tpl" springboardItems=$links springboardID="links"}
-{else}
+{elseif $displayType == 'list'}
   {include file="findInclude:common/navlist.tpl" navlistItems=$links}
 {/if}
 

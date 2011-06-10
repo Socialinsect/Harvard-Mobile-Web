@@ -33,7 +33,27 @@ class DiningModule extends Module {
     switch ($this->page) {
       case 'help':
         break;
+      
+      case 'pane':
+        $day = date('Y-m-d');
+        $hour = intval(date('G'));
+        if($hour < 12) {
+          $currentMeal = 'Breakfast';
+          $currentMealKey = 'BRK';
+        } else if ($hour < 15) {
+          $currentMeal = 'Lunch';
+          $currentMealKey = 'LUN';
+        } else {
+          $currentMeal = 'Dinner';
+          $currentMealKey = 'DIN';
+        }
         
+        $this->setPageTitle($this->getPageTitle().": $currentMeal");
+        
+        $this->assign('currentMeal', $currentMeal);
+        $this->assign('foodTypes',   DiningData::getDiningData($day, $currentMealKey));
+        break;        
+      
       case 'index':
         $time  = isset($this->args['time']) ? $this->args['time'] : time();
         $today = time();

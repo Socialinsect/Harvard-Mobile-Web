@@ -1,11 +1,21 @@
 <?php
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 
 if (!function_exists('xml_parser_create')) {
     die('XML Parser commands not available.');
 }
 
+/**
+  */
 require_once(LIB_DIR . '/RSS.php');
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSDataParser extends DataParser
 {
     protected $root;
@@ -144,7 +154,7 @@ class RSSDataParser extends DataParser
                     break;
                 case 'DESCRIPTION':
                     /* dupe description to content if content is not defined */
-                    if (is_a($parent, 'RSSItem') && !$parent->getContent()) {
+                    if ($parent instanceOf RSSItem && !$parent->getContent()) {
                         $contentElement = clone($element);
                         $contentElement->setName('CONTENT');
                         $contentElement->setValue($this->data, $this->shouldStripTags($contentElement));
@@ -165,6 +175,11 @@ class RSSDataParser extends DataParser
         $this->data .= $data;
     }
     
+    public function clearInternalCache()
+    {
+        $this->items = array();
+    }
+
   public function parseData($contents) {
         $xml_parser = xml_parser_create();
         // use case-folding so we are sure to find the tag in $map_array

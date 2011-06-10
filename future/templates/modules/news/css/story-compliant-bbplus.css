@@ -1,0 +1,4 @@
+/* Fix for Tour */
+#storybody img {
+  width: 100% !important;
+}

@@ -3,47 +3,48 @@
 {$tabBodies = array()}
 
 {capture name="mapPane" assign="mapPane"}
+  {block name='scrollLink'}{$scrollLink = "#scrolldown"}{/block}
   {block name="mapPane"}
     {if $hasMap}
       <div id="mapwrapper">
         <div id="mapscrollers">
           <div id="nw">
-            <a href="#scrolldown" onclick="scroll('nw'); ">
+            <a href="{$scrollLink}" onclick="scroll('nw'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="NW" />
             </a>
           </div>
           <div id="n">
-            <a href="#scrolldown" onclick="scroll('n'); ">
+            <a href="{$scrollLink}" onclick="scroll('n'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="N" />
             </a>
           </div>
           <div id="ne">
-            <a href="#scrolldown" onclick="scroll('ne'); ">
+            <a href="{$scrollLink}" onclick="scroll('ne'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="NE" />
             </a>
           </div>
           <div id="e">
-            <a href="#scrolldown" onclick="scroll('e'); ">
+            <a href="{$scrollLink}" onclick="scroll('e'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="E" />
             </a>
           </div>
           <div id="se">
-            <a href="#scrolldown" onclick="scroll('se'); ">
+            <a href="{$scrollLink}" onclick="scroll('se'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="SE" />
             </a>
           </div>
           <div id="s">
-            <a href="#scrolldown" onclick="scroll('s'); ">
+            <a href="{$scrollLink}" onclick="scroll('s'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="S" />
             </a>
           </div>
           <div id="sw">
-            <a href="#scrolldown" onclick="scroll('sw'); ">
+            <a href="{$scrollLink}" onclick="scroll('sw'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="SW" />
             </a>
           </div>
           <div id="w">
-            <a href="#scrolldown" onclick="scroll('w'); ">
+            <a href="{$scrollLink}" onclick="scroll('w'); ">
               <img src="/common/images/blank.png" width="50" height="50" alt="W" />
             </a>
           </div>
@@ -90,11 +91,11 @@
 {$tabBodies['detail'] = $detailPane}
 
 {block name="tabView"}
+  <a name="scrolldown"> </a>		
 	<div class="focal shaded">
 
 		<h2>{$name}</h2>
-		<p class="address">{$address|replace:' ':'&shy; '}</p>
-		<a name="scrolldown"></a>		
+		<p class="address">{$address|replace:' ':'&shy; '}</p>	
     {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}
   </div>
 {/block}

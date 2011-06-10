@@ -4,11 +4,15 @@
 <head>
   <meta http-equiv="content-type" content="application/xhtml+xml" />
   <title>{$moduleName}{if !$isModuleHome}: {$pageTitle}{/if}</title>
+  <link rel="shortcut icon" href="/favicon.ico" />
   <link href="{$minify['css']}" rel="stylesheet" media="all" type="text/css"/>
   {foreach $inlineCSSBlocks as $css}
     <style type="text/css" media="screen">
       {$css}
     </style>
+  {/foreach}
+  {foreach $cssURLs as $cssURL}
+    <link href="{$cssURL}" rel="stylesheet" media="all" type="text/css"/>
   {/foreach}
   
   {block name="javascript"}
@@ -26,16 +30,14 @@
       </script>
     {/if}
     
-    {foreach $inlineJavascriptBlocks as $script}
-      <script type="text/javascript">
-        {$script} 
-      </script>
-    {/foreach}  
+    {foreach $inlineJavascriptBlocks as $inlineJavascriptBlock}
+      <script type="text/javascript">{$inlineJavascriptBlock}</script>
+    {/foreach}
     
-    {foreach $externalJavascriptURLs as $url}
+    {foreach $javascriptURLs as $url}
       <script src="{$url}" type="text/javascript"></script>
     {/foreach}
-
+    
     <script src="{$minify['js']}" type="text/javascript"></script>
 
     {if count($onOrientationChangeBlocks)}
@@ -62,8 +64,10 @@
   {/block}
   
   <meta name="HandheldFriendly" content="true" />
-  <meta name="viewport" id="viewport" 
-    content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no, initial-scale=1.0, maximum-scale=1.0{/if}" />
+  {block name="viewportHeadTag"}
+    <meta name="viewport" id="viewport" 
+      content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no, initial-scale=1.0, maximum-scale=1.0{/if}" />
+  {/block}
   <link rel="apple-touch-icon" href="/common/images/icon-{$moduleID}.png" />
   {block name="additionalHeadTags"}{/block}
 </head>
@@ -71,13 +75,10 @@
 {capture name="breadcrumbHTML" assign="breadcrumbHTML"}
   {block name="breadcrumbs"}
     {if !$isModuleHome}
-      {if $moduleID != 'home'}
-        <a href="./" class="module">
-          <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" />
-        </a>
-      {/if}
       {foreach $breadcrumbs as $breadcrumb}
-        {if count($breadcrumbs) == 1}
+        {if $breadcrumb@first}
+          {$crumbClass = 'module'}
+        {elseif count($breadcrumbs) == 1}
           {$crumbClass = 'crumb1'}
         {elseif count($breadcrumbs) == 2}
           {if !$breadcrumb@last}
@@ -96,39 +97,46 @@
           
         {/if}
         <a href="{$breadcrumb['url']}" {if isset($crumbClass)}class="{$crumbClass}{/if}">
-          <span>{$breadcrumb['title']}</span>
+          {if $breadcrumb@first}
+            <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" />
+          {else}
+            <span>{$breadcrumb['title']}</span>
+          {/if}
         </a>
       {/foreach}
     {/if}
   {/block}
 {/capture}
 
-<body{block name="onLoad"}{if count($onLoadBlocks)} onload="onLoad();"{/if}{/block}>
-  <a name="top"></a>
-  {if isset($customHeader)}
-    {$customHeader|default:''}
-  {else}
-    {block name="navbar"}
-      <div id="navbar"{if $hasHelp} class="helpon"{/if}>
-        <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
-          <a name="top" href="/home/" class="homelink">
-            <img src="/common/images/homelink.png" width="57" height="45" alt="Home" />
-          </a>
-          
-          {$breadcrumbHTML}
-          <span class="pagetitle">
-            {if $isModuleHome}
-              <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" class="moduleicon" />
-            {/if}
-            {$pageTitle}
-          </span>
-        </div>
-        {if $hasHelp}
-          <div class="help">
-            <a href="help.php"><img src="/common/images/help.png" width="46" height="45" alt="Help" /></a>
+<body class="{$moduleID|capitalize}Module" {block name="onLoad"}{if count($onLoadBlocks)} onload="onLoad();"{/if}{/block}>
+  <div id="nonfooternav">
+    <a name="top"></a>
+    {if isset($customHeader)}
+      {$customHeader|default:''}
+    {else}
+      {block name="navbar"}
+        <div id="navbar"{if $hasHelp} class="helpon"{/if}>
+          <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
+            <a name="top" href="/home/" class="homelink">
+              <img src="/common/images/homelink.png" width="57" height="45" alt="Home" />
+            </a>
+            
+            {$breadcrumbHTML}
+            <span class="pagetitle">
+              {if $isModuleHome}
+                <img src="/common/images/title-{$navImageID|default:$moduleID}.png" width="28" height="28" alt="" class="moduleicon" />
+              {/if}
+              {$pageTitle}
+            </span>
           </div>
-        {/if}
-      </div>
+          {if $hasHelp}
+            <div class="help">
+              <a href="help.php"><img src="/common/images/help.png" width="46" height="45" alt="Help" /></a>
+            </div>
+          {/if}
+        </div>
+      {/block}
+    {/if}
+    {block name="containerStart"}
+      <div id="container">
     {/block}
-  {/if}
-  <div id="container">

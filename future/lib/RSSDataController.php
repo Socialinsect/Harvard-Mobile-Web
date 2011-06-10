@@ -1,5 +1,13 @@
 <?php
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 
+/**
+  * @package ExternalData
+  * @subpackage RSS
+  */
 class RSSDataController extends DataController
 {
     protected $DEFAULT_PARSER_CLASS='RSSDataParser';
@@ -62,6 +70,7 @@ class RSSDataController extends DataController
     protected function clearInternalCache()
     {
         $this->items = null;
+        $this->parser->clearInternalCache();
         parent::clearInternalCache();
     }
     

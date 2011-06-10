@@ -1,4 +1,7 @@
 <?php
+/**
+  * @package Core
+  */
 
 //
 // Initialization setup
@@ -9,8 +12,15 @@
 //            /device/[device]/ as the path.
 //
 
-define('ROOT_DIR', dirname(__FILE__).'/..'); // change if this file is moved
+/**
+  * change if this file is moved
+  */
+define('ROOT_DIR', dirname(__FILE__).'/..'); 
 
+/**
+  * Will see if there is a HTTP_IF_MODIFIED_SINCE header and if the dates match it will return a 304
+  * otherwise will set the Last-Modified header
+  */
 function CacheHeaders($file)
 {
     $mtime = gmdate('D, d M Y H:i:s', filemtime($file)) . ' GMT';
@@ -25,16 +35,32 @@ function CacheHeaders($file)
     return;
 }
 
+/**
+  * Outputs a 404 error message
+  */
+function _404() {
+    header("HTTP/1.0 404 Not Found");
+    echo "<h1>404 Not Found</h1>\n";
+    echo "The page that you have requested could not be found.\n";
+    exit();
+}
+
+
+/**
+  * 
+  */
 function Initialize(&$path=null) {
   //
   // Constants which cannot be set by config file
   //
   
-  define('WEBROOT_DIR',       ROOT_DIR.'/web'); 
-  define('LIB_DIR',           ROOT_DIR.'/lib');
-  define('MASTER_CONFIG_DIR', ROOT_DIR.'/config');
-  define('TEMPLATES_DIR',     ROOT_DIR.'/templates');
-  define('MODULES_DIR',       TEMPLATES_DIR.'/modules');
+  define('WEBROOT_DIR',       realpath(ROOT_DIR.'/web')); 
+  define('LIB_DIR',           realpath(ROOT_DIR.'/lib'));
+  define('MASTER_CONFIG_DIR', realpath(ROOT_DIR.'/config'));
+  define('TEMPLATES_DIR',     realpath(ROOT_DIR.'/templates'));
+  define('MODULES_DIR',       realpath(TEMPLATES_DIR.'/modules'));
+  
+  define('MIN_FILE_PREFIX', 'file:');
   
   
   //
@@ -98,8 +124,8 @@ function Initialize(&$path=null) {
     }
   }
   define('URL_BASE', $foundPath ? $urlBase : '/');
-  define('FULL_URL_BASE', "http://{$_SERVER['HTTP_HOST']}".URL_BASE);
-
+  define('IS_SECURE', isset($_SERVER['HTTPS']) && strlen($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');
+  define('FULL_URL_BASE', 'http'.(IS_SECURE ? 's' : '').'://'.SERVER_HOST.URL_BASE);
   define('COOKIE_PATH', URL_BASE); // We are installed under URL_BASE
 
   //
@@ -114,7 +140,7 @@ function Initialize(&$path=null) {
   
   require_once realpath(LIB_DIR.'/exceptions.php');
   
-  if($GLOBALS['siteConfig']->getVar('USE_PRODUCTION_ERROR_HANDLER')) {
+  if($GLOBALS['siteConfig']->getVar('PRODUCTION_ERROR_HANDLER_ENABLED')) {
     set_exception_handler("exceptionHandlerForProduction");
   } else {
     set_exception_handler("exceptionHandlerForDevelopment");
@@ -150,7 +176,7 @@ function Initialize(&$path=null) {
   
   define('URL_DEVICE_DEBUG_PREFIX', $urlDeviceDebugPrefix);
   define('URL_PREFIX', $urlPrefix);
-  define('FULL_URL_PREFIX', "http://{$_SERVER['HTTP_HOST']}".URL_PREFIX);
+  define('FULL_URL_PREFIX', 'http'.(IS_SECURE ? 's' : '').'://'.$_SERVER['HTTP_HOST'].URL_PREFIX);
 
   //error_log(__FUNCTION__."(): prefix: $urlPrefix");
   //error_log(__FUNCTION__."(): path: $path");

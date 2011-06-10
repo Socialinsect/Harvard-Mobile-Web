@@ -1,0 +1,57 @@
+body {
+  background: url(/common/images/background-tile.jpg) top right repeat-x, url(/common/images/background-tile-2.jpg) bottom left repeat;
+}
+
+#wrapper, #container {
+  background: none;
+}
+
+#navbar {
+  background: none;
+}
+
+#navbar .moduleicon {
+  padding: 8px 12px;
+  width: auto !important;
+  height: 40px !important;
+}
+
+.pagetitle {
+  display: none;
+}
+
+.blockborder {
+  border: none;
+  background: none;
+}
+
+.blockheader {
+  margin: 0;
+  -webkit-border-top-left-radius: 4px;
+  -webkit-border-top-right-radius: 4px;
+  -webkit-border-bottom-left-radius: 0px;
+  -webkit-border-bottom-right-radius: 0px;
+  padding-left: 44px;
+  font-size: 96%;
+  font-weight: bold;
+  border-bottom: solid 1px #430f13;
+}
+
+.blockheader .icon {
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
+  background-size: 30px;
+  -o-background-size: 30px;
+  -moz-background-size: 30px;
+  -khtml-background-size: 30px;
+  -webkit-background-size: 30px;
+}
+
+.blockcontent {
+  background-color: #F2F4F7;
+  border: solid 1px #bbb;
+  border-width: 0px 1px 1px 1px;
+  -webkit-border-bottom-left-radius: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+}

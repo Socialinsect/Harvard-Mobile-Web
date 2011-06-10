@@ -1,11 +1,15 @@
 <?php
-/****************************************************************
- *
- *  Copyright 2010 The President and Fellows of Harvard College
- *  Copyright 2010 Modo Labs Inc.
- *
- *****************************************************************/
+/**
+  * @copyright 2010 Modo Labs Inc.
+  * @package Core
+  *
+   */
 
+/**
+  * Provides an abstraction for an on disk cache
+  * @package Core
+  *
+  */
 class DiskCache {
 
   private $path;
@@ -140,7 +144,7 @@ class DiskCache {
 
   public function read($filename=NULL) {
     $path = $this->getFullPath($filename);
-    if (file_exists($path) && $this->isFresh($filename)) {
+    if (file_exists($path)) {
       if ($contents = file_get_contents($path)) {
         if ($this->serialize) {
           return unserialize($contents);

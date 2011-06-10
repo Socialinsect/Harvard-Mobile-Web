@@ -22,23 +22,25 @@
 
 {include file="findInclude:common/search.tpl" placeholder="Search "|cat:$SITE_NAME}
 
-{if $home['springboard']}
+{if $displayType == 'springboard'}
   {include file="findInclude:common/springboard.tpl" springboardItems=$modules springboardID="homegrid"}
-{else}
+  
+{elseif $displayType == 'list'}
   {$primaryModules = array()}
-  {$utilityModules = array()}
-  {$seenSeparator = false}
+  {$secondaryModules = array()}
+  {$foundSeparator = false}
   {foreach $modules as $module}
-    {if $module['class'] == 'utility'}
-      {$utilityModules[] = $module}
+    {if $module['separator']}
+      {$foundSeparator = true}
+    {elseif $foundSeparator}
+      {$secondaryModules[] = $module}
     {else}
       {$primaryModules[] = $module}
     {/if}
   {/foreach}
 
   {include file="findInclude:common/navlist.tpl" navlistItems=$primaryModules}
-  
-  {include file="findInclude:common/navlist.tpl" navlistItems=$utilityModules accessKeyLink=false}
+  {include file="findInclude:common/navlist.tpl" navlistItems=$secondaryModules accessKeyLink=false}
 {/if}
 
 {block name="homeFooter"}

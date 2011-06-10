@@ -1,17 +1,20 @@
 <?php
+/**
+  * @package Module
+  * @subpackage News
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
-if (!function_exists('mb_substr')) {
-    die('Multibyte String Functions not available (mbstring)');
-}
-
+/**
+  * @package Module
+  * @subpackage News
+  */
 class NewsModule extends Module {
   protected $id = 'news';
+  protected $hasFeeds = true;
   protected $feeds = array();
-  private   $feedIndex = 0;
+  protected $feedIndex = 0;
   protected $feed;
-  protected $maxPerPage;
+  protected $maxPerPage = 10;
   
   private function feedURLForFeed($feedIndex) {
     return isset($this->feeds[$feedIndex]) ? 
@@ -44,14 +47,20 @@ class NewsModule extends Module {
     ), $addBreadcrumb);
   }
 
-  private function storyURL($story, $addBreadcrumb=true) {
+  private function storyURL($story, $addBreadcrumb=true, $paneLink=false) {
     if ($storyID = $story->getGUID()) {
-        return $this->buildBreadcrumbURL('story', array(
+        $args = array(
           'storyID'   => $storyID,
           'section'   => $this->feedIndex,
           'start'     => self::argVal($this->args, 'start'),
           'filter'    => self::argVal($this->args, 'filter')
-        ), $addBreadcrumb);
+        );
+        
+        if ($paneLink) {
+          return $this->buildURL('story', $args);
+        } else {
+          return $this->buildBreadcrumbURL('story', $args, $addBreadcrumb);
+        }
     } elseif ($link = $story->getProperty('link')) {
         return $link;
     } else {
@@ -144,6 +153,10 @@ class NewsModule extends Module {
         
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
+        if ($this->platform == 'blackberry') {
+          $this->addOnLoad('fixImageSizes();');
+        }
+        
         $this->assign('date',          $date);
         $this->assign('storyURL',      urlencode($story->getLink()));
         $this->assign('shareEmailURL', $shareEmailURL);
@@ -193,6 +206,9 @@ class NewsModule extends Module {
             'section' => $this->feedIndex
           );
 
+          $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+          $this->addOnLoad('setupNewsListing();');
+
           $this->assign('extraArgs',   $extraArgs);
           $this->assign('searchTerms', $searchTerms);
           $this->assign('stories',     $stories);
@@ -203,7 +219,24 @@ class NewsModule extends Module {
           $this->redirectTo('index'); // search was blank
         }
         break;
+      
+      case 'pane':
+        $start = 0;
+        $items = $this->feed->items($start, $this->maxPerPage, $totalItems);
+        $stories = array();
+        foreach ($items as $story) {
+          $item = array(
+            'title'       => $story->getTitle(),
+            'description' => $story->getDescription(),
+            'url'         => $this->storyURL($story, false, true),
+            'image'       => $this->getImageForStory($story),
+          );
+          $stories[] = $item;
+        }
         
+        $this->assign('stories', $stories);
+        break;
+      
       case 'index':
         $start = $this->getArg('start', 0);
         $totalItems = 0;
@@ -250,6 +283,9 @@ class NewsModule extends Module {
           'section'=>$this->feedIndex
         );
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+        $this->addOnLoad('setupNewsListing();');
+
         $this->assign('hiddenArgs',     $hiddenArgs);
         $this->assign('sections',       $sections);
         $this->assign('currentSection', $sections[$this->feedIndex]);

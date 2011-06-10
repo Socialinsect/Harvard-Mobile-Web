@@ -181,21 +181,23 @@ class TransitConfig {
 class TransitDataView {
   private $config = array();
   private $parsers = array();
-  private static $routesCache = null;
+  private $daemonMode = false;
+  private static $viewCache = null;
   
-  private static function getRoutesCache() {
-    if (!isset(self::$routesCache)) {
-      self::$routesCache = new DiskCache(
+  private static function getViewCache() {
+    if (!isset(self::$viewCache)) {
+      self::$viewCache = new DiskCache(
         $GLOBALS['siteConfig']->getVar('TRANSIT_CACHE_DIR'),
         $GLOBALS['siteConfig']->getVar('TRANSIT_ROUTE_LIST_CACHE_TIMEOUT'), TRUE);
-      self::$routesCache->preserveFormat();
-      self::$routesCache->setSuffix(".json");
+      self::$viewCache->preserveFormat();
+      self::$viewCache->setSuffix(".json");
     } 
-    return self::$routesCache;
+    return self::$viewCache;
   }
   
-  function __construct($transitConfig) {
+  function __construct($transitConfig, $daemonMode=false) {
     $this->config = $transitConfig;
+    $this->daemonMode = $daemonMode;
     
     foreach ($this->config->getParserIDs() as $parserID) {
     
@@ -205,7 +207,8 @@ class TransitDataView {
           $this->config->getLiveParserClass($parserID), 
           $this->config->getLiveParserArgs($parserID),
           $this->config->getLiveParserOverrides($parserID),
-          $this->config->getLiveParserRouteWhitelist($parserID)
+          $this->config->getLiveParserRouteWhitelist($parserID),
+          $daemonMode
         );
       } else {
         $parser['live'] = false;
@@ -216,7 +219,8 @@ class TransitDataView {
           $this->config->getStaticParserClass($parserID), 
           $this->config->getStaticParserArgs($parserID),
           $this->config->getStaticParserOverrides($parserID),
-          $this->config->getStaticParserRouteWhitelist($parserID)
+          $this->config->getStaticParserRouteWhitelist($parserID),
+          $daemonMode
         );
       } else {
         $parser['static'] = false;
@@ -234,7 +238,8 @@ class TransitDataView {
           $this->config->getLiveParserClass($parserID), 
           $this->config->getLiveParserArgs($parserID),
           $this->config->getLiveParserOverrides($parserID),
-          $this->config->getLiveParserRouteWhitelist($parserID)
+          $this->config->getLiveParserRouteWhitelist($parserID),
+          $daemonMode
         );
       }
     }
@@ -243,9 +248,9 @@ class TransitDataView {
   public function getStopInfoForRoute($routeID, $stopID) {
     $stopInfo = array();
     $cacheName = "stopInfoForRoute.$routeID.$stopID";
-    $cache = self::getRoutesCache();
+    $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName)) {
+    if ($cache->isFresh($cacheName) && !$this->daemonMode) {
       $stopInfo = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -286,9 +291,9 @@ class TransitDataView {
   public function getStopInfo($stopID) {
     $stopInfo = array();
     $cacheName = "stopInfo.$stopID";
-    $cache = self::getRoutesCache();
+    $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName)) {
+    if ($cache->isFresh($cacheName) && !$this->daemonMode) {
       $stopInfo = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -306,9 +311,17 @@ class TransitDataView {
         if (!$parserInfo) {
           $parserInfo = $staticParserInfo;
         } else if (isset($staticParserInfo['routes'])) {
-          foreach ($parserInfo['routes'] as $routeID => $stopTimes) {
-            if (!isset($stopTimes['arrives']) && isset($staticParserInfo['routes'][$routeID])) {
-              $parserInfo['routes'][$routeID] = $staticParserInfo['routes'][$routeID];
+          // if live parser returns routes that are actually not in service
+          foreach (array_keys($parserInfo['routes']) as $routeID) {
+            if (!isset($staticParserInfo['routes'][$routeID])) {
+              unset($parserInfo['routes'][$routeID]);
+            }
+          }
+  
+          foreach ($staticParserInfo['routes'] as $routeID => $stopTimes) {
+            if (!isset($parserInfo['routes'][$routeID])
+                || !isset($parserInfo['routes'][$routeID]['arrives'])) {
+              $parserInfo['routes'][$routeID] = $stopTimes;
             }
           }
         } else {
@@ -383,9 +396,9 @@ class TransitDataView {
   public function getRouteInfo($routeID, $time=null) {
     $routeInfo = array();
     $cacheName = "routeInfo.$routeID";
-    $cache = self::getRoutesCache();
+    $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName) && $time == null) {
+    if ($cache->isFresh($cacheName) && $time == null && !$this->daemonMode) {
       $routeInfo = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -425,25 +438,28 @@ class TransitDataView {
             $firstStop = reset(array_keys($staticRouteInfo['stops']));
             $foundFirstStop = false;
             $moveToEnd = array();
-            foreach ($routeInfo['stops'] as $stopID => &$stop) {
-              if (!isset($staticRouteInfo['stops'][$stopID])) {
+            foreach ($routeInfo['stops'] as $stopID => $stop) {
+              $staticStopID = $stopID;
+            
+              if (!isset($staticRouteInfo['stops'][$staticStopID])) {
                 // NextBus sometimes has _ar suffixes on it.  Try stripping them
                 $parts = explode('_', $stopID);
                 if (isset($staticRouteInfo['stops'][$parts[0]])) {
                   //error_log("Warning: static route does not have live stop id $stopID, using {$parts[0]}");
-                  $stopID = $parts[0];
+                  $staticStopID = $parts[0];
                 }
               }
               
-              if (isset($staticRouteInfo['stops'][$stopID])) {
-                $stop['name'] = $staticRouteInfo['stops'][$stopID]['name'];
+              if (isset($staticRouteInfo['stops'][$staticStopID])) {
+                $routeInfo['stops'][$stopID]['name'] = $staticRouteInfo['stops'][$staticStopID]['name'];
   
-                if (!$stop['hasTiming'] && $staticRouteInfo['stops'][$stopID]['hasTiming']) {
-                  $stop['arrives'] = $staticRouteInfo['stops'][$stopID]['arrives'];
-                  if (isset($staticRouteInfo['stops'][$stopID]['predictions'])) {
-                    $stop['predictions'] = $staticRouteInfo['stops'][$stopID]['predictions'];
+                if (!$stop['hasTiming'] && $staticRouteInfo['stops'][$staticStopID]['hasTiming']) {
+                  $routeInfo['stops'][$stopID]['arrives'] = $staticRouteInfo['stops'][$staticStopID]['arrives'];
+                  
+                  if (isset($staticRouteInfo['stops'][$staticStopID]['predictions'])) {
+                    $routeInfo['stops'][$stopID]['predictions'] = $staticRouteInfo['stops'][$staticStopID]['predictions'];
                   } else {
-                    unset($stop['predictions']);
+                    unset($routeInfo['stops'][$stopID]['predictions']);
                   }
                 }
               } else {
@@ -458,6 +474,8 @@ class TransitDataView {
               }
             }
             $routeInfo['stops'] += $moveToEnd;
+            
+            uasort($routeInfo['stops'], array('TransitDataParser', 'sortStops'));
           }
         }
       }
@@ -557,9 +575,9 @@ class TransitDataView {
   private function getAllRoutes($time=null) {
     $allRoutes = array();
     $cacheName = 'allRoutes';
-    $cache = self::getRoutesCache();
+    $cache = self::getViewCache();
     
-    if ($cache->isFresh($cacheName) && $time == null) {
+    if ($cache->isFresh($cacheName) && $time == null && !$this->daemonMode) {
       $allRoutes = json_decode($cache->read($cacheName), true);
       
     } else {
@@ -663,6 +681,7 @@ class TransitDataView {
 abstract class TransitDataParser {
   protected $args = array();
   protected $whitelist = false;
+  protected $daemonMode = false;
   
   private $routes    = array();
   private $stops     = array();
@@ -679,17 +698,18 @@ abstract class TransitDataParser {
     '8' => 'nw',
   );
     
-  public static function factory($class, $args, $overrides, $whitelist) {
+  public static function factory($class, $args, $overrides, $whitelist, $daemonMode=false) {
     $parser = null;
     $parserClassFile = realpath_exists(LIB_DIR."/$class.php");
     if ($parserClassFile) {
       require_once $parserClassFile;
-      $parser = new $class($args, $overrides, $whitelist);
+      $parser = new $class($args, $overrides, $whitelist, $daemonMode);
     }
     return $parser;
   }
   
-  function __construct($args, $overrides, $whitelist) {
+  function __construct($args, $overrides, $whitelist, $daemonMode=false) {
+    $this->daemonMode = $daemonMode;
     $this->args = $args;
     $this->overrides = $overrides;
     $this->whitelist = $whitelist ? $whitelist : false;
@@ -774,7 +794,7 @@ abstract class TransitDataParser {
  
   protected function getMapIconUrlForRouteStop($routeID) {
     if($_SERVER['SERVER_NAME'] != 'localhost') {
-      $iconURL = "http://".SERVER_HOST."/modules/transit/images/shuttle_stop_dot.png";
+      $iconURL = FULL_URL_PREFIX.'/modules/transit/images/shuttle_stop_dot.png';
     } else {
       return $GLOBALS['siteConfig']->getVar('GOOGLE_CHART_API_URL').http_build_query(array(
         'chst' => 'd_simple_text_icon_left',
@@ -783,13 +803,18 @@ abstract class TransitDataParser {
     }
   }
  
-  protected function getMapIconUrlForStopPin($stopID) {
+  protected function getMapIconUrlForRouteStopPin($routeID=null) {
     if($_SERVER['SERVER_NAME'] != 'localhost') {
-      return "http://".SERVER_HOST."/modules/transit/images/shuttle_stop_pin.png";
+      return FULL_URL_PREFIX.'modules/transit/images/shuttle_stop_pin.png';
     } else {
+      $routeColor = $GLOBALS['siteConfig']->getVar('TRANSIT_DEFAULT_ROUTE_COLOR');
+      if ($routeID) {
+        $routeColor = $this->getRouteColor($routeID);
+      }
+      
       return $GLOBALS['siteConfig']->getVar('GOOGLE_CHART_API_URL').http_build_query(array(
         'chst' => 'd_map_pin_icon',
-        'chld' => 'bus|'.$GLOBALS['siteConfig']->getVar('TRANSIT_DEFAULT_ROUTE_COLOR'),
+        'chld' => "bus|$routeColor",
       ));
     }
   }
@@ -895,14 +920,14 @@ abstract class TransitDataParser {
   }
   
   public function getMapImageForStop($id, $width=270, $height=270) {
-    if (!isset($this->stops[$id])) {
+    $stop = $this->getStop($id);
+    if (!$stop) {
       error_log(__FUNCTION__."(): Warning no such stop '$id'");
       return false;
     }
     
-    $stop = $this->stops[$id];
     $coords = $stop->getCoordinates();
-    $iconURL = $this->getMapIconUrlForStopPin($id);
+    $iconURL = $this->getMapIconUrlForRouteStopPin();
     
     $query = http_build_query(array(
       'sensor'  => 'false',
@@ -914,12 +939,12 @@ abstract class TransitDataParser {
   }
 
   public function getMapImageForRoute($id, $width=270, $height=270) {
-    if (!isset($this->routes[$id])) {
+    $route = $this->getRoute($id);
+    if (!$route) {
       error_log(__FUNCTION__."(): Warning no such route '$id'");
       return false;
     }
     
-    $route = $this->routes[$id];
     $paths = $route->getPaths();
     $color = $this->getRouteColor($id);
     
@@ -952,7 +977,8 @@ abstract class TransitDataParser {
   }
 
   public function routeIsRunning($routeID, $time=null) {
-    if (!isset($this->routes[$routeID])) {
+    $route = $this->getRoute($routeID);
+    if (!$route) {
       error_log(__FUNCTION__."(): Warning no such route '$routeID'");
       return false;
     }
@@ -962,21 +988,22 @@ abstract class TransitDataParser {
     if (!isset($time)) {
       $time = TransitTime::getCurrentTime();
     }
-    return $this->routes[$routeID]->isRunning($time);
+    return $route->isRunning($time);
   }
   
   public function getRoutePaths($routeID) {
-    if (!isset($this->routes[$routeID])) {
+    $route = $this->getRoute($routeID);
+    if (!$route) {
       error_log(__FUNCTION__."(): Warning no such route '$routeID'");
       return array();
     }
 
-    $route = $this->routes[$routeID];
     return $route->getPaths();
   }
   
   public function getRouteInfo($routeID, $time=null) {
-    if (!isset($this->routes[$routeID])) {
+    $route = $this->getRoute($routeID);
+    if (!$route) {
       error_log(__FUNCTION__."(): Warning no such route '$routeID'");
       return array();
     }
@@ -985,16 +1012,18 @@ abstract class TransitDataParser {
     if (!isset($time)) {
       $time = TransitTime::getCurrentTime();
     }
-    $route = $this->routes[$routeID];
 
+    $inService = false;
+    $isRunning = $route->isRunning($time, $inService);
+    
     $routeInfo = array(
       'agency'         => $route->getAgencyID(),
       'name'           => $route->getName(),
       'description'    => $route->getDescription(),
       'color'          => $this->getRouteColor($routeID),
-      'live'           => $this->isLive(),
+      'live'           => $isRunning ? $this->isLive() : false,
       'frequency'      => $route->getServiceFrequency($time),
-      'running'        => $route->isRunning($time, $inService),
+      'running'        => $isRunning,
       'inService'      => $inService,
       'stopIconUrl'    => $this->getMapIconUrlForRouteStop($routeID),
       'vehicleIconUrl' => $this->getMapIconUrlForRouteVehicle($routeID),
@@ -1030,18 +1059,20 @@ abstract class TransitDataParser {
           }
           
           if (!isset($directionStops[$stopID])) {
-            $directionStops[$stopID] = array(
-              'name'      => $this->stops[$stopID]->getName(),
-              'arrives'   => $arrivalTime,
-              'hasTiming' => $stopInfo['hasTiming'],
-            );
-            if (isset($this->stops[$stopID])) {
-              $directionStops[$stopID]['coordinates'] = $this->stops[$stopID]->getCoordinates();
+            $stop = $this->getStop($stopID);
+            if ($stop) {
+              $directionStops[$stopID] = array(
+                'name'      => $stop->getName(),
+                'arrives'   => $arrivalTime,
+                'hasTiming' => $stopInfo['hasTiming'],
+                'i'         => $stopInfo['i'],
+              );
+              $directionStops[$stopID]['coordinates'] = $stop->getCoordinates();
             }
             if (isset($stopInfo['predictions'])) {
               $directionStops[$stopID]['predictions'] = $stopInfo['predictions'];
             }
-            //error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrives).' for '.$this->stops[$stopID]->getName());
+            //error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime).' for '.$this->stops[$stopID]->getName());
           } else {
             $oldArrivalTime = $directionStops[$stopID]['arrives'];
             if ($arrivalTime > $time && ($arrivalTime < $oldArrivalTime || $oldArrivalTime < $time)) {
@@ -1137,28 +1168,30 @@ abstract class TransitDataParser {
     }
 
     $routes = array();
-    $inService = false;
     foreach ($this->routes as $routeID => $route) {
       $this->updatePredictionData($routeID);
           
+      $inService = false; // Safety in case isRunning doesn't set this
+      $isRunning = $route->isRunning($time, $inService);
+
       $routes[$routeID] = array(
         'name'        => $route->getName(),
         'description' => $route->getDescription(),
         'color'       => $this->getRouteColor($routeID),
         'frequency'   => round($route->getServiceFrequency($time) / 60),
         'agency'      => $route->getAgencyID(),
-        'live'        => $this->isLive(),
+        'live'        => $isRunning ? $this->isLive() : false,
+        'inService'   => $inService,
+        'running'     => $isRunning,
       );
-      $routes[$routeID]['running'] = $route->isRunning($time, $inService);
-      $routes[$routeID]['inService'] = $inService;
-      
+
       $this->applyRouteInfoOverrides($routeID, $routes[$routeID]);
     }
 
     return $routes;
   }
   
-  private function applyRouteInfoOverrides($routeID, &$routeInfo) {
+  protected function applyRouteInfoOverrides($routeID, &$routeInfo) {
     if (isset($this->overrides['route'])) {
       foreach ($this->overrides['route'] as $field => $overrides) {
         if (isset($overrides[$routeID])) {
@@ -1168,7 +1201,7 @@ abstract class TransitDataParser {
     }
   }
   
-  private function applyStopInfoOverrides($stopID, &$stopInfo) {
+  protected function applyStopInfoOverrides($stopID, &$stopInfo) {
     if (isset($this->overrides['stop'])) {
       foreach ($this->overrides['stop'] as $field => $overrides) {
         if (isset($overrides[$stopID])) {
@@ -1200,6 +1233,13 @@ abstract class TransitDataParser {
     reset($stops);
     unset($stops[key($stops)]);
   }
+  
+  public static function sortStops($a, $b) {
+    if ($a["i"] == $b["i"]) { 
+      return 0; 
+    }
+    return ($a["i"] < $b["i"]) ? -1 : 1;
+  }
 }
 
 //
@@ -1230,6 +1270,12 @@ class TransitTime {
   public static function getLocalDatetimeFromTimestamp($timestamp) {
     $datetime = new DateTime('@'.$timestamp, self::getGMTTimezone());
     $datetime->setTimeZone(self::getLocalTimezone()); 
+    
+    $hours = intval($datetime->format('G'));
+    if ($hours < 5) {
+      $datetime->modify('-1 day'); // before 5am is for the previous day
+    }
+    
     return $datetime;
   }
 
@@ -1286,13 +1332,15 @@ class TransitTime {
     list($hours, $minutes, $seconds) = explode(':', $date->format('G:i:s'));
     $dateTT = self::createFromComponents($hours, $minutes, $seconds);
   
-    list($hours, $minutes, $seconds) = self::getComponents($tt);
+    list($ttHours, $ttMinutes, $ttSeconds) = self::getComponents($tt);
 
-    if ($hours > 23) {
-      $date->modify('+1 day'); // will be for the next day
+    // Note: getLocalDatetimeFromTimestamp subtracts a day if it is before 5am
+    // so it will end up being the same day if ttHours > 23
+    if ($ttHours > 23) {
+      $date->modify('+1 day');
     }
     
-    $date->setTime($hours, $minutes, $seconds);
+    $date->setTime($ttHours, $ttMinutes, $ttSeconds);
     
     return $date->format('U');
   }
@@ -1351,8 +1399,8 @@ class TransitRoute {
   private $name = null;
   private $description = null;
   private $agencyID = null;
-  private $directions = array();
   private $viewAsLoop = false;
+  protected $directions = array();
   
   function __construct($id, $agencyID, $name, $description, $viewAsLoop=false) {
     $this->id = $id;
@@ -1404,6 +1452,14 @@ class TransitRoute {
     }
   }
   
+  public function getDirection($id) {
+    if (!isset($this->directions[$id])) {
+      error_log(__FUNCTION__."(): Warning no such direction '$id'");
+      return false;
+    }
+    return $this->directions[$id];
+  }
+  
   public function getSegmentsForDirection($direction) {
     if ($this->viewAsLoop) {
       $segments = array();
@@ -1412,7 +1468,8 @@ class TransitRoute {
       }
       return $segments;
     } else {
-      return $this->directions[$direction]['segments'];
+      $direction = $this->getDirection($direction);
+      return $direction['segments'];
     }
   }
   
@@ -1426,10 +1483,8 @@ class TransitRoute {
   }
   
   public function setStopPredictions($directionID, $stopID, $predictions) {
-    if (!isset($this->directions[$directionID])) {
-      error_log("Warning no direction $directionID for route {$this->id}");
-    }
-    foreach ($this->directions[$directionID]['segments'] as &$segment) {
+    $direction = $this->getDirection($directionID);
+    foreach ($direction['segments'] as &$segment) {
       $segment->setStopPredictions($stopID, $predictions);
     }
   }
@@ -1534,7 +1589,7 @@ class TransitRoute {
     return $isRunning;
   }
   
-  private function segmentsUseFrequencies() {
+  protected function segmentsUseFrequencies() {
     foreach ($this->directions as $direction) {
       foreach ($direction['segments'] as $segment) {
         return $segment->hasFrequencies();
@@ -1593,7 +1648,7 @@ class TransitRoute {
               $frequency = $arrivalTimes[$i] - $arrivalTimes[$i-1];
             }
           }
-          if ($frequency > 0 && $frequency < MAX_ARRIVAL_DELAY) { break; }
+          if ($frequency > 0 && $frequency < $GLOBALS['siteConfig']->getVar('TRANSIT_MAX_ARRIVAL_DELAY')) { break; }
         }
       }
       if ($frequency == 0) { $frequency = 60*60; } // default to 1 hour
@@ -1655,23 +1710,24 @@ class TransitService {
   
     $datetime = TransitTime::getLocalDatetimeFromTimestamp($time);
     
-    $hour = intval($datetime->format('H'));
-    if ($hour < 5) {
-      $datetime->modify('-1 day'); // before 5am is part of the previous day
-    }
-    
     $date = intval($datetime->format('Ymd'));
     $dayName = $datetime->format('l');
     
-    $insideValidDateRange = false;
-    foreach ($this->dateRanges as $dateRange) {
-      $week  = $dateRange['weekdays'];
-      
-      if ($date >= $dateRange['first'] && $date <= $dateRange['last'] && $week[strtolower($dayName)]) {
-        $insideValidDateRange = true;
-        break;
+    if (count($this->dateRanges)) {
+      $insideValidDateRange = false;
+      foreach ($this->dateRanges as $dateRange) {
+        $week  = $dateRange['weekdays'];
+        
+        if ($date >= $dateRange['first'] && $date <= $dateRange['last'] && $week[strtolower($dayName)]) {
+          $insideValidDateRange = true;
+          break;
+        }
       }
+    } else {
+      // no date ranges means always valid
+      $insideValidDateRange = true;
     }
+    
     $isException  = in_array($date, $this->exceptions);
     $isAddition   = in_array($date, $this->additions);
 
@@ -1689,9 +1745,9 @@ class TransitSegment {
   private $name = null;
   private $service = null;
   private $direction = null;
-  private $stops = array();
   private $stopsSorted = false;
-  private $frequencies = null;
+  protected $stops = array();
+  protected $frequencies = null;
   
   private $hasPredictions = false;
   
@@ -1788,16 +1844,9 @@ class TransitSegment {
     }
   }
   
-  private static function sortStops($a, $b) {
-    if ($a["i"] == $b["i"]) { 
-      return 0; 
-    }
-    return ($a["i"] < $b["i"]) ? -1 : 1;
-  }
-  
   private function sortStopsIfNeeded() {
     if (!$this->stopsSorted) {
-      usort($this->stops, array(get_class($this), 'sortStops'));
+      usort($this->stops, array('TransitDataParser', 'sortStops'));
       $this->stopsSorted = true;
     }
   }
@@ -1867,8 +1916,8 @@ class TransitSegment {
     $arrivalTime = 0; // noticeable error state
 
     $stop = $this->stops[$stopIndex];
-
-    if (isset($this->frequencies)) {
+    
+    if ($this->hasFrequencies()) {
       $firstFrequency = reset($this->frequencies);
       
       $firstLoopStopTime = $firstFrequency['start'];

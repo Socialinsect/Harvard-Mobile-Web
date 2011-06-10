@@ -12,3 +12,6 @@
   {$smarty.block.parent}
   (<a href="{$refreshURL}">refresh</a>)
 {/block}
+
+{block name="autoReload"}
+{/block}

@@ -6,6 +6,7 @@ require_once realpath(LIB_DIR.'/feeds/Libraries.php');
 define('LIBRARY_LIBRARIES_COOKIE', 'libraryLocations');
 define('LIBRARY_ARCHIVES_COOKIE',  'libraryArchives');
 define('LIBRARY_ITEMS_COOKIE',     'libraryItems');
+define('LIBRARIES_COOKIE_DURATION', 160 * 24 * 60 * 60);
 
 
 class LibrariesModule extends Module {
@@ -110,7 +111,8 @@ class LibrariesModule extends Module {
   
   private function setBookmarks($type, $bookmarks) {
     if (isset(self::$typeToCookie[$type])) {
-      setcookie(self::$typeToCookie[$type], implode(',', array_unique($bookmarks)), 0, COOKIE_PATH);
+      setcookie(self::$typeToCookie[$type], implode(',', array_unique($bookmarks)), 
+        time() + LIBRARIES_COOKIE_DURATION, COOKIE_PATH);
       $this->bookmarks[$type] = $bookmarks;
     } else {
       error_log(__FUNCTION__."(): Warning unknown cookie type '$type'");
@@ -329,6 +331,11 @@ class LibrariesModule extends Module {
   }
   
   protected function initializeForPage() {
+    $this->addInlineJavascript(
+      'var LIBRARIES_COOKIE_DURATION = "'.LIBRARIES_COOKIE_DURATION.'";'.
+      'var COOKIE_PATH = "'.COOKIE_PATH.'";'
+    );
+
     switch ($this->page) {
       case 'index':
         $indexConfig = $this->loadWebAppConfigFile('libraries-index', 'indexConfig');
@@ -681,6 +688,9 @@ class LibrariesModule extends Module {
           $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
         }
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+        $this->addOnLoad('setupItemList();');
+
         $this->assign('keywords',    implode(' ', array($keywords, $q)));
         $this->assign('title',       $title);
         $this->assign('author',      $author);
@@ -759,6 +769,9 @@ class LibrariesModule extends Module {
         
         //error_log(print_r($results, true));
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+        $this->addOnLoad('setupItemList();');
+        
         $this->assign('bookmarkType', $type);
         $this->assign('results', $results);
         break;
@@ -821,7 +834,7 @@ class LibrariesModule extends Module {
         }
         
         $this->assign('openOnly',         $openOnly);
-        $this->assign('openNowToggleURL', $this->buildURL($this->page, $toggleOpenArgs, false));
+        $this->assign('openNowToggleURL', $this->buildBreadcrumbURL($this->page, $toggleOpenArgs, false));
         $this->assign('entries',          $entries);
         break;
         

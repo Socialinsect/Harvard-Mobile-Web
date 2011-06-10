@@ -1,15 +1,30 @@
 <?php
+/**
+  * @package Module
+  * @subpackage Calendar
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
+/**
+  */
 require_once realpath(LIB_DIR.'/TimeRange.php');
+
+/**
+  */
 require_once realpath(LIB_DIR.'/ICalendar.php');
 
 define('DAY_SECONDS', 24*60*60);
 
+/**
+  * @package Module
+  * @subpackage Calendar
+  */
 class CalendarModule extends Module {
   protected $id = 'calendar';
   protected $feeds = array();
+  protected $hasFeeds = true;
   protected $timezone;
+  protected $feedFields = array('CACHE_LIFETIME'=>'Cache lifetime (seconds)', 'CONTROLLER_CLASS'=>'Controller Class','PARSER_CLASS'=>'Parser Class','EVENT_CLASS'=>'Event Class');
+  protected $defaultSearchOption = 0;
   
   public function timezone()
   {
@@ -53,12 +68,16 @@ class CalendarModule extends Module {
     );
   }
     
-  private function timeText($event) {
-    return strval($event->get_range());
-    if ($event->get_end() - $event->get_start() == -1) {
-      return $event->get_range()->format('D M j').' '.date('g:i a', $event->get_start());
+  private function timeText($event, $timeOnly=false) {
+    if ($timeOnly) {
+      if ($event->get_end() - $event->get_start() == -1) {
+        return date('g:ia', $event->get_start());
+      } else {
+        return date('g:ia', $event->get_start()).' - '.date('g:ia', $event->get_end());
+      }
+    } else {
+      return strval($event->get_range());
     }
-    return $event->get_range()->format('D M j g:i a');
   }
 
   private function ucname($name) {
@@ -79,7 +98,7 @@ class CalendarModule extends Module {
   
     switch ($type) {
       case 'datetime':
-        if (is_a($value, 'DayRange')) {
+        if ($value instanceOf DayRange) {
           $valueForType = strval($value);
         } else {
           $valueForType = date("D M j", $value->get_start());
@@ -169,32 +188,19 @@ class CalendarModule extends Module {
     ), $addBreadcrumb);
   }
   
+  private function yearURL($year, $month, $type, $addBreadcrumb=true) {
+    return $this->buildBreadcrumbURL('year', array(
+      'year'  => $year,
+      'month' => $month,
+      'type'  => $type,
+    ), $addBreadcrumb);
+  }
+
   private function categoryDayURL($time, $categoryID, $name, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('category', array(
-      'time' => $time,
-      'catid'   => $categoryID,
-      'name' => $name, 
-    ), $addBreadcrumb);
-  }
-  
-  private function academicURL($year, $addBreadcrumb=true) {
-    return $this->buildBreadcrumbURL('year', array(
-      'type'=> 'academic',
-      'month'=>'9',
-      'year' => $year,
-    ), $addBreadcrumb);
-  }
-  
-  private function holidaysURL($year=NULL, $addBreadcrumb=true) {
-    return $this->buildBreadcrumbURL('holidays', array(
-      'year' => isset($year) ? $year : $this->args['year'],
-    ), $addBreadcrumb);
-  }
-  
-  private function religiousURL($year=NULL, $addBreadcrumb=true) {
-    return $this->buildBreadcrumbURL('holidays', array(
-      'page' => 'religious',
-      'year' => isset($year) ? $year : $this->args['year'],
+      'time'  => $time,
+      'catid' => $categoryID,
+      'name'  => $name,
     ), $addBreadcrumb);
   }
   
@@ -204,8 +210,8 @@ class CalendarModule extends Module {
   
   private function categoryURL($category, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('category', array(
-      'catid'   => is_array($category) ? $category['catid'] : $category->get_cat_id(),
-      'name' => is_array($category) ? $category['name']  : $this->ucname($category->get_name()),
+      'catid' => is_array($category) ? $category['catid'] : $category->get_cat_id(),
+      'name'  => is_array($category) ? $category['name']  : $this->ucname($category->get_name()),
     ), $addBreadcrumb);
   }
   
@@ -215,16 +221,22 @@ class CalendarModule extends Module {
     ), $addBreadcrumb);
   }
   
-  private function detailURL($event, $options=array(), $addBreadcrumb=true) {
-    return $this->buildBreadcrumbURL('detail', array_merge($options, array(
+  private function detailURL($event, $options=array(), $addBreadcrumb=true, $noBreadcrumbs=false) {
+    $args = array_merge($options, array(
       'id'   => $event->get_uid(),
       'time' => $event->get_start()
-    )), $addBreadcrumb);
+    ));
+
+    if ($noBreadcrumbs) {
+      return $this->buildURL('detail', $args);
+    } else {
+      return $this->buildBreadcrumbURL('detail', $args, $addBreadcrumb);
+    }
   }
   
   public function federatedSearch($searchTerms, $maxCount, &$results) {
-    $searchOption = $this->searchOptions[0]; // default timeframe
-    $type = 'events';
+    $searchOption = $this->searchOptions[$this->defaultSearchOption]; // default timeframe
+    $type = $this->getDefaultFeed();
     
     $feed = $this->getFeed($type); // this allows us to have multiple feeds in the future
     
@@ -237,16 +249,12 @@ class CalendarModule extends Module {
     $limit = min($maxCount, count($iCalEvents));
     for ($i = 0; $i < $limit; $i++) {
       $subtitle = $this->timeText($iCalEvents[$i]);
-      $briefLocation = $iCalEvents[$i]->get_location();
-      if (isset($briefLocation)) {
+      if ($briefLocation = $iCalEvents[$i]->get_location()) {
         $subtitle .= " | $briefLocation";
       }
   
       $results[] = array(
-        'url'      => $this->buildBreadcrumbURL("/{$this->id}/detail", array(
-            'id'   => $iCalEvents[$i]->get_uid(),
-            'time' => $iCalEvents[$i]->get_start()
-          ), false),
+        'url'      => $this->detailURL($iCalEvents[$i], array(), false, false),
         'title'    => $iCalEvents[$i]->get_summary(),
         'subtitle' => $subtitle,
       );
@@ -254,16 +262,14 @@ class CalendarModule extends Module {
     
     return count($iCalEvents);
   }
-  
-  protected function urlForFederatedSearch($searchTerms) {
-    return $this->buildBreadcrumbURL("/{$this->id}/search", array(
-      'filter'    => $searchTerms,
-      'timeframe' => '0',
-    ), false);
-  }
 
-  protected function getFeedTitle($index)
-  {
+  public function getDefaultFeed() {
+     if ($indexes = array_keys($this->feeds)) {
+         return current($indexes);
+     }
+  }
+  
+  protected function getFeedTitle($index) {
     if (isset($this->feeds[$index])) {
         
         $feedData = $this->feeds[$index];
@@ -273,8 +279,7 @@ class CalendarModule extends Module {
     }
   }
   
-  public function getFeed($index)
-  {
+  public function getFeed($index) {
     if (isset($this->feeds[$index])) {
         $feedData = $this->feeds[$index];
         $controller = CalendarDataController::factory($feedData);
@@ -294,7 +299,30 @@ class CalendarModule extends Module {
     switch ($this->page) {
       case 'help':
         break;
+      
+      case 'pane':
+        $start = new DateTime(date('Y-m-d H:i:s', time()), $this->timezone);
+        $start->setTime(0,0,0);
+        $end = clone $start;
+        $end->setTime(23,59,59);
         
+        $feed = $this->getFeed('events'); 
+        $feed->setStartDate($start);
+        $feed->setEndDate($end);
+        $iCalEvents = $feed->items();
+                
+        $events = array();
+        foreach($iCalEvents as $iCalEvent) {
+          $events[] = array(
+            'url'      => $this->detailURL($iCalEvent, array(), false, true),
+            'title'    => $iCalEvent->get_summary().':',
+            'subtitle' => $this->timeText($iCalEvent, true),
+          );
+        }
+        
+        $this->assign('events',  $events);        
+        break;
+
       case 'index':
         $this->loadWebAppConfigFile('calendar-index','calendarPages');
         $today = mktime(12,0,0);
@@ -306,7 +334,7 @@ class CalendarModule extends Module {
       
       case 'categories':
         $categories = array();
-        $type = $this->getArg('type', 'events');
+        $type = $this->getArg('type', $this->getDefaultFeed());
         
         $feed = $this->getFeed($type);
         
@@ -323,7 +351,7 @@ class CalendarModule extends Module {
         break;
       
       case 'category':
-        $type    = $this->getArg('type', 'events');
+        $type    = $this->getArg('type', $this->getDefaultFeed());
         $catid   = $this->getArg('catid', '');
         $name    = $this->getArg('name', '');
         $current = $this->getArg('time', time());
@@ -360,13 +388,12 @@ class CalendarModule extends Module {
           
           foreach($iCalEvents as $iCalEvent) {
             $subtitle = $this->timeText($iCalEvent);
-            $briefLocation = $iCalEvent->get_location();
-            if (isset($briefLocation)) {
+            if ($briefLocation = $iCalEvent->get_location()) {
               $subtitle .= " | $briefLocation";
             }
           
             $events[] = array(
-              'url'      => $this->detailURL($iCalEvent,array('catid'=>$catid)),
+              'url'      => $this->detailURL($iCalEvent, array('catid' => $catid)),
               'title'    => $iCalEvent->get_summary(),
               'subtitle' => $subtitle,
             );
@@ -375,10 +402,45 @@ class CalendarModule extends Module {
         
         $this->assign('events', $events);        
         break;
-      
+        
+      case 'list':
+        $current = $this->getArg('time', time());
+        $type = $this->getArg('type', $this->getDefaultFeed());
+        $limit = $this->getArg('limit', 20);
+        $feed = $this->getFeed($type); 
+        $this->setPageTitle($this->getFeedTitle($type));
+        $this->setBreadcrumbTitle('List');
+        $this->setBreadcrumbLongTitle($this->getFeedTitle($type));
+        
+        $start = new DateTime(date('Y-m-d H:i:s', $current), $this->timezone);
+        $start->setTime(0,0,0);
+
+        $feed->setStartDate($start);
+        $iCalEvents = $feed->items(0, $limit);
+                        
+        $events = array();
+        foreach($iCalEvents as $iCalEvent) {
+          $subtitle = $this->timeText($iCalEvent);
+          if ($briefLocation = $iCalEvent->get_location()) {
+            $subtitle .= " | $briefLocation";
+          }
+
+          $events[] = array(
+            'url'      => $this->detailURL($iCalEvent),
+            'title'    => $iCalEvent->get_summary(),
+            'subtitle' => $subtitle
+          );
+        }
+
+        $this->assign('feedTitle', $this->getFeedTitle($type));
+        $this->assign('type',    $type);
+        $this->assign('current', $current);
+        $this->assign('events',  $events);        
+        break;
+        
       case 'day':  
         $current = $this->getArg('time', time());
-        $type = $this->getArg('type', 'events');
+        $type = $this->getArg('type', $this->getDefaultFeed());
         $next = strtotime("+1 day", $current);
         $prev = strtotime("-1 day", $current);
         
@@ -395,9 +457,8 @@ class CalendarModule extends Module {
                 
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $subtitle = $this->timeText($iCalEvent);
-          $briefLocation = $iCalEvent->get_location();
-          if (isset($briefLocation)) {
+          $subtitle = $this->timeText($iCalEvent, true);
+            if ($briefLocation = $iCalEvent->get_location()) {
             $subtitle .= " | $briefLocation";
           }
         
@@ -408,6 +469,7 @@ class CalendarModule extends Module {
           );
         }
 
+        $this->assign('feedTitle', $this->getFeedTitle($type));
         $this->assign('type',    $type);
         $this->assign('current', $current);
         $this->assign('next',    $next);
@@ -419,20 +481,20 @@ class CalendarModule extends Module {
         
       case 'detail':  
         $calendarFields = $this->loadWebAppConfigFile('calendar-detail', 'detailFields');
-        $type = $this->getArg('type', 'events');
+        $type = $this->getArg('type', $this->getDefaultFeed());
         
         $feed = $this->getFeed($type); // this allows us to have multiple feeds in the future
         
-        if (isset($this->args['filter'])) {
-            $feed->addFilter('search', $this->args['filter']);
+        if ($filter = $this->getArg('filter')) {
+            $feed->addFilter('search', $filter);
         }
 
-        if (isset($this->args['catid'])) {
-            $feed->addFilter('category', $this->args['catid']);
+        if ($catid = $this->getArg('catid')) {
+            $feed->addFilter('category', $catid);
         }
         
         $time = $this->getArg('time', time());
-        if ($event = $feed->getItem($this->args['id'], $time)) {
+        if ($event = $feed->getItem($this->getArg('id'), $time)) {
           $this->assign('event', $event);
         } else {
           throw new Exception("Event not found");
@@ -463,7 +525,7 @@ class CalendarModule extends Module {
             $field = array();
             
             $value = $event->get_attribute($key);
-            if (!isset($value)) { continue; }
+            if (empty($value)) { continue; }
 
             if (isset($info['label'])) {
               $field['label'] = $info['label'];
@@ -514,7 +576,7 @@ class CalendarModule extends Module {
       case 'search':
         $searchTerms  = $this->getArg('filter');
         $timeframeKey = $this->getArg('timeframe', 0);
-        $type         = $this->getArg('type', 'events');
+        $type         = $this->getArg('type', $this->getDefaultFeed());
         
         if ($searchTerms && isset($this->searchOptions[$timeframeKey])) {
           $searchOption = $this->searchOptions[$timeframeKey];
@@ -530,13 +592,14 @@ class CalendarModule extends Module {
           $events = array();
           foreach($iCalEvents as $iCalEvent) {
             $subtitle = $this->timeText($iCalEvent);
-            $briefLocation = $iCalEvent->get_location();
-            if (isset($briefLocation)) {
+            if ($briefLocation = $iCalEvent->get_location()) {
               $subtitle .= " | $briefLocation";
             }
         
             $events[] = array(
-              'url'      => $this->detailURL($iCalEvent, array('filter'=>$searchTerms, 'timeframe'=>$timeframeKey)),
+              'url'      => $this->detailURL($iCalEvent, array(
+                'filter'    => $searchTerms, 
+                'timeframe' => $timeframeKey)),
               'title'    => $iCalEvent->get_summary(),
               'subtitle' => $subtitle
             );
@@ -554,10 +617,10 @@ class CalendarModule extends Module {
         
       case 'year':
         $year  = $this->getArg('year', date('Y'));
-        $type  = $this->getArg('type', 'events');
+        $type  = $this->getArg('type', $this->getDefaultFeed());
         $month = $this->getArg('month', 1); //default to january
         
-        $start = new DateTime(sprintf("%d%02d01", $year, $month, $this->timezone));
+        $start = new DateTime(sprintf("%d%02d01", $year, $month), $this->timezone);
         $end   = new DateTime(sprintf("%d%02d01", $year+1, $month), $this->timezone);
         
         $feed = $this->getFeed($type);
@@ -580,11 +643,11 @@ class CalendarModule extends Module {
 
         if ((date('Y')+1) > $year) {
           $this->assign('next',    $next);
-          $this->assign('nextURL', $this->academicURL($year+1, false));
+          $this->assign('nextURL', $this->yearURL($year+1, $month, $type, false));
         }
         if ($year > intval(date('Y'))) {
           $this->assign('prev',    $prev);
-          $this->assign('prevURL', $this->academicURL($year-1, false));
+          $this->assign('prevURL', $this->yearURL($year-1, $month, $type, false));
         }
 
         $this->assign('current', $current);
@@ -593,7 +656,7 @@ class CalendarModule extends Module {
         break;
       
       case 'academic': //preserved for compatibility
-        $this->redirectTo('year', array('type'=>'academic','month'=>9));
+        $this->redirectTo('year', array('type' => 'academic','month' => 9));
     }
     
   }

@@ -1,7 +1,15 @@
 <?php
+/**
+  * @package Core
+  */
 
+/**
+  */
 require_once realpath(LIB_DIR.'/db.php');
 
+/**
+  * @package Core
+  */
 class PageViews {
 
   public static function log_api($module, $platform, $time=NULL) {
@@ -208,6 +216,7 @@ class PageViews {
       if (count($output) == 1 && $output[0]['viewcount'] === NULL) {
         $output = Array();
       }
+
     return $output;
   }
 

@@ -3,14 +3,11 @@
 }
 .springboard div {
 	margin: 1px 4px;
-	line-height: 1.1em;
+	line-height: 1.2em;
 }
 .springboard div a {	
 	padding: 4px 6px;
 	color: #333;
-}
-.springboard div.utility a {
-	font-size: 90%;
 }
 .springboard a:hover {
 	border: 2px solid #c00;

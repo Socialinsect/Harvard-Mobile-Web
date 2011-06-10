@@ -1,5 +1,12 @@
 <?php
+/**
+  * This script handles all incoming requests
+  * @package Core
+  */
 
+/**
+  * The initialize library sets up the environment
+  */
 require_once realpath(dirname(__FILE__).'/../lib/initialize.php');
 
 //
@@ -11,31 +18,31 @@ $path = isset($_GET['_path']) ? $_GET['_path'] : '';
 
 Initialize($path); 
 
-//
-// Handle page request
-//
-
-if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
-  $icon = realpath_exists(THEME_DIR.'/common/images/favicon.ico');
-  if ($icon) {
-    CacheHeaders($icon);
-    header('Content-type: '.mime_type($icon));
-    echo file_get_contents($icon);
+function _phpFile($_file) {
+  if ($file = realpath_exists($_file)) {
+    require_once $file;
     exit;
   }
-} else if (preg_match(';^.*ga.php$;', $path, $matches)) {
-  //
-  // Google Analytics for non-Javascript devices
-  //
   
-  require_once realpath(LIB_DIR.'/ga.php');
-  exit;
+  _404();
+}
 
-} else if (preg_match(';^.*(modules|common)(/.*images)/(.*)$;', $path, $matches)) {
-  //
-  // Images
-  //
-  
+function _outputFile($_file) {
+  if ($file = realpath_exists($_file)) {
+    CacheHeaders($file);
+    header('Content-type: '.mime_type($file));
+    readfile($file);
+    exit;
+  }
+
+  _404();
+}
+
+function _outputSiteFile($matches) {
+  _outputFile(SITE_DIR.'/'.$matches[1].'/'.$matches[2]);
+}
+
+function _outputTypeFile($matches) { 
   $file = $matches[3];
 
   $platform = $GLOBALS['deviceClassifier']->getPlatform();
@@ -43,8 +50,10 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
   
   $testDirs = array(
     THEME_DIR.'/'.$matches[1].$matches[2],
+    SITE_DIR.'/'.$matches[1].$matches[2],
     TEMPLATES_DIR.'/'.$matches[1].$matches[2],
   );
+  
   $testFiles = array(
     "$pagetype-$platform/$file",
     "$pagetype/$file",
@@ -53,21 +62,16 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
   
   foreach ($testDirs as $dir) {
     foreach ($testFiles as $file) {
-      $image = realpath_exists("$dir/$file");
-      if ($image) {
-        CacheHeaders($image);    
-        header('Content-type: '.mime_type($image));
-        echo file_get_contents($image);
-        exit;
-      }        
+      if ($file = realpath_exists("$dir/$file")) {
+          _outputFile($file);
+      }
     }
   }
 
-} else if (preg_match(';^.*'.ImageLoader::imageDir().'/(.+)$;', $path, $matches)) {
-  //
-  // Autoloaded Images
-  //
-  
+  _404();
+}
+
+function _outputImageLoaderFile($matches) {
   $fullPath = ImageLoader::load($matches[1]);
   
   if ($fullPath) {
@@ -77,35 +81,10 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
     exit;
   }
 
-} else if (preg_match(';^.*media/(.*)$;', $path, $matches)) {
-  //
-  // Media
-  //
+  _404();
+}
 
-  $media = realpath_exists(SITE_DIR."/media/$matches[1]");
-  if ($media) {
-    CacheHeaders($media);    
-    header('Content-type: '.mime_type($media));
-    echo file_get_contents($media);
-    exit;
-  }
-
-} else if (preg_match(';^.*(sample/.*)$;', $path, $matches)) {
-  //
-  // Sample Files
-  //
-
-  $sample = realpath_exists(SITE_DIR."/$matches[1].php");
-  if ($sample) {
-    require_once $sample;
-    exit;
-  }
-  
-} else if (preg_match(';^.*api/$;', $path, $matches)) {
-  //
-  // Native Interface API
-  //  
-  
+function _outputAPICall() {
   require_once realpath(LIB_DIR.'/PageViews.php');
   
   if (isset($_REQUEST['module']) && $_REQUEST['module']) {
@@ -126,65 +105,102 @@ if (preg_match(';^.*favicon.ico$;', $path, $matches)) {
     }
   }
   
-} else {
-  //
-  // Web Interface
-  //
-  
-  require_once realpath(LIB_DIR.'/Module.php');
-  require_once realpath(LIB_DIR.'/PageViews.php');
-    
-  $id = 'home';
-  $page = 'index';
-  
-  $args = array_merge($_GET, $_POST);
-  unset($args['_path']);
-  if (get_magic_quotes_gpc()) {
-    
-    function deepStripSlashes($v) {
-      return is_array($v) ? array_map('deepStripSlashes', $v) : stripslashes($v);
-    }
-    $args = deepStripslashes($args);
-  }
-  
-  if (!strlen($path) || $path == '/') {
-    $redirectID = 'home';
-    
-    if ($GLOBALS['deviceClassifier']->isComputer() || $GLOBALS['deviceClassifier']->isSpider()) {
-      $redirectID = 'info';
-    }
-    $redirectPath = Module::getPathSegmentForModuleID($redirectID);
-    
-    header("Location: ./$redirectPath/");
-    
-  } else {  
-    $parts = explode('/', ltrim($path, '/'), 2);
-
-    $id = $parts[0];
-    if (isset($parts[1])) {
-      if (strlen($parts[1])) {
-        $page = basename($parts[1], '.php');
-      }
-    } else {
-      // redirect with trailing slash for completeness
-      header("Location: ./$id/");
-    }
-  }
-
-  // Module::getModuleIDForPathSegment($id) gets called in Module::factory
-  // so we could just set $id = Module::getModuleIDForPathSegment($id) here
-  // and not in Module::factory, unless Module::factory gets called elsewhere
-  $moduleID = Module::getModuleIDForPathSegment($id);
-  PageViews::increment($moduleID, $GLOBALS['deviceClassifier']->getPlatform());
-
-  $module = Module::factory($id, $page, $args);
-  $module->displayPage();
-  exit;
+  _404();
 }
 
 //
-// Unsupported Request or File Not Found
+// Handle page request
 //
 
-header("{$_SERVER['SERVER_PROTOCOL']} 404 Not Found");
+$url_patterns = array(
+  array(
+    'pattern' => ';^.*favicon.ico$;', 
+    'func'    => '_outputFile',
+    'params'  => array(THEME_DIR.'/common/images/favicon.ico'),
+  ),
+  array(
+    'pattern' => ';^.*ga.php$;',
+    'func'    => '_phpFile',
+    'params'  => array(LIB_DIR.'/ga.php'),
+  ),
+  array(
+    'pattern' => ';^.*(modules|common)(/.*images)/(.*)$;',
+    'func'    => '_outputTypeFile',
+  ),
+  array(
+    'pattern' => ';^.*'.ImageLoader::imageDir().'/(.+)$;',
+    'func'    => '_outputImageLoaderFile',
+  ),
+  array(
+    'pattern' => ';^.*(media)(/.*)$;',
+    'func'    => '_outputSiteFile',
+  ),
+  array(
+    'pattern' => ';^.*api/$;',
+    'func'    => '_outputAPICall',
+  ),
+);
+ 
+// try the url patterns. Run the path through each pattern testing for a match
+foreach ($url_patterns as $pattern_data) {
+  if (preg_match($pattern_data['pattern'], $path, $matches)) {
+    $params = isset($pattern_data['params']) ? $pattern_data['params'] : array($matches);
+    call_user_func_array($pattern_data['func'], $params);
+  }
+}
+
+// No pattern matches. Attempt to load a module
+  
+require_once realpath(LIB_DIR.'/Module.php');
+require_once realpath(LIB_DIR.'/PageViews.php');
+  
+$id = 'home';
+$page = 'index';
+
+$args = array_merge($_GET, $_POST);
+unset($args['_path']);
+
+// undo magic_quotes_gpc if set. It really shouldn't be. Stop using it.
+if (get_magic_quotes_gpc()) {
+  function deepStripSlashes($v) {
+    return is_array($v) ? array_map('deepStripSlashes', $v) : stripslashes($v);
+  }
+  $args = deepStripslashes($args);
+}
+
+if (!strlen($path) || $path == '/') {
+  $redirectID = 'home';
+  
+  if ($GLOBALS['deviceClassifier']->isComputer() || $GLOBALS['deviceClassifier']->isSpider()) {
+    $redirectID = 'info';
+  }
+  $url = URL_PREFIX.Module::getPathSegmentForModuleID($redirectID).'/';
+  
+  header("Location: $url");
+  exit;
+}
+
+$parts = explode('/', ltrim($path, '/'), 2);
+$id = $parts[0];
+
+// find the page part
+if (isset($parts[1])) {
+  if (strlen($parts[1])) {
+    $page = basename($parts[1], '.php');
+  }
+  
+} else {
+  // redirect with trailing slash for completeness
+  header("Location: ./$id/");
+   exit;
+}
+
+// Module::getModuleIDForPathSegment($id) gets called in Module::factory
+// so we could just set $id = Module::getModuleIDForPathSegment($id) here
+// and not in Module::factory, except...
+// Module::factory gets called elsewhere for federated search and tablet homepage
+PageViews::increment(Module::getModuleIDForPathSegment($id), $GLOBALS['deviceClassifier']->getPlatform());
+
+$module = Module::factory($id, $page, $args);
+$module->displayPage();
 exit;

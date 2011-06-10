@@ -1,0 +1,4 @@
+/* Fix for Storm */
+#storybody img {
+  width: 100% !important;
+}

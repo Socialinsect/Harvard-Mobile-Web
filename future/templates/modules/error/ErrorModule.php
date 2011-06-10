@@ -1,7 +1,13 @@
 <?php
+/**
+  * @package Module
+  * @subpackage Error
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
+/**
+  * @package Module
+  * @subpackage Error
+  */
 class ErrorModule extends Module {
   protected $id = 'error';
 
@@ -31,6 +37,10 @@ class ErrorModule extends Module {
     ),
     'protected' => array(
       'message' =>  'This module requires you to login',
+      'linkText' => 'Click here to login'
+    ),
+    'protectedACL' => array(
+      'message' =>  'You are not permitted to use this module',
       'linkText' => 'Click here to login'
     ),
     'default' => array(
@@ -66,13 +76,14 @@ class ErrorModule extends Module {
   protected function devError() {
     
     // production
-    if($GLOBALS['siteConfig']->getVar('USE_PRODUCTION_ERROR_HANDLER'))
+    if($GLOBALS['siteConfig']->getVar('PRODUCTION_ERROR_HANDLER_ENABLED')) {
       return false;
-      
-    //check for development errors
+    }
+    
+    // check for development errors
     if(isset($_GET['error'])){
       $file = $path =  CACHE_DIR . "/errors/" . $_GET['error'] . ".log";
-      if(file_exists($file) && $handle = fopen($file, "r")){
+      if(file_exists($file) && $handle = fopen($file, "r")) {
         $msg = fread($handle, filesize($file));
         fclose($handle);
         return $msg;

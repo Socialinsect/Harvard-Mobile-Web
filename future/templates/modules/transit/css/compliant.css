@@ -17,13 +17,20 @@
 }
 
 #schedule li.icon a {
-  padding: 13px 25px 13px 25px;
+  padding: 10px 25px 10px 25px;
   line-height: 1.2em;
 }
+/* Use float and negative margins because Storm 2 doesn't
+ * handle position: absolute properly when the DOM gets changed
+ * which happens with the countdown timer */
 #schedule li.icon img {
+  display: block;
   width: 18px;
   height: 19px;
-  top: 14px;
+  position: static;
+  float: left;
+  margin-left: -24px;
+  margin-top: 1px;
 }
 
 .sid {
@@ -47,7 +54,7 @@
 }
 
 .stop-map {
-    border: 2pt solid white;
+  border: 2pt solid white;
 }
 
 .logoContainer {
@@ -55,14 +62,17 @@
 }
 #servicelogo {
   display: inline-block;
-  position: absolute;
-  bottom: -12px;
-  right: -5px;
+  float: right;
+}
+.refreshContainer {
+  text-align: left;
 }
 #refresh {
   float: right;
 	margin-top: -4px;
 	margin-right: -4px;
+	margin-left: 4px;
+	margin-bottom: 4px;
 	font-size: 82.35%;
 }
 

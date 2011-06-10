@@ -1,5 +1,11 @@
 <?php
+/**
+  * @package Config
+  */
 
+/**
+  * @package Config
+  */
 class SiteConfig {
   private $configVars = array();
   private $sectionVars = array();
@@ -200,7 +206,7 @@ class SiteConfig {
     $this->replaceConfigVariables($this->configVars);
 
     $siteDir  = self::getVarOrDie($file, $this->configVars, 'SITE_DIR');
-    $siteMode = self::getVarOrDie($file, $this->configVars, 'SITE_MODE');
+    $configMode = self::getVarOrDie($file, $this->configVars, 'CONFIG_MODE');
 
     // Set up defines relative to SITE_DIR
     define('SITE_DIR',             $this->configVars['SITE_DIR']);
@@ -218,8 +224,8 @@ class SiteConfig {
 
     // Load site mode configuration file
     $this->configVars = array_merge($this->configVars, 
-      parse_ini_file(self::getPathOrDie(SITE_CONFIG_DIR."/config-$siteMode.ini"), false));   
-    $this->addSectionVars(parse_ini_file(self::getPathOrDie(SITE_CONFIG_DIR."/config-$siteMode.ini"), true));
+      parse_ini_file(self::getPathOrDie(SITE_CONFIG_DIR."/config-$configMode.ini"), false));   
+    $this->addSectionVars(parse_ini_file(self::getPathOrDie(SITE_CONFIG_DIR."/config-$configMode.ini"), true));
     $this->replaceConfigVariables($this->configVars);
     
     // Set up theme define

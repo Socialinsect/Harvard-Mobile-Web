@@ -3,7 +3,7 @@
 require_once realpath(LIB_DIR.'/Module.php');
 require_once realpath(LIB_DIR.'/feeds/courses.php');
 
-define('MYCOURSES_EXPIRE_TIME', 160 * 24 * 60 * 60); // Maybe use customize expire time?
+define('MY_CLASSES_COOKIE_DURATION', 160 * 24 * 60 * 60); // Maybe use customize expire time?
 define('MY_CLASSES_COOKIE', 'myclasses');
 
 
@@ -63,7 +63,7 @@ class CoursesModule extends Module {
   }
   
   private function setMyClasses($classes) {
-    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MYCOURSES_EXPIRE_TIME, COOKIE_PATH);
+    setcookie(MY_CLASSES_COOKIE, implode(',', $classes), time() + MY_CLASSES_COOKIE_DURATION, COOKIE_PATH);
   }
   
   private function coursesURL($school, $addBreadcrumb=true) {
@@ -72,16 +72,13 @@ class CoursesModule extends Module {
     ), $addBreadcrumb);
   }
   
-  private function getClassListItems($classes, $externalLink=false, $limit=null) {
+  private function getClassListItems($classes, $externalLink=false, $limit=null, $showTimes=false) {
     $listItems = array();
-    
-    $detailPath = 'detail';
-    if ($externalLink) {
-      $detailPath = "/{$this->id}/detail";
-    }
     
     $count = 0;
     foreach ($classes as $i => $class) {
+      if (!strlen($class['masterId'])) { continue; }
+      
       // Multiple classes with the same name in a row, show instructors to differentiate     
       $staffNamesIfNeeded = '';    
       if (($i > 0                   && $class['name'] == $classes[$i-1]['name']) || 
@@ -92,12 +89,34 @@ class CoursesModule extends Module {
         }
       }
       
-      $listItems[] = array(
-        'title' => "<strong>{$class['name']}:</strong> {$class['title']}".$staffNamesIfNeeded,
-        'url'   => $this->buildBreadcrumbURL($detailPath, array(
-          'class' => $class['masterId'],
-        ), !$externalLink),
+      $args = array(
+        'class' => $class['masterId'],
       );
+      
+      $listItem = array(
+        'title' => "<strong>{$class['name']}:</strong> {$class['title']}".$staffNamesIfNeeded,
+        'url'   => $externalLink ? 
+          $this->buildURL('detail', $args) :
+          $this->buildBreadcrumbURL('detail', $args),
+      );
+      
+      if ($showTimes) {
+        $meetingTimes = $class['meeting_times'];
+        
+        $times = array();
+        if ($meetingTimes->parseSucceeded()) {
+          foreach ($meetingTimes->all() as $meetingTime) {
+            $times[] = $this->formatDetails($meetingTime->daysText()).' '.
+              $this->formatDetails($meetingTime->timeText());
+          }
+          $listItem['subtitle'] = implode(', ', $times);
+          
+        } else {
+          $listItem['subtitle'] = $class['meeting_times']->rawTimesText();
+        }
+      }
+      
+      $listItems[] = $listItem;
       
       $count++;
       if (isset($limit) && $count >= $limit) {
@@ -175,7 +194,19 @@ class CoursesModule extends Module {
     switch ($this->page) {
       case 'help':
         break;
-        
+      
+      case 'pane':
+        // List of bookmarked courses and schools
+        $myClasses = $this->getMyClasses();
+        $classes = array();
+        foreach ($myClasses['currentIds'] as $index => $id) {
+          $classes[] = CourseData::get_subject_details($id);
+        }
+        $this->assign('myClasses',        $this->getClassListItems($classes, true, null, true));
+        $this->assign('myRemovedCourses', $myClasses['oldIds']);
+        break;        
+      
+      
       case 'index':
         // List of bookmarked courses and schools
         $myClasses = $this->getMyClasses();
@@ -443,6 +474,7 @@ class CoursesModule extends Module {
         
         $this->addInlineJavascript(
           'var MY_CLASSES_COOKIE = "'.MY_CLASSES_COOKIE.'";'.
+          'var MY_CLASSES_COOKIE_DURATION = "'.MY_CLASSES_COOKIE_DURATION.'";'.
           'var COOKIE_PATH = "'.COOKIE_PATH.'";'
         );
         break;

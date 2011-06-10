@@ -12,9 +12,9 @@
 {/if}
 
 {if $keywords || $title || $author}
-  {include file="findInclude:modules/{$moduleID}/itemlist.tpl" items=$results}
+  {include file="findInclude:modules/{$moduleID}/common/itemlist.tpl" items=$results}
 {/if}
 
-{include file="findInclude:modules/{$moduleID}/searchfields.tpl"}
+{include file="findInclude:modules/{$moduleID}/common/searchfields.tpl"}
 
 {include file="findInclude:common/footer.tpl"}

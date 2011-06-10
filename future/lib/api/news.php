@@ -47,7 +47,7 @@ switch(apiGetArg('command')) {
       $index = 0;
       $lastStoryId = apiGetArg('storyId', null);
       if ($lastStoryId) {
-        $feedIndex = $feed->getIndexForItem($lastStoryId);
+        $feedIndex = $feed->getRSSIndexForItem($lastStoryId);
         if (!is_null($feedIndex)) {
           $index = $feedIndex + 1;
         }
@@ -64,7 +64,7 @@ switch(apiGetArg('command')) {
       $index = 0;
       $lastStoryId = apiGetArg('storyId', null);
       if ($lastStoryId) {
-        $feedIndex = $feed->getIndexForItem($lastStoryId);
+        $feedIndex = $feed->getRSSIndexForItem($lastStoryId);
         if (!is_null($feedIndex)) {
           $index = $feedIndex + 1;
         }

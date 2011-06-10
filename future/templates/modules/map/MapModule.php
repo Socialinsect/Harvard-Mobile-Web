@@ -69,6 +69,10 @@ class MapModule extends Module {
     $bbox = isset($this->args['bbox']) ? $this->bboxStr2Arr($this->args['bbox']) : NULL;
   
     switch ($this->pagetype) {
+    case 'tablet':
+      $imageWidth = 600; $imageHeight = 350;
+       break;
+    
      case 'compliant':
        if ($GLOBALS['deviceClassifier']->getPlatform() == 'bbplus') {
          $imageWidth = 410; $imageHeight = 260;

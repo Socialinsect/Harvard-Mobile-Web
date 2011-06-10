@@ -1,37 +1,52 @@
 <?php
+/**
+  * @package Exceptions
+  *
+  */
 
-//
-// Helper functions and classes
-//
-
+/**
+  *  Returned when there is a problem returning data from a server
+  * @package Exceptions
+  */
 class DataServerException extends Exception {
 }
 
+/**
+  * @package Exceptions
+  */
 class DeviceNotSupported extends Exception {
 }
 
+/**
+  * @package Exceptions
+  */
 class PageNotFound extends Exception {
 }
 
+/**
+  * @package Exceptions
+  */
 class DisabledModuleException extends Exception {
 }
 
+/**
+  */
 function getErrorURL($exception, $devError = false) {
   $args = array(
     'code' => 'internal',
     'url' => $_SERVER['REQUEST_URI'],
   );
   
-  if (is_a($exception, "DataServerException")) {
+  if ($exception instanceOf DataServerException) {
     $args['code'] = 'data';
   
-  } else if(is_a($exception, "DeviceNotSupported")) {
+  } else if ($exception instanceOf DeviceNotSupported) {
     $args['code'] = 'device_notsupported';
     
-  } else if(is_a($exception, "PageNotFound")) {
+  } else if ($exception instanceOf PageNotFound) {
     $args['code'] = 'notfound';
     
-  } else if(is_a($exception, "DisabledModuleException")) {
+  } else if ($exception instanceOf DisabledModuleException) {
     $args['code'] = 'forbidden';
   }
   
@@ -39,12 +54,12 @@ function getErrorURL($exception, $devError = false) {
     $args['error'] = $devError;
   }
   
-  return Module::buildURLForModule('error', 'index', $args);
+  return URL_PREFIX.'error/?'.http_build_query($args);
 }
 
-//
-// When in development, see your errors on the page instead of opening error log
-// 
+/**
+  * When in development, see your errors on the page instead of opening error log
+  */
 function developmentErrorLog($exception){
   $path =  CACHE_DIR . "/errors/";
   if (!file_exists($path)) {
@@ -73,22 +88,24 @@ function developmentErrorLog($exception){
   // alter your trace as you please, here
   $trace = $exception->getTrace();
   foreach ($trace as $key => $stackPoint) {
+    if (isset($trace[$key]['args'])) {
       // I'm converting arguments to their type
       // (prevents passwords from ever getting logged as anything other than 'string')
       $trace[$key]['args'] = array_map('gettype', $trace[$key]['args']);
+    }
   }
 
   // build your tracelines
   $result = array();
   foreach ($trace as $key => $stackPoint) {
-      $result[] = sprintf(
-          $traceline,
-          $key,
-          $stackPoint['file'],
-          $stackPoint['line'],
-          $stackPoint['function'],
-          implode(', ', $stackPoint['args'])
-      );
+    $result[] = sprintf(
+      $traceline,
+      $key,
+      $stackPoint['file'],
+      $stackPoint['line'],
+      $stackPoint['function'],
+      (isset($stackPoint['args']) ? implode(', ', $stackPoint['args']) : '')
+    );
   }
   // trace always ends with {main}
   $result[] = '#' . ++$key . ' {main}';
@@ -117,25 +134,24 @@ function developmentErrorLog($exception){
   
 }
 
-
-//
-// Exceptoin Handler set in initialize.php
-// 
+/**
+  * Exception Handler set in initialize.php
+  */
 function exceptionHandlerForDevelopment($exception) {
   $errtime = developmentErrorLog($exception);
   error_log(print_r($exception, TRUE));
   header('Location: '.getErrorURL($exception, $errtime));
 }
 
+/**
+  * Exception Handler set in initialize.php
+  */
 function exceptionHandlerForProduction($exception) {
   if(!$GLOBALS['deviceClassifier']->isSpider()) {
-    $protocol = isset($_SERVER['HTTPS']) && strlen($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ?
-      'https' : 'http';
-  
     mail($GLOBALS['siteConfig']->getVar('DEVELOPER_EMAIL'), 
       "Mobile web page experiencing problems",
       "The following page is throwing exceptions:\n\n" .
-      "URL: $protocol://".SERVER_HOST."{$_SERVER['REQUEST_URI']}\n" .
+      "URL: http".(IS_SECURE ? 's' : '')."://".SERVER_HOST."{$_SERVER['REQUEST_URI']}\n" .
       "User-Agent: \"{$_SERVER['HTTP_USER_AGENT']}\"\n" .
       "Referrer URL: \"{$_SERVER['HTTP_REFERER']}\"\n" .
       "Exception:\n\n" . 

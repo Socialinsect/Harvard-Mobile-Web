@@ -12,6 +12,15 @@
 {$tabBodies['map'] = $mapPane}
 
 {capture name="stopsPane" assign="stopsPane"}
+  {foreach $routeInfo['stops'] as $stopID => $stopInfo}
+    {capture name="subtitle" assign="subtitle"}
+      {include file="findInclude:modules/{$moduleID}/include/predictions.tpl" predictions=$stopInfo['predictions']}
+    {/capture}
+    {if $subtitle}
+      {$routeInfo['stops'][$stopID]['subtitle'] = $subtitle}
+    {/if}
+  {/foreach}
+
   {block name="stopsPane"}
     <span class="smallprint">{$routeConfig['stopTimeHelpText']}</span>
     <div id="schedule">
@@ -33,6 +42,15 @@
   </h2>
   
   <p class="smallprint logoContainer clear">
+    {block name="headerServiceLogo"}
+      {if $routeConfig['serviceLogo']}
+        <span id="servicelogo">
+          {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
+            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
+          {if $routeConfig['serviceLink']}</a>{/if}
+        </span>
+      {/if}
+    {/block}
     {block name="routeInfo"}
       {if $routeInfo['description']}
         {$routeInfo['description']}<br/>
@@ -47,16 +65,9 @@
         Bus not running.
       {/if}
     {/block}
-    
-    {block name="headerServiceLogo"}
-      {if $routeConfig['serviceLogo']}
-        <span id="servicelogo">
-          {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
-          {if $routeConfig['serviceLink']}</a>{/if}
-        </span>
-      {/if}
-    {/block}
+    {block name="autoReload"}
+      <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+    {/block}  
   </p>
 {block name="tabView"}
 	  {include file="findInclude:common/tabs.tpl" tabBodies=$tabBodies}

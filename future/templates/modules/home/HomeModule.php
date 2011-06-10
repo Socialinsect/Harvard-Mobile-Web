@@ -1,47 +1,61 @@
 <?php
+/**
+  * @package Module
+  * @subpackage Home
+  */
 
-require_once realpath(LIB_DIR.'/Module.php');
-
+/**
+  * @package Module
+  * @subpackage Home
+  */
 class HomeModule extends Module {
   protected $id = 'home';
-     
+  
+  private function getTabletModulePanes($tabletConfig) {
+    $modulePanes = array();
+    
+    foreach ($tabletConfig as $blockName => $moduleID) {
+      $path = self::getPathSegmentForModuleID($moduleID);
+    
+      $module = self::factory($path, 'pane', $this->args);
+      
+      $paneContent = $module->fetchPage(); // sets pageTitle var
+      
+      $this->importCSSAndJavascript($module->exportCSSAndJavascript());
+      
+      $modulePanes[$blockName] = array(
+        'id'      => $moduleID,
+        'url'     => self::buildURLForModule($moduleID, 'index'),
+        'title'   => $module->getTemplateVars('pageTitle'),
+        'content' => $paneContent,
+      );
+    }
+    
+    return $modulePanes;
+  }
+  
   protected function initializeForPage() {
     switch ($this->page) {
       case 'help':
         break;
         
+      case 'pane':
+        break;
+        
       case 'index':
-        $this->loadWebAppConfigFile('home-index', 'home');
-      
-        $whatsNewCount = 0;
-        $modules = array();
-        $secondaryModules = array();
-                
-        foreach ($this->getHomeScreenModules() as $id => $info) {
-          if (!$info['disabled']) {
-            $module = array(
-              'title' => $info['title'],
-              'url'   => $info['url'],
-              'img'   => self::argVal($info, 'img', "/modules/{$this->id}/images/$id").$this->imageExt,
-            );
-            if ($id == 'about' && $whatsNewCount > 0) {
-              $module['badge'] = $whatsNewCount;
-            }
-            if ($info['primary']) {
-              $modules[] = $module;
-            } else {
-              $module['class'] = 'utility';
-              $secondaryModules[] = $module;
-            }
-          }
-        }
+        $homeConfig = $this->loadWebAppConfigFile('home-index', 'home');
         
-        if (count($modules) && count($secondaryModules)) {
-          $modules[] = array('separator' => true);
+        $this->addOnLoad('rotateScreen();');
+        $this->addOnOrientationChange('rotateScreen();');
+
+        if ($this->pagetype == 'tablet') {
+          $this->assign('modulePanes', $this->getTabletModulePanes($homeConfig['tabletPanes']));
+          $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+          $this->addOnLoad('moduleHandleWindowResize();');
+        } else {
+          $this->assign('modules', $this->getModuleNavList());
         }
-        $modules = array_merge($modules, $secondaryModules);
-        
-        $this->assign('modules', $modules);
+        $this->assign('displayType', $homeConfig['springboard'] ? 'springboard' : 'list');
         $this->assign('topItem', null);
         break;
         
@@ -49,11 +63,14 @@ class HomeModule extends Module {
         $searchTerms = $this->getArg('filter');
         
         $federatedResults = array();
-     
-        foreach ($this->getHomeScreenModules() as $id => $info) {
+    
+        $navModulesBySection = $this->getNavigationModules(false); 
+        $primaryModules = $navModulesBySection['primary'];
+        foreach ($primaryModules as $id => $info) {
+          $path = self::getPathSegmentForModuleID($id);
+          $module = self::factory($path, $this->page, $this->args);
           if ($info['search']) {
             $results = array();
-            $module = Module::factory($id, $this->page, $this->args);
             $total = $module->federatedSearch($searchTerms, 2, $results);
             $federatedResults[] = array(
               'title'   => $info['title'],

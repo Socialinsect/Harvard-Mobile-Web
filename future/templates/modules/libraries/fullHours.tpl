@@ -1,6 +1,6 @@
 {include file="findInclude:common/header.tpl"}
 
-{include file="findInclude:modules/{$moduleID}/libraryName.tpl"}
+{include file="findInclude:modules/{$moduleID}/common/libraryName.tpl"}
 
 {foreach $item['hours'] as $entry}
   {block name="item"}

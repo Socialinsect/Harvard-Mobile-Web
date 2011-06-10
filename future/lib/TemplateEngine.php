@@ -1,7 +1,15 @@
 <?php
+/**
+  * @package Core
+  */
 
+/**
+  */
 require_once realpath(LIB_DIR.'/smarty/Smarty.class.php');
 
+/**
+  * @package Core
+  */
 class TemplateEngine extends Smarty {
   static $accessKey = 0;
   
@@ -38,7 +46,7 @@ class TemplateEngine extends Smarty {
         }
       }
     }
-    return false;
+    return $name;
   }
   
   public static function smartyResourceIncludeGetSource($name, &$source, $smarty) {
@@ -77,6 +85,7 @@ class TemplateEngine extends Smarty {
     
     $checkDirs = array(
       'TEMPLATES_DIR' => TEMPLATES_DIR,
+      'SITE_DIR'      => SITE_DIR,
       'THEME_DIR'     => THEME_DIR
     );
     
@@ -132,7 +141,7 @@ class TemplateEngine extends Smarty {
     // rewrite urls for the device classifier in case  our root is not / 
     // also handles debugging mode for paths without hostnames
     $source = preg_replace(
-      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.URL_DEVICE_DEBUG_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
+      ';(url\("?\'?|href\s*=\s*"|src\s*=\s*")('.URL_PREFIX.'|'.URL_DEVICE_DEBUG_PREFIX.'|/);', '\1'.URL_PREFIX, $source);
     
     if ($GLOBALS['siteConfig']->getVar('DEVICE_DEBUG')) {
       // if we are in debugging mode we need to also rewrite full paths with hostnames
@@ -184,7 +193,7 @@ class TemplateEngine extends Smarty {
   
   public static function smartyBlockAccessKeyLink($params, $content, &$smarty, &$repeat) {
     if (empty($params['href'])) {
-      $smarty->trigger_error("assign: missing 'href' parameter");
+      trigger_error("assign: missing 'href' parameter");
     }
     
     $html = '';
@@ -211,7 +220,7 @@ class TemplateEngine extends Smarty {
   
   public static function smartyTemplateAccessKeyReset($params, &$smarty) {
     if (!isset($params['index'])) {
-        $smarty->trigger_error("assign: missing 'index' parameter");
+        trigger_error("assign: missing 'index' parameter");
         return;
     }
     if (self::$accessKey == 0 || (isset($params['force']) && $params['force'])) {
@@ -251,7 +260,8 @@ class TemplateEngine extends Smarty {
       array('TemplateEngine','smartyResourceIncludeGetTrusted')
     ));
     
-    // Postfilter to add url prefix to absolute urls
+    // Postfilter to add url prefix to absolute urls and
+    // strip unnecessary whitespace (ignores <pre>, <script>, etc)
     $this->registerFilter('output', array('TemplateEngine', 
       'smartyOutputfilterAddURLPrefixAndStripWhitespace'));
     
@@ -264,16 +274,23 @@ class TemplateEngine extends Smarty {
     $this->assign('pagetype', $pagetype);
     $this->assign('platform', $platform);
     $this->assign('supportsCerts', $supportsCerts ? 1 : 0);
-    $this->assign('showDeviceDetection', $GLOBALS['siteConfig']->getVar('SHOW_DEVICE_DETECTION'));
+    $this->assign('showDeviceDetection', $GLOBALS['siteConfig']->getVar('DEVICE_DETECTION_DEBUG'));
     $this->assign('moduleDebug', $GLOBALS['siteConfig']->getVar('MODULE_DEBUG'));
-    
   }
   
   //
   // Display template for device and theme
   //
   
-  function displayForDevice($page, $cacheID = null, $compileID = null, $parent = null) {
-    $this->display(self::getIncludeFile($page), $cacheID, $compileID, $parent);
+  function displayForDevice($page, $cacheID = null, $compileID = null) {
+    $this->display(self::getIncludeFile($page), $cacheID, $compileID);
+  }
+  
+  //
+  // Fetch template contents for device and theme
+  //
+  
+  function fetchForDevice($page, $cacheID = null, $compileID = null) {
+    return $this->fetch(self::getIncludeFile($page), $cacheID, $compileID);
   }
 }

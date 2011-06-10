@@ -7,6 +7,12 @@ h1 {
 	padding: 17px 0 11px 0;
 	text-align: center;
 }
+/*
+.springboard div {
+	font-size: 88%;
+	line-height: 1em;
+}
+*/
 #new {
 	position: absolute;
 	top: 0;
@@ -16,8 +22,8 @@ h1 {
 	background-image: url(/modules/home/images/newbig.jpg);
 	background-repeat: no-repeat;
 	color: #fff;
-	font-size: 13px;
-	line-height: 13px;
+	font-size: 76.5%;
+	line-height: 1em;
 	text-align: center;
 	overflow: hidden;
 }
@@ -34,8 +40,8 @@ h1 {
 }
 #new a .newlabel {
 	display: block;
-	font-size: 9px;
-	line-height: 11px;
+	font-size: 47%;
+	line-height: 1.1em;
 	color: #ffcece;
 }
 .forminput {
