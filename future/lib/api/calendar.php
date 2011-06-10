@@ -130,8 +130,8 @@ switch (apiGetArg('command')) {
   case 'academic':
     $year = intval(apiGetArg('year', date('Y')));
 
-    $start = new DateTime( $year   ."0901", $timezone);        
-    $end   = new DateTime(($year+1)."0831", $timezone);
+    $start = new DateTime( $year   ."0820", $timezone);
+    $end   = new DateTime(($year+1)."0819", $timezone);
     
     $feed = getFeed($feeds, 'academic');
     
